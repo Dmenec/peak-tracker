@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PeakTracker · Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rock:    #1a1a1a;
+    --granite: #2d2d2d;
+    --mist:    #8fa3b8;
+    --snow:    #f0f4f8;
+    --summit:  #e8f4fd;
+    --sun:     #f5a623;
+    --sky:     #4a9fd4;
+    --moss:    #7ec87e;
+    --danger:  #c0392b;
+    --done:    #27ae60;
+    --radius:  10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--rock);
+    color: var(--snow);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ─────────────────────────────────────────────────────────── */
+  header {
+    background: linear-gradient(160deg, #080f18 0%, #122030 40%, #091808 100%);
+    padding: 3rem 2rem 5rem;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 80%, #4a9fd420 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, #5a8a6a20 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .mountain-silhouette {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%; height: 70px;
+    pointer-events: none;
+  }
+
+  .header-inner {
+    max-width: 700px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .logo-mark {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .main-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 10vw, 6rem);
+    letter-spacing: 0.05em;
+    line-height: 0.9;
+    background: linear-gradient(135deg, #ffffff 0%, #b8d8f5 40%, #c8e8c8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+    color: var(--mist);
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* ── Stats section ───────────────────────────────────────────────────── */
+  .stats-section {
+    max-width: 800px;
+    margin: -2rem auto 0;
+    padding: 0 1.5rem;
+    position: relative;
+    z-index: 10;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+  }
+
+  .stat-card {
+    background: var(--granite);
+    border: 1px solid #ffffff12;
+    border-radius: var(--radius);
+    padding: 1.2rem 1.5rem;
+    text-align: center;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+
+  .stat-card:hover { border-color: #ffffff25; transform: translateY(-2px); }
+
+  .stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.8rem;
+    line-height: 1;
+    letter-spacing: 0.03em;
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+    color: var(--mist);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.3rem;
+  }
+
+  .stat-card.climbed .stat-value  { color: var(--moss); }
+  .stat-card.planned .stat-value  { color: var(--sky); }
+  .stat-card.altitude .stat-value { color: var(--sun); }
+  .stat-card.done .stat-value     { color: var(--done); }
+
+  /* ── Navigation cards ────────────────────────────────────────────────── */
+  .nav-section {
+    max-width: 800px;
+    margin: 2.5rem auto;
+    padding: 0 1.5rem;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.1em;
+    color: var(--mist);
+    margin-bottom: 1rem;
+  }
+
+  .nav-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .nav-card {
+    background: var(--granite);
+    border: 1px solid #ffffff10;
+    border-radius: var(--radius);
+    padding: 1.8rem;
+    text-decoration: none;
+    color: var(--snow);
+    transition: border-color 0.2s, transform 0.2s, background 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .nav-card:hover {
+    transform: translateY(-3px);
+    background: #353535;
+  }
+
+  .nav-card.map-card    { border-color: #7ec87e30; }
+  .nav-card.map-card:hover { border-color: var(--moss); }
+  .nav-card.cal-card    { border-color: #4a9fd430; }
+  .nav-card.cal-card:hover { border-color: var(--sky); }
+
+  .nav-card-icon  { font-size: 2rem; margin-bottom: 0.2rem; }
+  .nav-card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.05em;
+  }
+  .nav-card.map-card .nav-card-title { color: var(--moss); }
+  .nav-card.cal-card .nav-card-title { color: var(--sky); }
+
+  .nav-card-desc {
+    font-size: 0.82rem;
+    color: var(--mist);
+    line-height: 1.5;
+  }
+
+  .nav-card-arrow {
+    margin-top: auto;
+    padding-top: 1rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .nav-card.map-card .nav-card-arrow { color: var(--moss); }
+  .nav-card.cal-card .nav-card-arrow { color: var(--sky); }
+
+  /* ── Recent activity ─────────────────────────────────────────────────── */
+  .activity-section {
+    max-width: 800px;
+    margin: 0 auto 3rem;
+    padding: 0 1.5rem;
+  }
+
+  .activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .activity-item {
+    background: var(--granite);
+    border: 1px solid #ffffff0a;
+    border-radius: var(--radius);
+    padding: 0.85rem 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    text-decoration: none;
+    color: var(--snow);
+  }
+  .activity-item:hover { border-color: #ffffff25; }
+
+  .activity-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .activity-name { font-weight: 600; font-size: 0.9rem; }
+  .activity-meta { font-size: 0.75rem; color: var(--mist); margin-top: 0.1rem; }
+  .activity-alt  { font-size: 0.8rem; font-weight: 600; color: var(--moss); margin-left: auto; flex-shrink: 0; }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--mist);
+    font-size: 0.85rem;
+  }
+
+  /* ── Responsive ──────────────────────────────────────────────────────── */
+  @media (max-width: 500px) {
+    .nav-cards { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <svg class="mountain-silhouette" viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,70 L0,45 L70,15 L130,40 L200,5 L265,30 L340,8 L400,35 L475,18 L535,42 L610,5 L670,28 L750,10 L810,35 L890,18 L950,42 L1030,22 L1090,45 L1170,20 L1240,40 L1310,25 L1380,42 L1440,30 L1440,70 Z" fill="#000000" opacity="0.35"/>
+    <path d="M0,70 L0,55 L90,38 L160,55 L240,38 L320,52 L400,40 L480,56 L560,42 L640,58 L720,44 L800,60 L880,46 L960,60 L1040,48 L1120,62 L1200,50 L1280,62 L1360,52 L1440,60 L1440,70 Z" fill="#000000" opacity="0.45"/>
+  </svg>
+  <div class="header-inner">
+    <span class="logo-mark">⛰</span>
+    <div class="main-title">PeakTracker</div>
+    <div class="subtitle">Your personal summit &amp; expedition log</div>
+  </div>
+</header>
+
+<!-- Stats -->
+<div class="stats-section">
+  <div class="stats-grid" id="stats-grid">
+    <div class="stat-card climbed">
+      <div class="stat-value" id="stat-climbed">—</div>
+      <div class="stat-label">Peaks climbed</div>
+    </div>
+    <div class="stat-card altitude">
+      <div class="stat-value" id="stat-highest">—</div>
+      <div class="stat-label">Highest peak (m)</div>
+    </div>
+    <div class="stat-card planned">
+      <div class="stat-value" id="stat-planned">—</div>
+      <div class="stat-label">Planned expeditions</div>
+    </div>
+    <div class="stat-card done">
+      <div class="stat-value" id="stat-done">—</div>
+      <div class="stat-label">Completed expeditions</div>
+    </div>
+  </div>
+</div>
+
+<!-- Navigation -->
+<div class="nav-section">
+  <div class="section-title">Go to</div>
+  <div class="nav-cards">
+    <a class="nav-card map-card" href="/mapa.html">
+      <div class="nav-card-icon">🗺</div>
+      <div class="nav-card-title">Map</div>
+      <div class="nav-card-desc">View all your peaks on the topographic relief. Register new peaks by clicking on the map.</div>
+      <div class="nav-card-arrow">Open map →</div>
+    </a>
+    <a class="nav-card cal-card" href="/calendar/">
+      <div class="nav-card-icon">📅</div>
+      <div class="nav-card-title">Calendar</div>
+      <div class="nav-card-desc">Plan upcoming ascents, manage expeditions, and mark completed summits.</div>
+      <div class="nav-card-arrow">Open calendar →</div>
+    </a>
+  </div>
+</div>
+
+<!-- Recent peaks -->
+<div class="activity-section">
+  <div class="section-title">Recent peaks</div>
+  <div class="activity-list" id="activity-list">
+    <div class="empty-state">Loading…</div>
+  </div>
+</div>
+
+<script>
+// Load and display stats + recent peaks
+async function loadDashboard() {
+  try {
+    const [rPeaks, rEvents] = await Promise.all([
+      fetch('/api/peaks'),
+      fetch('/api/calendar'),
+    ]);
+    const peaks  = await rPeaks.json();
+    const events = await rEvents.json();
+
+    // Stats
+    const climbed  = peaks.filter(p => p.ascent_date);
+    const highest  = climbed.length > 0 ? Math.max(...climbed.map(p => p.altitude)) : 0;
+    const planned  = events.filter(e => e.status === 'planned').length;
+    const done     = events.filter(e => e.status === 'completed').length;
+
+    document.getElementById('stat-climbed').textContent = climbed.length;
+    document.getElementById('stat-highest').textContent = highest > 0 ? highest.toLocaleString() : '—';
+    document.getElementById('stat-planned').textContent = planned;
+    document.getElementById('stat-done').textContent    = done;
+
+    // Recent peaks (last 5 climbed)
+    const list = document.getElementById('activity-list');
+    const recent = peaks
+      .filter(p => p.ascent_date)
+      .sort((a, b) => b.ascent_date.localeCompare(a.ascent_date))
+      .slice(0, 5);
+
+    if (recent.length === 0) {
+      list.innerHTML = '<div class="empty-state">No peaks logged yet. Head to the map to add your first!</div>';
+      return;
+    }
+
+    list.innerHTML = recent.map(p => `
+      <a class="activity-item" href="/mapa.html">
+        <div class="activity-dot" style="background:#7ec87e;"></div>
+        <div>
+          <div class="activity-name">⛰ ${esc(p.name)}</div>
+          <div class="activity-meta">${formatDate(p.ascent_date)}${p.difficulty ? ' · ' + esc(p.difficulty) : ''}${p.duration_hours ? ' · ' + p.duration_hours + 'h' : ''}</div>
+        </div>
+        <div class="activity-alt">${p.altitude.toLocaleString()}m</div>
+      </a>
+    `).join('');
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatDate(s) {
+  if (!s) return '';
+  const [y, m, d] = s.split('-');
+  const date = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+  return date.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+loadDashboard();
+</script>
+</body>
+</html>

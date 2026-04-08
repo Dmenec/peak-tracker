@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PeakTracker · My Peaks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+/* ── Design tokens ──────────────────────────────────────────────────────── */
+:root {
+  /* Palette */
+  --rock:       #0f1510;
+  --granite:    #1a2018;
+  --cliff:      #232d20;
+  --slate:      #2e3c2a;
+  --fog:        #6a9060;
+  --mist:       #8ab080;
+  --snow:       #e8f5e0;
+  --summit:     #f0fae8;
+  --sun:        #f5a623;
+  --sky:        #4a9fd4;
+  --ice:        #a8daf8;
+  --moss:       #4aaa5a;
+  --moss-dark:  #27ae60;
+  --pine:       #2a6a3a;
+  --cancel:     #7f8c8d;
+  --danger:     #c0392b;
+  --radius:     10px;
+  --radius-sm:  6px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--rock);
+  color: var(--snow);
+  min-height: 100vh;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HEADER — Mountain hero section
+══════════════════════════════════════════════════════════════════════════ */
+.hero {
+  position: relative;
+  background: linear-gradient(180deg,
+    #060d08 0%,
+    #0a1a10 30%,
+    #0d2015 60%,
+    #0a180e 100%
+  );
+  padding: 2.5rem 2rem 4.5rem;
+  overflow: hidden;
+}
+
+/* Stars */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 8%,  #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 20%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 55% 5%,  #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 12%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 83% 7%,  #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 92% 18%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 18% 35%, #ffffffaa 0%, transparent 100%),
+    radial-gradient(1px 1px at 62% 28%, #ffffffaa 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 48% 10%, #fff 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 77% 25%, #fff 0%, transparent 100%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Moon */
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 1.2rem; right: 3rem;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff8e0, #f0e8a0);
+  box-shadow: 0 0 12px #f5e07060, 0 0 30px #f5e07030;
+  pointer-events: none;
+}
+
+/* Mountain silhouette layers */
+.mountains {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%; height: 80px;
+  pointer-events: none;
+}
+
+.hero-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* Nav */
+.top-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  color: var(--mist);
+  text-decoration: none;
+  opacity: 0.75;
+}
+.logo span { color: var(--moss); }
+
+.nav-sep { color: #ffffff20; font-size: 0.9rem; }
+
+.nav-link {
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  color: var(--mist);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+}
+.nav-link:hover { color: var(--snow); background: #ffffff10; }
+.nav-link.active { color: var(--moss); background: #4aaa5a18; border-color: #4aaa5a30; }
+
+/* Title */
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3.5rem, 9vw, 6.5rem);
+  letter-spacing: 0.04em;
+  line-height: 0.9;
+  background: linear-gradient(140deg, #ffffff 0%, #d0f0d0 40%, #a0e0a0 75%, #80d080 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.4rem;
+}
+
+.hero-sub {
+  font-size: 0.8rem;
+  color: var(--fog);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-weight: 300;
+  margin-bottom: 1.6rem;
+}
+
+/* Stats strip */
+.stats-strip {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ffffff08;
+  border: 1px solid #ffffff12;
+  border-radius: 30px;
+  padding: 0.4rem 1rem;
+  font-size: 0.78rem;
+  color: var(--mist);
+  transition: border-color 0.2s;
+}
+
+.stat-pill:hover { border-color: #ffffff25; }
+
+.stat-pill .num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  line-height: 1;
+  letter-spacing: 0.03em;
+}
+
+.stat-pill.s-plans     { border-color: #4a9fd430; }
+.stat-pill.s-plans .num     { color: var(--sky); }
+.stat-pill.s-ascents   { border-color: #4aaa5a40; }
+.stat-pill.s-ascents .num   { color: var(--moss); }
+.stat-pill.s-hours     .num { color: var(--sun); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MONTH NAVIGATION
+══════════════════════════════════════════════════════════════════════════ */
+.month-nav {
+  max-width: 1100px;
+  margin: 2rem auto 0;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0 2rem;
+}
+
+.nav-btn {
+  background: #ffffff0a;
+  border: 1px solid #ffffff18;
+  color: var(--snow);
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.nav-btn:hover { background: #ffffff15; border-color: var(--moss); color: var(--moss); }
+
+.month-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 0.1em;
+  color: var(--summit);
+  min-width: 260px;
+  text-align: center;
+}
+
+.today-btn {
+  background: transparent;
+  border: 1px solid #ffffff18;
+  color: var(--fog);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-left: auto;
+}
+.today-btn:hover { border-color: var(--moss); color: var(--moss); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CALENDAR GRID
+══════════════════════════════════════════════════════════════════════════ */
+.calendar-wrap {
+  max-width: 1100px;
+  margin: 1.2rem auto 0;
+  padding: 0 2rem;
+}
+
+.week-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  margin-bottom: 3px;
+}
+
+.day-name {
+  text-align: center;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--fog);
+  padding: 0.3rem 0;
+  font-weight: 600;
+}
+
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+/* Individual day cell */
+.day-cell {
+  background: var(--granite);
+  border-radius: var(--radius-sm);
+  min-height: 110px;
+  padding: 0.45rem;
+  border: 1px solid #ffffff06;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.day-cell:hover         { border-color: #4aaa5a50; background: #1e271c; }
+.day-cell.empty         { background: #131810; border-color: transparent; cursor: default; }
+.day-cell.empty:hover   { background: #131810; border-color: transparent; }
+.day-cell.past          { opacity: 0.4; }
+.day-cell.past:hover    { border-color: #ffffff15; }
+
+.day-cell.today {
+  border-color: var(--sun) !important;
+  background: #2a1e00;
+}
+.day-cell.today:hover { background: #2e2400; }
+
+/* Day number */
+.day-num {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--fog);
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+.day-cell.today .day-num { color: var(--sun); }
+
+/* "+" hint on hover */
+.add-hint {
+  position: absolute;
+  top: 0.3rem; right: 0.35rem;
+  font-size: 0.7rem;
+  color: transparent;
+  transition: color 0.15s;
+  pointer-events: none;
+}
+.day-cell:not(.empty):not(.past):hover .add-hint { color: var(--moss); }
+
+/* Event chips */
+.chip {
+  font-size: 0.6rem;
+  padding: 2px 5px;
+  border-radius: 3px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  letter-spacing: 0.01em;
+}
+.chip:hover { opacity: 0.75; }
+
+/* Plan chip */
+.chip.plan {
+  background: #0d1e35;
+  color: var(--ice);
+  border-left: 2px solid var(--sky);
+}
+/* Ascension chip */
+.chip.ascension {
+  background: #0a2012;
+  color: #80dd80;
+  border-left: 2px solid var(--moss-dark);
+}
+/* Cancelled chip */
+.chip.cancelled {
+  background: #1e1e1e;
+  color: #666;
+  border-left: 2px solid #444;
+  text-decoration: line-through;
+}
+
+.chip-more {
+  font-size: 0.56rem;
+  color: var(--fog);
+  padding-top: 1px;
+  cursor: pointer;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BOTTOM PANELS — Plans + Ascensions side by side
+══════════════════════════════════════════════════════════════════════════ */
+.bottom-panels {
+  max-width: 1100px;
+  margin: 2.5rem auto 3rem;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #ffffff0c;
+}
+
+.panel-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: 0.1em;
+}
+
+.panel-plans     .panel-title { color: var(--sky); }
+.panel-ascents   .panel-title { color: var(--moss); }
+
+.panel-count {
+  font-size: 0.7rem;
+  background: #ffffff0a;
+  border: 1px solid #ffffff12;
+  border-radius: 20px;
+  padding: 0.15rem 0.55rem;
+  color: var(--fog);
+}
+
+/* Event cards */
+.event-card {
+  background: var(--granite);
+  border: 1px solid #ffffff0a;
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.event-card:hover { transform: translateY(-2px); }
+
+.panel-plans   .event-card { border-left: 3px solid var(--sky); }
+.panel-plans   .event-card:hover { border-color: var(--sky); }
+.panel-ascents .event-card { border-left: 3px solid var(--moss-dark); background: #141e12; }
+.panel-ascents .event-card:hover { border-color: var(--moss-dark); }
+
+.card-peak { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.2rem; }
+.card-date { font-size: 0.74rem; color: var(--fog); margin-bottom: 0.2rem; }
+.card-meta { font-size: 0.72rem; color: var(--fog); }
+
+.card-quick-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+  padding: 0.28rem 0.65rem;
+  background: #0a2012;
+  color: #6dd06d;
+  border: 1px solid #27ae6035;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.card-quick-done:hover { background: #142a1a; }
+
+.ascent-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.4rem;
+  font-size: 0.7rem;
+  color: var(--moss);
+}
+
+.empty-panel {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--fog);
+  font-size: 0.82rem;
+  border: 1px dashed #ffffff12;
+  border-radius: var(--radius);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MODALS
+══════════════════════════════════════════════════════════════════════════ */
+.overlay {
+  position: fixed; inset: 0;
+  background: #000000a0;
+  backdrop-filter: blur(5px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; padding: 1rem;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.overlay.visible { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: var(--cliff);
+  border: 1px solid #ffffff18;
+  border-radius: 16px;
+  padding: 2rem;
+  width: 100%; max-width: 500px;
+  transform: translateY(24px); transition: transform 0.22s;
+  box-shadow: 0 24px 64px #00000080;
+  max-height: 92vh; overflow-y: auto;
+}
+.overlay.visible .modal { transform: translateY(0); }
+
+/* Type selector (shown before the form) */
+.type-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.type-btn {
+  padding: 1rem;
+  border-radius: var(--radius);
+  border: 2px solid #ffffff12;
+  background: transparent;
+  color: var(--fog);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.type-btn:hover { border-color: #ffffff25; background: #ffffff08; }
+
+.type-btn.selected-plan {
+  border-color: var(--sky);
+  background: #0d1e35;
+  color: var(--ice);
+}
+.type-btn.selected-ascension {
+  border-color: var(--moss-dark);
+  background: #0a2012;
+  color: #80dd80;
+}
+
+.type-btn-icon { font-size: 1.6rem; display: block; margin-bottom: 0.3rem; }
+.type-btn-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  display: block;
+}
+.type-btn-desc { font-size: 0.65rem; opacity: 0.7; margin-top: 0.15rem; display: block; }
+
+.modal-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.7rem;
+  letter-spacing: 0.07em;
+  color: var(--summit);
+  margin-bottom: 0.2rem;
+}
+.modal-date {
+  font-size: 0.8rem;
+  color: var(--fog);
+  margin-bottom: 1.4rem;
+}
+
+.field { margin-bottom: 0.9rem; }
+.field label {
+  display: block;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--mist);
+  margin-bottom: 0.35rem;
+  font-weight: 600;
+}
+.field input, .field textarea, .field select {
+  width: 100%;
+  background: #0f1810;
+  border: 1px solid #ffffff15;
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.8rem;
+  color: var(--snow);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.15s;
+  resize: vertical;
+}
+.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--moss); }
+.field input::placeholder, .field textarea::placeholder { color: #3a5a3a; }
+.field select option { background: #1a2a1a; }
+
+.form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+.modal-actions { display: flex; gap: 0.65rem; margin-top: 1.4rem; }
+
+.btn {
+  padding: 0.65rem 1.2rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.83rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+.btn-cancel  { background: #ffffff0e; color: var(--fog); border: 1px solid #ffffff15; }
+.btn-cancel:hover { background: #ffffff18; }
+.btn-save-plan {
+  flex: 1;
+  background: linear-gradient(135deg, #1a4a7a, #2260a0);
+  color: var(--ice);
+  border: 1px solid #4a9fd440;
+}
+.btn-save-plan:hover { opacity: 0.9; }
+.btn-save-plan:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-save-ascent {
+  flex: 1;
+  background: linear-gradient(135deg, #1a4a2a, #236030);
+  color: #80dd80;
+  border: 1px solid #4aaa5a40;
+}
+.btn-save-ascent:hover { opacity: 0.9; }
+.btn-save-ascent:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-delete {
+  width: 100%;
+  background: #2a0e0e;
+  color: #f09090;
+  border: 1px solid #c0392b35;
+  margin-top: 0.5rem;
+}
+.btn-delete:hover { background: #3a1414; }
+.btn-complete {
+  flex: 1;
+  background: #0a2012;
+  color: #6dd06d;
+  border: 1px solid #27ae6040;
+}
+.btn-complete:hover { background: #142a1a; }
+
+/* Detail modal — status pills */
+.status-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+}
+.status-pill {
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  border: 1px solid #ffffff18;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--fog);
+}
+.status-pill.active-plan       { background: #0d1e35; color: var(--ice); border-color: var(--sky); }
+.status-pill.active-completado { background: #0a2012; color: #7ed87e; border-color: var(--moss-dark); }
+.status-pill.active-cancelado  { background: #1e1e1e; color: #888; border-color: #555; }
+
+.detail-row { display: flex; gap: 0.5rem; align-items: flex-start; margin-bottom: 0.55rem; font-size: 0.86rem; }
+.detail-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fog);
+  min-width: 85px;
+  padding-top: 3px;
+  font-weight: 600;
+}
+
+/* Autocomplete */
+.ac-wrap { position: relative; }
+.ac-list {
+  position: absolute; top: 100%; left: 0; right: 0;
+  background: #1e2a1e;
+  border: 1px solid #ffffff15;
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  max-height: 150px; overflow-y: auto;
+  z-index: 20; display: none;
+}
+.ac-list.open { display: block; }
+.ac-item {
+  padding: 0.5rem 0.8rem;
+  font-size: 0.83rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background 0.1s;
+}
+.ac-item:hover { background: #ffffff10; }
+.ac-alt { font-size: 0.7rem; color: var(--moss); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════════════════════════════════ */
+.toast {
+  position: fixed; bottom: 1.8rem; right: 1.8rem;
+  background: var(--cliff);
+  border: 1px solid var(--moss);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1.2rem;
+  font-size: 0.83rem;
+  z-index: 200;
+  transform: translateY(8px);
+  opacity: 0;
+  transition: all 0.28s;
+  pointer-events: none;
+  max-width: 320px;
+}
+.toast.visible { transform: translateY(0); opacity: 1; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 700px) {
+  .bottom-panels { grid-template-columns: 1fr; }
+  .day-cell { min-height: 70px; padding: 0.3rem; }
+  .day-num  { font-size: 0.68rem; }
+  .chip     { font-size: 0.52rem; }
+  .hero     { padding-bottom: 3.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ HERO ═════════════════════════════════════════════════════════════════ -->
+<header class="hero">
+  <!-- Mountain silhouette SVG -->
+  <svg class="mountains" viewBox="0 0 1440 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Far mountains (lighter) -->
+    <path d="M0,80 L0,55 L80,20 L140,48 L220,12 L290,42 L370,18 L440,50 L520,22 L590,55 L680,8 L750,38 L840,15 L910,45 L1000,20 L1070,50 L1160,25 L1230,52 L1320,30 L1440,48 L1440,80 Z"
+          fill="#0a1a0a" opacity="0.9"/>
+    <!-- Snow caps on far peaks -->
+    <path d="M80,20 L95,35 L65,35 Z M220,12 L238,30 L202,30 Z M370,18 L385,32 L355,32 Z M520,22 L536,36 L504,36 Z M680,8 L700,28 L660,28 Z M840,15 L858,32 L822,32 Z M1000,20 L1016,34 L984,34 Z M1160,25 L1175,38 L1145,38 Z"
+          fill="#1a3a1a" opacity="0.6"/>
+    <!-- Near mountains (darker) -->
+    <path d="M0,80 L0,62 L100,38 L170,60 L260,40 L340,65 L430,45 L510,68 L600,50 L680,70 L770,52 L850,72 L940,54 L1020,70 L1110,55 L1190,72 L1280,58 L1360,70 L1440,60 L1440,80 Z"
+          fill="#060e06" opacity="1"/>
+    <!-- Snow on near peaks -->
+    <path d="M100,38 L114,50 L86,50 Z M260,40 L274,52 L246,52 Z M430,45 L444,56 L416,56 Z M600,50 L614,60 L586,60 Z M770,52 L784,62 L756,62 Z M940,54 L954,64 L926,64 Z M1110,55 L1124,65 L1096,65 Z M1280,58 L1294,68 L1266,68 Z"
+          fill="#1e3a1e" opacity="0.8"/>
+  </svg>
+
+  <div class="hero-inner">
+    <div class="top-nav">
+      <a class="logo" href="/">Peak<span>Tracker</span></a>
+      <span class="nav-sep">/</span>
+      <a class="nav-link" href="/mapa.html">Map</a>
+      <a class="nav-link active" href="/calendar/">Calendar</a>
+    </div>
+
+    <div class="hero-title">My Peaks</div>
+    <div class="hero-sub">Plans · Ascents · Adventures</div>
+
+    <div class="stats-strip" id="stats-strip">
+      <div class="stat-pill s-plans">
+        <span class="num" id="stat-plans">—</span>
+        <span>active plans</span>
+      </div>
+      <div class="stat-pill s-ascents">
+        <span class="num" id="stat-ascents">—</span>
+        <span>completed peaks</span>
+      </div>
+      <div class="stat-pill s-hours">
+        <span class="num" id="stat-hours">—</span>
+        <span>hours on mountain</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══ MONTH NAV ═══════════════════════════════════════════════════════════ -->
+<div class="month-nav">
+  <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
+  <div class="month-label" id="month-label"></div>
+  <button class="nav-btn" onclick="changeMonth(1)">›</button>
+  <button class="today-btn" onclick="goToToday()">Today</button>
+</div>
+
+<!-- ══ CALENDAR ════════════════════════════════════════════════════════════ -->
+<div class="calendar-wrap">
+  <div class="week-header">
+    <div class="day-name">Mon</div><div class="day-name">Tue</div>
+    <div class="day-name">Wed</div><div class="day-name">Thu</div>
+    <div class="day-name">Fri</div><div class="day-name">Sat</div>
+    <div class="day-name">Sun</div>
+  </div>
+  <div class="days-grid" id="days-grid"></div>
+</div>
+
+<!-- ══ BOTTOM PANELS ═══════════════════════════════════════════════════════ -->
+<div class="bottom-panels">
+  <!-- Plans panel -->
+  <div class="panel panel-plans">
+    <div class="panel-header">
+      <div class="panel-title">🗺️ Upcoming Plans</div>
+      <div class="panel-count" id="plans-count">0</div>
+    </div>
+    <div id="plans-list"><div class="empty-panel">Loading…</div></div>
+  </div>
+
+  <!-- Ascensions panel -->
+  <div class="panel panel-ascents">
+    <div class="panel-header">
+      <div class="panel-title">⛰ Completed Peaks</div>
+      <div class="panel-count" id="ascents-count">0</div>
+    </div>
+    <div id="ascents-list"><div class="empty-panel">Loading…</div></div>
+  </div>
+</div>
+
+<!-- ══ MODAL: Add event ════════════════════════════════════════════════════ -->
+<div class="overlay" id="overlay-add" onclick="closeAddModal(event)">
+  <div class="modal">
+    <div class="modal-title">New entry</div>
+    <div class="modal-date" id="add-date-label"></div>
+
+    <!-- Type selector -->
+    <div class="type-selector">
+      <button class="type-btn" id="type-btn-plan" onclick="selectType('plan')">
+        <span class="type-btn-icon">📅</span>
+        <span class="type-btn-label">Plan</span>
+        <span class="type-btn-desc">Future ascent</span>
+      </button>
+      <button class="type-btn" id="type-btn-ascension" onclick="selectType('ascent')">
+        <span class="type-btn-icon">⛰</span>
+        <span class="type-btn-label">Log ascent</span>
+        <span class="type-btn-desc">Already completed</span>
+      </button>
+    </div>
+
+    <!-- Peak name with autocomplete -->
+    <div class="field">
+      <label>Peak *</label>
+      <div class="ac-wrap">
+        <input type="text" id="add-peak" placeholder="Puigmal, Carlit, Aneto…"
+               oninput="onPeakInput()" autocomplete="off">
+        <div class="ac-list" id="ac-list"></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label id="add-date-label-field">Date *</label>
+      <input type="date" id="add-date">
+    </div>
+
+    <!-- Extra fields for ascensions -->
+    <div id="ascension-fields" style="display:none;">
+      <div class="form-2col">
+        <div class="field">
+          <label>Duration (h)</label>
+          <input type="number" id="add-duration" step="0.5" placeholder="6.5">
+        </div>
+        <div class="field">
+          <label>Difficulty</label>
+          <select id="add-difficulty">
+            <option value="">— Select —</option>
+            <option value="Easy">Easy</option>
+            <option value="Moderate">Moderate</option>
+            <option value="Hard">Hard</option>
+            <option value="Very hard">Very hard</option>
+            <option value="Alpine">Alpine</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Companions</label>
+      <input type="text" id="add-companions" placeholder="Alice, Bob…">
+    </div>
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="add-notes" rows="2" placeholder="Route, meeting point…"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn-save-plan" id="btn-add-save" onclick="saveEvent()">Add plan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: Event detail ══════════════════════════════════════════════════ -->
+<div class="overlay" id="overlay-detail" onclick="closeDetailModal(event)">
+  <div class="modal">
+    <div class="modal-title" id="detail-title"></div>
+    <div class="modal-date"  id="detail-date"></div>
+
+    <div class="status-row" id="status-row"></div>
+    <div id="detail-body"></div>
+
+    <div class="modal-actions" style="flex-direction:column; gap:0.5rem; margin-top:1.2rem;">
+      <div style="display:flex;gap:0.65rem;">
+        <button class="btn btn-cancel" onclick="closeDetailModal()">Close</button>
+        <button class="btn btn-complete" id="btn-detail-done" onclick="quickComplete()">✓ Mark as done</button>
+      </div>
+      <button class="btn btn-delete" onclick="deleteEvent()">🗑 Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+const TODAY = new Date();
+let currentMonth = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
+let events = [];
+let peaks  = [];
+let selectedDate = null;
+let selectedEvent = null;
+let addType = 'plan'; // current type selection in add modal
+
+const MONTHS = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December'
+];
+
+// ── API ───────────────────────────────────────────────────────────────────────
+async function loadAll() {
+  try {
+    const [rEvents, rPeaks] = await Promise.all([
+      fetch('/api/calendar'),
+      fetch('/api/peaks'),
+    ]);
+    events = await rEvents.json();
+    peaks  = await rPeaks.json();
+    render();
+  } catch (e) {
+    console.error(e);
+    showToast('Error loading data', true);
+  }
+}
+
+async function saveEvent() {
+  const peakName = document.getElementById('add-peak').value.trim();
+  const date     = document.getElementById('add-date').value;
+  if (!peakName) { document.getElementById('add-peak').focus(); return; }
+  if (!date)     { document.getElementById('add-date').focus(); return; }
+
+  const btn = document.getElementById('btn-add-save');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    const body = {
+      peak_name:       peakName,
+      planned_date: date,
+      event_type:              addType,
+      status:            addType === 'ascent' ? 'completed' : 'planned',
+      companions:  document.getElementById('add-companions').value.trim()  || null,
+      notes:       document.getElementById('add-notes').value.trim()       || null,
+      duration_hours: addType === 'ascent' ? (parseFloat(document.getElementById('add-duration').value) || null) : null,
+      difficulty:     addType === 'ascent' ? (document.getElementById('add-difficulty').value || null) : null,
+    };
+
+    const r = await fetch('/api/calendar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) throw new Error();
+    const ev = await r.json();
+    events.push(ev);
+    closeAddModal();
+    render();
+    showToast(addType === 'ascent' ? '⛰ Peak logged!' : '📅 Plan added to calendar');
+  } catch {
+    showToast('Error saving', true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = addType === 'ascent' ? 'Log ascent' : 'Add plan';
+  }
+}
+
+async function changeEventStatus(id, newStatus) {
+  try {
+    const r = await fetch(`/api/calendar/${id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    });
+    if (!r.ok) throw new Error();
+    const updated = await r.json();
+    events = events.map(e => e.id === id ? updated : e);
+    if (selectedEvent?.id === id) selectedEvent = updated;
+    renderDetailModal();
+    render();
+    if (newStatus === 'completed') showToast('⛰ Peak completed! Counter updated.');
+    else showToast('Status updated');
+  } catch {
+    showToast('Error updating', true);
+  }
+}
+
+async function quickComplete() {
+  if (!selectedEvent || selectedEvent.status === 'completed') return;
+  await changeEventStatus(selectedEvent.id, 'completed');
+}
+
+async function deleteEvent() {
+  if (!selectedEvent) return;
+  if (!confirm(`Delete "${selectedEvent.peak_name}"?`)) return;
+  try {
+    const r = await fetch(`/api/calendar/${selectedEvent.id}`, { method: 'DELETE' });
+    if (!r.ok) throw new Error();
+    events = events.filter(e => e.id !== selectedEvent.id);
+    closeDetailModal();
+    render();
+    showToast('Entry deleted');
+  } catch {
+    showToast('Error deleting', true);
+  }
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  renderMonthLabel();
+  renderGrid();
+  renderPanels();
+  renderStats();
+}
+
+function renderStats() {
+  const todayStr  = formatDateObj(TODAY);
+  const planCount = events.filter(e => e.event_type === 'plan' && e.status === 'planned' && e.planned_date >= todayStr).length;
+  const doneCount = events.filter(e => e.event_type === 'ascent').length;
+  const totalHours = events.filter(e => e.event_type === 'ascent').reduce((s, e) => s + (e.duration_hours || 0), 0);
+
+  document.getElementById('stat-plans').textContent   = planCount;
+  document.getElementById('stat-ascents').textContent = doneCount;
+  document.getElementById('stat-hours').textContent   = totalHours > 0 ? totalHours.toFixed(1) + 'h' : '0h';
+}
+
+function renderMonthLabel() {
+  document.getElementById('month-label').textContent =
+    `${MONTHS[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
+}
+
+function renderGrid() {
+  const grid  = document.getElementById('days-grid');
+  grid.innerHTML = '';
+
+  const year  = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+  let firstDay = new Date(year, month, 1).getDay();
+  firstDay = (firstDay + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayStr = formatDateObj(TODAY);
+
+  for (let i = 0; i < firstDay; i++) {
+    const c = document.createElement('div');
+    c.className = 'day-cell empty';
+    grid.appendChild(c);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date    = new Date(year, month, day);
+    const dateStr = formatDate(year, month + 1, day);
+    const isToday = isSameDate(date, TODAY);
+    const isPast  = date < TODAY && !isToday;
+    const dayEvs  = events.filter(e => e.planned_date === dateStr);
+
+    const cell = document.createElement('div');
+    cell.className = `day-cell${isToday ? ' today' : ''}${isPast ? ' past' : ''}`;
+    cell.onclick   = () => openAddModal(dateStr);
+
+    const num = document.createElement('div');
+    num.className   = 'day-num';
+    num.textContent = day;
+    cell.appendChild(num);
+
+    const hint = document.createElement('span');
+    hint.className   = 'add-hint';
+    hint.textContent = '+';
+    cell.appendChild(hint);
+
+    const MAX = 3;
+    dayEvs.slice(0, MAX).forEach(ev => {
+      const chip = document.createElement('div');
+      chip.className   = `chip ${ev.event_type === 'ascent' ? 'ascent' : ev.status === 'cancelled' ? 'cancelled' : 'plan'}`;
+      chip.textContent = (ev.event_type === 'ascent' ? '⛰ ' : '🗺️ ') + ev.peak_name;
+      chip.onclick     = e => { e.stopPropagation(); openDetailModal(ev); };
+      cell.appendChild(chip);
+    });
+
+    if (dayEvs.length > MAX) {
+      const more = document.createElement('div');
+      more.className   = 'chip-more';
+      more.textContent = `+${dayEvs.length - MAX} más`;
+      more.onclick     = e => { e.stopPropagation(); openDetailModal(dayEvs[MAX]); };
+      cell.appendChild(more);
+    }
+
+    grid.appendChild(cell);
+  }
+}
+
+function renderPanels() {
+  const todayStr = formatDateObj(TODAY);
+
+  // Plans — upcoming, sorted by date
+  const plans = events
+    .filter(e => e.event_type === 'plan' && e.status !== 'cancelled' && e.planned_date >= todayStr)
+    .sort((a, b) => a.planned_date.localeCompare(b.planned_date))
+    .slice(0, 10);
+
+  document.getElementById('plans-count').textContent = plans.length;
+  const plansList = document.getElementById('plans-list');
+  if (plans.length === 0) {
+    plansList.innerHTML = '<div class="empty-panel">No upcoming plans.<br>Click a date to add one.</div>';
+  } else {
+    plansList.innerHTML = plans.map(ev => `
+      <div class="event-card" onclick="openDetailModal(${safeJSON(ev)})">
+        <div class="card-peak">🗺️ ${escapeHTML(ev.peak_name)}</div>
+        <div class="card-date">📅 ${formatReadable(ev.planned_date)}</div>
+        ${ev.companions ? `<div class="card-meta">👥 ${escapeHTML(ev.companions)}</div>` : ''}
+        <button class="card-quick-done" onclick="event.stopPropagation(); quickDoneCard('${ev.id}')">
+          ✓ I've completed this peak
+        </button>
+      </div>
+    `).join('');
+  }
+
+  // Ascensions — all completed, sorted recent first
+  const ascents = events
+    .filter(e => e.event_type === 'ascent')
+    .sort((a, b) => b.planned_date.localeCompare(a.planned_date))
+    .slice(0, 10);
+
+  document.getElementById('ascents-count').textContent = ascents.length;
+  const ascentsList = document.getElementById('ascents-list');
+  if (ascents.length === 0) {
+    ascentsList.innerHTML = '<div class="empty-panel">No completed peaks yet.</div>';
+  } else {
+    ascentsList.innerHTML = ascents.map(ev => `
+      <div class="event-card" onclick="openDetailModal(${safeJSON(ev)})">
+        <div class="card-peak">⛰ ${escapeHTML(ev.peak_name)}</div>
+        <div class="card-date">📅 ${formatReadable(ev.planned_date)}</div>
+        ${ev.duration_hours ? `<div class="ascent-badge">⏱ ${ev.duration_hours}h</div>` : ''}
+        ${ev.difficulty     ? `<div class="card-meta">▲ ${escapeHTML(ev.difficulty)}</div>` : ''}
+        ${ev.companions     ? `<div class="card-meta">👥 ${escapeHTML(ev.companions)}</div>` : ''}
+      </div>
+    `).join('');
+  }
+}
+
+async function quickDoneCard(id) {
+  await changeEventStatus(id, 'completed');
+}
+
+// ── Modals ────────────────────────────────────────────────────────────────────
+function selectType(type) {
+  addType = type;
+  const planBtn    = document.getElementById('type-btn-plan');
+  const ascentBtn  = document.getElementById('type-btn-ascension');
+  const saveBtn    = document.getElementById('btn-add-save');
+  const extraFields = document.getElementById('ascension-fields');
+  const dateLabel  = document.getElementById('add-date-label-field');
+
+  planBtn.className   = `type-btn ${type === 'plan' ? 'selected-plan' : ''}`;
+  ascentBtn.className = `type-btn ${type === 'ascent' ? 'selected-ascension' : ''}`;
+
+  if (type === 'ascent') {
+    extraFields.style.display = '';
+    saveBtn.className = 'btn btn-save-ascent';
+    saveBtn.textContent = 'Log ascent';
+    dateLabel.textContent = 'Ascent date *';
+  } else {
+    extraFields.style.display = 'none';
+    saveBtn.className = 'btn btn-save-plan';
+    saveBtn.textContent = 'Add plan';
+    dateLabel.textContent = 'Date *';
+  }
+}
+
+function openAddModal(dateStr) {
+  selectedDate = dateStr;
+  document.getElementById('add-date-label').textContent = '📅 ' + formatReadable(dateStr);
+  document.getElementById('add-peak').value       = '';
+  document.getElementById('add-date').value       = dateStr;
+  document.getElementById('add-companions').value = '';
+  document.getElementById('add-notes').value      = '';
+  document.getElementById('add-duration').value   = '';
+  document.getElementById('add-difficulty').value = '';
+  document.getElementById('ac-list').classList.remove('open');
+
+  // Reset to plan type
+  selectType('plan');
+
+  document.getElementById('overlay-add').classList.add('visible');
+  setTimeout(() => document.getElementById('add-peak').focus(), 100);
+}
+
+function closeAddModal(event) {
+  if (event && event.target !== event.currentTarget) return;
+  document.getElementById('overlay-add').classList.remove('visible');
+  document.getElementById('ac-list').classList.remove('open');
+}
+
+function openDetailModal(ev) {
+  selectedEvent = typeof ev === 'string' ? JSON.parse(ev) : ev;
+  renderDetailModal();
+  document.getElementById('overlay-detail').classList.add('visible');
+}
+
+function renderDetailModal() {
+  if (!selectedEvent) return;
+  const ev = selectedEvent;
+  const isAscent = ev.event_type === 'ascent';
+
+  document.getElementById('detail-title').textContent =
+    (isAscent ? '⛰ ' : '🗺️ ') + ev.peak_name;
+  document.getElementById('detail-date').textContent =
+    '📅 ' + formatReadable(ev.planned_date);
+
+  // Status pills
+  const statuses = ['planned', 'completed', 'cancelled'];
+  const labels   = { planned: '🗺️ Planned', completed: '⛰ Completed', cancelled: '❌ Cancelled' };
+  document.getElementById('status-row').innerHTML = statuses.map(s => `
+    <button class="status-pill ${ev.status === s ? (s === 'completed' ? 'active-completado' : s === 'planned' ? 'active-plan' : 'active-cancelado') : ''}"
+            onclick="changeEventStatus('${ev.id}', '${s}')">
+      ${labels[s]}
+    </button>
+  `).join('');
+
+  // Body details
+  let bodyHTML = '';
+  if (ev.companions)    bodyHTML += `<div class="detail-row"><span class="detail-label">Companions</span><span>${escapeHTML(ev.companions)}</span></div>`;
+  if (ev.difficulty)    bodyHTML += `<div class="detail-row"><span class="detail-label">Difficulty</span><span>${escapeHTML(ev.difficulty)}</span></div>`;
+  if (ev.duration_hours) bodyHTML += `<div class="detail-row"><span class="detail-label">Duration</span><span>${ev.duration_hours}h</span></div>`;
+  if (ev.notas)         bodyHTML += `<div class="detail-row"><span class="detail-label">Notas</span><span>${escapeHTML(ev.notas)}</span></div>`;
+  document.getElementById('detail-body').innerHTML = bodyHTML;
+
+  // Show "Mark done" button only if not already completed
+  document.getElementById('btn-detail-done').style.display =
+    ev.status === 'completed' ? 'none' : '';
+}
+
+function closeDetailModal(event) {
+  if (event && event.target !== event.currentTarget) return;
+  document.getElementById('overlay-detail').classList.remove('visible');
+  selectedEvent = null;
+}
+
+// ── Autocomplete ──────────────────────────────────────────────────────────────
+function onPeakInput() {
+  const q    = document.getElementById('add-peak').value.toLowerCase().trim();
+  const list = document.getElementById('ac-list');
+  if (!q || peaks.length === 0) { list.classList.remove('open'); return; }
+
+  const matches = peaks.filter(p => p.name.toLowerCase().includes(q)).slice(0, 6);
+  if (matches.length === 0) { list.classList.remove('open'); return; }
+
+  list.innerHTML = matches.map(p => `
+    <div class="ac-item" onclick="pickPeak('${escapeHTML(p.name)}')">
+      <span>⛰ ${escapeHTML(p.name)}</span>
+      <span class="ac-alt">${p.altitude.toLocaleString()}m</span>
+    </div>
+  `).join('');
+  list.classList.add('open');
+}
+
+function pickPeak(name) {
+  document.getElementById('add-peak').value = name;
+  document.getElementById('ac-list').classList.remove('open');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.ac-wrap')) {
+    document.getElementById('ac-list').classList.remove('open');
+  }
+});
+
+// ── Month nav ─────────────────────────────────────────────────────────────────
+function changeMonth(delta) {
+  currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + delta, 1);
+  render();
+}
+function goToToday() {
+  currentMonth = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
+  render();
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function showToast(msg, error = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = error ? 'var(--danger)' : 'var(--moss)';
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 3200);
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function formatDate(y, m, d) {
+  return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+function formatDateObj(date) {
+  return formatDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
+}
+function formatReadable(s) {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  });
+}
+function isSameDate(a, b) {
+  return a.getFullYear() === b.getFullYear() &&
+         a.getMonth()    === b.getMonth()    &&
+         a.getDate()     === b.getDate();
+}
+function escapeHTML(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function safeJSON(obj) {
+  return JSON.stringify(obj).replace(/"/g, '&quot;');
+}
+
+// ── Keyboard ──────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeAddModal(); closeDetailModal(); }
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+renderMonthLabel();
+loadAll();
+</script>
+</body>
+</html>

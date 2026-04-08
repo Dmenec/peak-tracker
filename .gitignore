@@ -1,0 +1,20 @@
+# Secrets — NEVER commit to Git
+.env
+
+# Local database
+*.db
+*.db-shm
+*.db-wal
+
+# User-uploaded photos
+uploads/
+
+# Rust build artifacts
+/target/
+
+# Temporary files
+*.tmp
+.DS_Store
+
+# Claude Code project settings
+.claude/

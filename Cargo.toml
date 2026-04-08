@@ -1,0 +1,26 @@
+[package]
+name = "peak-tracker"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "peak-tracker"
+path = "src/main.rs"
+
+[dependencies]
+axum       = { version = "0.7", features = ["multipart"] }
+tokio      = { version = "1", features = ["full"] }
+tower-http = { version = "0.5", features = ["cors", "fs"] }
+serde      = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid       = { version = "=1.10.0", features = ["v4"] }
+chrono     = { version = "0.4", default-features = false, features = ["serde", "std", "alloc", "clock"] }
+anyhow     = "1"
+tracing    = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+image      = { version = "=0.24.7", default-features = false, features = ["jpeg", "png", "webp"] }
+base64     = "0.22"
+dotenvy    = "0.15"
+rusqlite   = { version = "0.31", features = ["bundled"] }
+hmac       = "0.12"
+sha2       = "0.10"

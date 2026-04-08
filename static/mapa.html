@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PeakTracker · Peak Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root {
+    --bg:      #1a1e1a;
+    --surface: #222822;
+    --border:  #3a4a3a;
+    --muted:   #7a9a7a;
+    --text:    #e8f0e8;
+    --accent:  #7ec87e;
+    --sky:     #4a9fd4;
+    --sun:     #f5a623;
+    --danger:  #e05050;
+    --done:    #27ae60;
+    --radius:  8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Header ─────────────────────────────────────────────────────────── */
+  header {
+    height: 52px;
+    background: #141a14;
+    border-bottom: 1px solid #3a4a3a;
+    display: flex;
+    align-items: center;
+    padding: 0 1.2rem;
+    gap: 1rem;
+    flex-shrink: 0;
+    z-index: 1000;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.08em;
+    color: var(--text);
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .logo span { color: var(--accent); }
+
+  nav { display: flex; gap: 0.25rem; margin-left: 0.5rem; }
+  .nav-link {
+    padding: 0.35rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-decoration: none;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+  .nav-link:hover { color: var(--text); background: #ffffff10; }
+  .nav-link.active { color: var(--accent); background: #7ec87e18; border-color: #7ec87e30; }
+
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .legend-items { display: flex; gap: 0.6rem; align-items: center; }
+  .legend-item  { display: flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; color: var(--muted); }
+  .legend-dot   {
+    width: 10px; height: 10px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    border: 1px solid #fff;
+    display: inline-block;
+  }
+
+  .stats-badge {
+    font-size: 0.75rem;
+    color: var(--muted);
+    background: #ffffff08;
+    border: 1px solid #ffffff12;
+    border-radius: 20px;
+    padding: 0.25rem 0.7rem;
+    cursor: default;
+  }
+  .stats-badge strong { color: var(--accent); }
+
+  /* ── Layout ──────────────────────────────────────────────────────────── */
+  .main-layout { flex: 1; display: flex; overflow: hidden; position: relative; }
+  #map { flex: 1; z-index: 1; }
+
+  /* ── Sidebar ─────────────────────────────────────────────────────────── */
+  .sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-header {
+    padding: 1rem 1rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .sidebar-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.6rem;
+  }
+
+  .sidebar-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+    color: var(--text);
+  }
+
+  .btn-register-peak {
+    background: transparent;
+    border: 1px solid #ffffff20;
+    color: var(--muted);
+    border-radius: 5px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-register-peak:hover { border-color: var(--accent); color: var(--accent); }
+
+  .sidebar-stats-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-chip {
+    font-size: 0.68rem;
+    color: var(--muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.2rem 0.5rem;
+  }
+  .stat-chip strong { color: var(--accent); }
+
+  .search-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: #4a6a4a; }
+
+  /* ── Peaks list ──────────────────────────────────────────────────────── */
+  .peaks-list { flex: 1; overflow-y: auto; padding: 0.5rem 0; }
+  .peaks-list::-webkit-scrollbar { width: 4px; }
+  .peaks-list::-webkit-scrollbar-thumb { background: #3a4a3a; border-radius: 2px; }
+
+  .peak-item {
+    padding: 0.65rem 1rem;
+    cursor: pointer;
+    transition: background 0.12s;
+    border-left: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .peak-item:hover { background: #ffffff08; }
+  .peak-item.selected { background: #7ec87e12; }
+
+  .peak-thumb {
+    width: 36px; height: 36px;
+    border-radius: 5px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+
+  .peak-thumb-placeholder {
+    width: 36px; height: 36px;
+    border-radius: 5px;
+    background: var(--bg);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    border: 1px solid var(--border);
+  }
+
+  .peak-info { flex: 1; min-width: 0; }
+  .peak-name { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .peak-meta { font-size: 0.7rem; color: var(--muted); margin-top: 0.1rem; }
+  .peak-elevation { font-size: 0.78rem; font-weight: 600; flex-shrink: 0; }
+
+  /* ── Map hint ────────────────────────────────────────────────────────── */
+  .map-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #141a14ee;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.4rem 1rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+    z-index: 500;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  /* ── Leaflet popup ───────────────────────────────────────────────────── */
+  .leaflet-popup-content-wrapper {
+    background: #1e281e !important;
+    border: 1px solid #4a7a4a !important;
+    border-radius: 10px !important;
+    box-shadow: 0 8px 30px #00000070 !important;
+    color: #e8f0e8 !important;
+  }
+  .leaflet-popup-tip { background: #1e281e !important; }
+
+  .popup-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.15rem; letter-spacing: 0.06em; margin-bottom: 0.2rem; }
+  .popup-elevation { font-size: 0.75rem; color: var(--accent); font-weight: 600; margin-bottom: 0.5rem; }
+  .popup-photo { width: 100%; height: 110px; object-fit: cover; border-radius: 6px; margin-bottom: 0.5rem; border: 1px solid var(--border); }
+  .popup-meta { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.2rem; }
+  .popup-notes { font-size: 0.75rem; color: #a0c0a0; font-style: italic; margin: 0.5rem 0; border-top: 1px solid var(--border); padding-top: 0.4rem; }
+
+  .popup-actions { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.6rem; }
+  .btn-popup {
+    display: block; width: 100%;
+    border: none; border-radius: 6px; padding: 0.45rem;
+    font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; text-align: center; transition: all 0.15s;
+  }
+  .btn-popup-schedule { background: #1a3a5c; color: #7ec8f0; border: 1px solid #4a9fd440; }
+  .btn-popup-schedule:hover { background: #2a4a6c; }
+  .btn-popup-done    { background: #1a3a1a; color: #7ec87e; border: 1px solid #27ae6040; }
+  .btn-popup-done:hover { background: #2a4a2a; }
+  .btn-popup-delete  { background: #2a1a1a; color: #f09090; border: 1px solid #e0505040; }
+  .btn-popup-delete:hover { background: #3a1a1a; }
+
+  /* ── Expedition list in popup ─────────────────────────────────────────── */
+  .popup-section-title {
+    font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #5a8a5a; margin: 0.5rem 0 0.3rem; border-top: 1px solid #3a5a3a;
+    padding-top: 0.4rem;
+  }
+  .popup-exp-item {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 0.4rem; margin-bottom: 0.3rem; padding: 0.3rem 0.4rem;
+    background: #162016; border-radius: 5px; cursor: pointer;
+    transition: background 0.12s;
+  }
+  .popup-exp-item:hover { background: #1e2e1e; }
+  .popup-exp-date  { font-size: 0.7rem; color: #7ec8f0; font-weight: 600; }
+  .popup-exp-info  { font-size: 0.63rem; color: #7a9a7a; }
+  .popup-exp-arrow { font-size: 0.7rem; color: #5a8a5a; flex-shrink: 0; }
+  .popup-exp-status-done { font-size: 0.62rem; color: #7ec87e; font-weight: 600; }
+
+  /* ── Expedition edit modal extras ────────────────────────────────────── */
+  .status-pills { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .status-pill {
+    padding: 0.3rem 0.75rem; border-radius: 20px;
+    border: 1px solid #ffffff18; background: transparent;
+    font-family: 'DM Sans', sans-serif; font-size: 0.7rem;
+    cursor: pointer; transition: all 0.15s; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
+  }
+  .status-pill.active-planned   { background: #1a3a5c; color: #7ec8f0; border-color: var(--sky); }
+  .status-pill.active-completed { background: #1a3a1a; color: #7ec87e; border-color: var(--done); }
+  .status-pill.active-cancelled { background: #3a0a0a; color: #e87e7e; border-color: #c0392b; }
+  .section-label {
+    font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--muted); font-weight: 600; margin-bottom: 0.4rem;
+  }
+
+  /* ── Modals ──────────────────────────────────────────────────────────── */
+  .overlay {
+    position: fixed; inset: 0;
+    background: #00000085;
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2000; padding: 1rem;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .overlay.visible { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid #4a7a4a;
+    border-radius: 12px; padding: 1.8rem;
+    width: 100%; max-width: 440px;
+    transform: translateY(16px); transition: transform 0.2s;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .overlay.visible .modal { transform: translateY(0); }
+
+  .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.06em; margin-bottom: 0.2rem; }
+  .modal-subtitle { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.2rem; }
+
+  .field { margin-bottom: 0.85rem; }
+  .field label { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.3rem; font-weight: 600; }
+  .field input, .field textarea, .field select {
+    width: 100%; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.55rem 0.75rem;
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+    outline: none; transition: border-color 0.15s; resize: vertical;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); }
+  .field input::placeholder, .field textarea::placeholder { color: #4a6a4a; }
+  .field select option { background: var(--surface); }
+
+  .form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+  .modal-actions { display: flex; gap: 0.6rem; margin-top: 1.2rem; }
+  .btn { padding: 0.6rem 1.1rem; border-radius: 6px; border: none; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .btn-primary { background: var(--accent); color: #141a14; flex: 1; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary { background: #ffffff10; color: var(--muted); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: #ffffff18; }
+  .btn-danger { background: #3a1a1a; color: #f09090; border: 1px solid #e0505030; flex: 1; }
+  .btn-danger:hover { background: #4a1a1a; }
+
+  /* ── Inline login ────────────────────────────────────────────────────── */
+  .inline-login {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1rem; margin-bottom: 1rem;
+  }
+  .inline-login-title { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .inline-login-row { display: flex; gap: 0.5rem; }
+  .inline-login input {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 5px; padding: 0.45rem 0.6rem;
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; outline: none;
+  }
+  .inline-login input:focus { border-color: var(--accent); }
+  .btn-inline-login { background: var(--accent); color: #141a14; border: none; border-radius: 5px; padding: 0.45rem 0.8rem; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
+  .login-error { font-size: 0.72rem; color: var(--danger); margin-top: 0.4rem; display: none; }
+
+  /* ── Toast ───────────────────────────────────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 1.5rem; left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--surface); border: 1px solid var(--accent);
+    border-radius: 6px; padding: 0.65rem 1.2rem; font-size: 0.82rem;
+    z-index: 3000; opacity: 0; transition: all 0.25s; pointer-events: none; white-space: nowrap;
+  }
+  .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 700px) {
+    .sidebar { display: none; }
+    .legend-items { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">Peak<span>Tracker</span></a>
+  <nav>
+    <a class="nav-link active" href="/mapa.html">Map</a>
+    <a class="nav-link" href="/calendar/">Calendar</a>
+  </nav>
+  <div class="header-right">
+    <div class="legend-items">
+      <div class="legend-item">
+        <span class="legend-dot" style="background:#27ae60;"></span> Completed
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot" style="background:#4a9fd4;"></span> Planned
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot" style="background:#c0392b;"></span> Cancelled
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot" style="background:#7a9a7a;"></span> Unplanned
+      </div>
+    </div>
+    <div class="stats-badge">
+      <strong id="peak-count">0</strong> completed
+    </div>
+  </div>
+</header>
+
+<div class="main-layout">
+  <div id="map"></div>
+  <div class="map-hint" id="map-hint">Click on the map to plan an ascent</div>
+
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-top-row">
+        <div class="sidebar-title">Registered peaks</div>
+        <button class="btn-register-peak" onclick="startRegisterPeakMode()" title="Add a new peak to the map (requires authentication)">+ New peak</button>
+      </div>
+      <div class="sidebar-stats-row" id="sidebar-stats"></div>
+      <input class="search-input" type="text" id="search-input" placeholder="Search peak…" oninput="filterPeaks()">
+    </div>
+    <div class="peaks-list" id="peaks-list">
+      <div style="padding:2rem;text-align:center;color:var(--muted);font-style:italic;font-size:0.82rem;">Loading…</div>
+    </div>
+  </aside>
+</div>
+
+<!-- Modal: Plan ascent (map click or from popup) -->
+<div class="overlay" id="overlay-plan" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title">Plan an ascent</div>
+    <div class="modal-subtitle" id="plan-subtitle"></div>
+    <div class="field">
+      <label>Peak *</label>
+      <input type="text" id="plan-peak-name" placeholder="Peak name…">
+    </div>
+    <div class="field">
+      <label>Date *</label>
+      <input type="date" id="plan-date">
+    </div>
+    <div class="field">
+      <label>Companions</label>
+      <input type="text" id="plan-companions" placeholder="Alice, Bob, Carol…">
+    </div>
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="plan-notes" rows="2" placeholder="Meeting point, gear…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closePlanModal()">Cancel</button>
+      <button class="btn btn-primary" id="btn-plan-save" onclick="savePlan()">Add to calendar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Expedition detail / edit -->
+<div class="overlay" id="overlay-expedition" onclick="closeExpeditionModal(event)">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-title" id="exp-modal-title">Expedition</div>
+    <div class="modal-subtitle" id="exp-modal-subtitle"></div>
+
+    <!-- Status pills -->
+    <div class="section-label">Status</div>
+    <div class="status-pills" id="exp-status-pills"></div>
+
+    <!-- Editable fields -->
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="exp-date">
+    </div>
+    <div class="form-2col">
+      <div class="field">
+        <label>Duration (h)</label>
+        <input type="number" id="exp-duration" step="0.5" placeholder="6.5">
+      </div>
+      <div class="field">
+        <label>Difficulty</label>
+        <select id="exp-difficulty">
+          <option value="">— Not specified —</option>
+          <option value="Easy">Easy</option>
+          <option value="Moderate">Moderate</option>
+          <option value="Hard">Hard</option>
+          <option value="Very hard">Very hard</option>
+          <option value="Alpine">Alpine</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Companions</label>
+      <input type="text" id="exp-companions" placeholder="Alice, Bob, Carol…">
+    </div>
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="exp-notes" rows="2" placeholder="Meeting point, gear…"></textarea>
+    </div>
+
+    <div class="modal-actions" style="flex-direction:column; gap:0.5rem;">
+      <div style="display:flex;gap:0.6rem;">
+        <button class="btn btn-secondary" onclick="closeExpeditionModal()">Close</button>
+        <button class="btn btn-primary" id="btn-exp-save" onclick="saveExpeditionEdits()">Save changes</button>
+      </div>
+      <button class="btn btn-danger" style="width:100%;text-align:center;" onclick="deleteExpedition()">🗑 Delete expedition</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Register new peak (requires auth) -->
+<div class="overlay" id="overlay-new-peak" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title">Register peak</div>
+    <div class="modal-subtitle" id="np-coords-label">Click on the map to select the location</div>
+
+    <div class="inline-login" id="inline-login-box">
+      <div class="inline-login-title">Sign in to register peaks</div>
+      <div class="inline-login-row">
+        <input type="text"     id="login-user" placeholder="Username">
+        <input type="password" id="login-pass" placeholder="Password">
+        <button class="btn-inline-login" onclick="inlineLogin()">Sign in</button>
+      </div>
+      <div class="login-error" id="login-error">Invalid username or password</div>
+    </div>
+
+    <div id="new-peak-form">
+      <div class="field">
+        <label>Name *</label>
+        <input type="text" id="np-name" placeholder="Mont Blanc, Matterhorn, Eiger…">
+      </div>
+      <div class="form-2col">
+        <div class="field">
+          <label>Latitude</label>
+          <input type="number" id="np-lat" step="any" readonly>
+        </div>
+        <div class="field">
+          <label>Longitude</label>
+          <input type="number" id="np-lng" step="any" readonly>
+        </div>
+        <div class="field">
+          <label>Altitude (m) *</label>
+          <input type="number" id="np-alt" placeholder="2500">
+        </div>
+        <div class="field">
+          <label>Ascent date</label>
+          <input type="date" id="np-date">
+        </div>
+        <div class="field">
+          <label>Difficulty</label>
+          <select id="np-difficulty">
+            <option value="">— Select —</option>
+            <option value="Easy">Easy</option>
+            <option value="Moderate">Moderate</option>
+            <option value="Hard">Hard</option>
+            <option value="Very hard">Very hard</option>
+            <option value="Alpine">Alpine</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Duration (h)</label>
+          <input type="number" id="np-duration" step="0.5" placeholder="5.5">
+        </div>
+      </div>
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="np-notes" rows="2" placeholder="Access, hut, route…"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeNewPeakModal()">Cancel</button>
+      <button class="btn btn-primary" id="btn-np-save" style="display:none;" onclick="saveNewPeak()">Save peak</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirm delete peak -->
+<div class="overlay" id="overlay-delete" onclick="closeModal(event)">
+  <div class="modal" style="max-width:360px;">
+    <div class="modal-title">Delete peak</div>
+    <div class="modal-subtitle" id="delete-peak-name"></div>
+
+    <div class="inline-login" id="delete-login-box">
+      <div class="inline-login-title">Sign in to delete</div>
+      <div class="inline-login-row">
+        <input type="text"     id="del-login-user" placeholder="Username">
+        <input type="password" id="del-login-pass" placeholder="Password">
+        <button class="btn-inline-login" onclick="inlineLoginForDelete()">Sign in</button>
+      </div>
+      <div class="login-error" id="del-login-error">Invalid username or password</div>
+    </div>
+
+    <div id="delete-confirm-actions" style="display:none;" class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger" id="btn-confirm-delete" onclick="confirmDeletePeak()">Delete peak</button>
+    </div>
+    <div id="delete-no-auth-actions" class="modal-actions" style="margin-top:0;">
+      <button class="btn btn-secondary" style="flex:1;" onclick="closeDeleteModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let map, peaks = [], markers = [], eventMarkers = [], selectedPeakId = null;
+let token = sessionStorage.getItem('pt_token') || null;
+let events = [];
+let tempMarker = null;
+let newPeakCoords = null;
+let deletePeakId = null;
+let registerPeakMode = false; // when true, map click registers a peak instead of planning
+let osmPeaks = []; // cache of OSM natural=peak nodes for the current map view
+
+// ── Map (terrain only) ────────────────────────────────────────────────────────
+map = L.map('map', { center: [42.5, 1.5], zoom: 8 });
+
+L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+  attribution: '© <a href="https://opentopomap.org" target="_blank">OpenTopoMap</a> (CC-BY-SA) · © <a href="https://openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+  maxZoom: 17,
+  subdomains: 'abc',
+}).addTo(map);
+
+// Load all named peaks from OSM for the current map view (called once on init + on moveend)
+let _loadPeaksTimer = null;
+async function loadOsmPeaks() {
+  const b = map.getBounds().pad(0.2); // pad slightly so panning doesn't immediately miss peaks
+  const query = `[out:json][timeout:15];node[natural=peak](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});out;`;
+  try {
+    const r = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: query });
+    if (!r.ok) return;
+    const data = await r.json();
+    osmPeaks = (data.elements || [])
+      .filter(e => e.tags?.name)
+      .map(e => ({ lat: e.lat, lon: e.lon, name: e.tags.name }));
+  } catch {}
+}
+
+// Sync lookup from pre-loaded cache
+function nearestOsmPeakName(lat, lng) {
+  if (!osmPeaks.length) return null;
+  let best = null, bestDist = Infinity;
+  osmPeaks.forEach(p => {
+    const d = Math.hypot(p.lat - lat, p.lon - lng);
+    if (d < bestDist) { bestDist = d; best = p; }
+  });
+  return best?.name ?? null;
+}
+
+// Fallback: targeted Overpass query for a single click location (used when cache is empty)
+async function fetchNearestPeakName(lat, lng) {
+  try {
+    const query = `[out:json][timeout:8];node[natural=peak](around:8000,${lat},${lng});out 5;`;
+    const r = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: query });
+    if (!r.ok) return null;
+    const data = await r.json();
+    if (!data.elements?.length) return null;
+    let best = null, bestDist = Infinity;
+    data.elements.forEach(el => {
+      if (!el.tags?.name) return;
+      const d = Math.hypot(el.lat - lat, el.lon - lng);
+      if (d < bestDist) { bestDist = d; best = el; }
+    });
+    // Also store results in cache for future clicks
+    if (data.elements.length) {
+      data.elements.filter(e => e.tags?.name).forEach(e => {
+        if (!osmPeaks.some(p => p.lat === e.lat && p.lon === e.lon)) {
+          osmPeaks.push({ lat: e.lat, lon: e.lon, name: e.tags.name });
+        }
+      });
+    }
+    return best?.tags?.name ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// Map click: plan ascent OR register peak (if in register mode)
+map.on('click', function(e) {
+  const { lat, lng } = e.latlng;
+  if (registerPeakMode) {
+    openNewPeakModal(lat, lng);
+  } else {
+    openPlanModal(null, lat, lng);
+  }
+});
+
+// ── Icons ─────────────────────────────────────────────────────────────────────
+function createPeakIcon(type) {
+  const colors = {
+    done:      { bg: '#27ae60', border: '#fff' },
+    planned:   { bg: '#4a9fd4', border: '#fff' },
+    cancelled: { bg: '#c0392b', border: '#fff' },
+    unplanned: { bg: '#7a9a7a', border: '#ccc' },
+  };
+  const c = colors[type] || colors.unplanned;
+  return L.divIcon({
+    className: '',
+    html: `<div style="width:14px;height:14px;background:${c.bg};border:2px solid ${c.border};
+           border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+           box-shadow:0 2px 6px #00000060;"></div>`,
+    iconSize: [14, 14], iconAnchor: [7, 14], popupAnchor: [0, -16],
+  });
+}
+
+function createTempIcon() {
+  return L.divIcon({
+    className: '',
+    html: `<div style="width:16px;height:16px;background:#f5a623;border:2px solid #fff;
+           border-radius:50%;box-shadow:0 2px 8px #00000070;
+           animation:pulse 1s ease-in-out infinite alternate;"></div>
+           <style>@keyframes pulse{from{transform:scale(1)}to{transform:scale(1.3)}}</style>`,
+    iconSize: [16, 16], iconAnchor: [8, 8],
+  });
+}
+
+// ── Load data ─────────────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const [rPeaks, rEvents] = await Promise.all([
+      fetch('/api/peaks'),
+      fetch('/api/calendar'),
+    ]);
+    peaks  = await rPeaks.json();
+    events = await rEvents.json();
+    indexEvents();
+    updateCounter();
+    updateSidebarStats();
+    renderList(peaks);
+    placeMarkers(peaks);
+    placeEventMarkers();
+    if (peaks.length > 0) centerMap(peaks);
+  } catch {
+    document.getElementById('peaks-list').innerHTML =
+      '<div style="padding:2rem;text-align:center;color:var(--muted);font-style:italic;">Error loading data</div>';
+  }
+}
+
+function updateCounters() {
+  updateCounter();
+  updateSidebarStats();
+}
+
+
+// Counter = ascent-type events (event_type='ascent') + peaks with ascent_date
+function updateCounter() {
+  const ascents = events.filter(e => e.event_type === 'ascent').length;
+  const legacyClimbed = peaks.filter(p => p.ascent_date &&
+    !events.some(e => e.event_type === 'ascent' && e.peak_name.toLowerCase() === p.name.toLowerCase())
+  ).length;
+  document.getElementById('peak-count').textContent = ascents + legacyClimbed;
+}
+
+function updateSidebarStats() {
+  const climbed   = peaks.filter(p => p.ascent_date).length;
+  const highest   = peaks.length > 0 ? Math.max(...peaks.map(p => p.altitude)) : 0;
+  const completed = events.filter(e => e.event_type === 'ascent').length;
+  const planned   = events.filter(e => e.status === 'planned').length;
+
+  document.getElementById('sidebar-stats').innerHTML = `
+    <div class="stat-chip">Total: <strong>${peaks.length}</strong></div>
+    ${climbed > 0 ? `<div class="stat-chip">Climbed: <strong>${climbed}</strong></div>` : ''}
+    ${completed > 0 ? `<div class="stat-chip">Completed: <strong>${completed}</strong></div>` : ''}
+    ${planned > 0 ? `<div class="stat-chip" style="color:#7ec8f0;">Plans: <strong>${planned}</strong></div>` : ''}
+    ${highest > 0 ? `<div class="stat-chip">Max: <strong>${highest.toLocaleString()}m</strong></div>` : ''}
+  `;
+}
+
+// ── Peak classification ───────────────────────────────────────────────────────
+function peakType(peak) {
+  // "done" if registered with an ascent date OR has an ascent-type event
+  const hasDone = peak.ascent_date ||
+    events.some(e => e.peak_name.toLowerCase() === peak.name.toLowerCase() && e.event_type === 'ascent');
+  if (hasDone) return 'done';
+
+  // "planned" if has any active planned event
+  const peakEvents = events.filter(e => e.peak_name.toLowerCase() === peak.name.toLowerCase());
+  const hasPlanned = peakEvents.some(e => e.status === 'planned');
+  if (hasPlanned) return 'planned';
+  // "cancelled" if has events but all are cancelled
+  const hasCancelled = peakEvents.some(e => e.status === 'cancelled');
+  if (hasCancelled && peakEvents.every(e => e.status === 'cancelled')) return 'cancelled';
+  return 'unplanned';
+}
+
+function peakUpcomingEvents(peak) {
+  const today = new Date().toISOString().split('T')[0];
+  return events
+    .filter(e => e.peak_name.toLowerCase() === peak.name.toLowerCase() && e.planned_date >= today)
+    .sort((a, b) => a.planned_date.localeCompare(b.planned_date))
+    .slice(0, 3);
+}
+
+function centerMap(list) {
+  if (list.length === 1) { map.setView([list[0].latitude, list[0].longitude], 12); return; }
+  map.fitBounds(L.latLngBounds(list.map(p => [p.latitude, p.longitude])), { padding: [40, 40] });
+}
+
+// ── Markers ───────────────────────────────────────────────────────────────────
+function placeMarkers(list) {
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+  list.forEach(peak => {
+    const type = peakType(peak);
+    const m = L.marker([peak.latitude, peak.longitude], { icon: createPeakIcon(type) })
+      .addTo(map)
+      .bindPopup(buildPopupHTML(peak), { maxWidth: 260, minWidth: 210 });
+    m.on('click', () => selectPeak(peak.id));
+    markers.push(m);
+  });
+}
+
+// Place markers for calendar events (plans + ascents) with GPS coords not covered by a registered peak
+function placeEventMarkers() {
+  eventMarkers.forEach(m => map.removeLayer(m));
+  eventMarkers = [];
+
+  const coveredByRegistered = new Set(peaks.map(p => p.name.toLowerCase()));
+
+  // Deduplicate by peak_name: if multiple events share a name, show the most significant one
+  const byName = new Map();
+  events.forEach(e => {
+    if (e.latitude == null || e.longitude == null) return;
+    if (coveredByRegistered.has(e.peak_name.toLowerCase())) return;
+    const key = e.peak_name.toLowerCase();
+    const prev = byName.get(key);
+    if (!prev ||
+        (e.event_type === 'ascent' && prev.event_type !== 'ascent') ||
+        (e.event_type === prev.event_type && e.planned_date > prev.planned_date)) {
+      byName.set(key, e);
+    }
+  });
+
+  byName.forEach(e => {
+    const isDone      = e.event_type === 'ascent';
+    const isCancelled = e.status === 'cancelled';
+    const color = isDone ? '#27ae60' : isCancelled ? '#c0392b' : '#4a9fd4';
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:14px;height:14px;background:${color};border:2px solid #fff;
+             border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+             box-shadow:0 2px 6px #00000060;opacity:0.85;"></div>`,
+      iconSize: [14, 14], iconAnchor: [7, 14], popupAnchor: [0, -16],
+    });
+
+    // Build a popup listing all events for this peak name
+    const relatedEvents = events
+      .filter(ev => ev.peak_name.toLowerCase() === e.peak_name.toLowerCase())
+      .sort((a, b) => b.planned_date.localeCompare(a.planned_date));
+
+    const expRows = relatedEvents.map(ev => {
+      const evDone      = ev.event_type === 'ascent';
+      const evCancelled = ev.status === 'cancelled';
+      const evDotColor  = evDone ? '#27ae60' : evCancelled ? '#c0392b' : '#4a9fd4';
+      const evTextColor = evDone ? '#7ec87e' : evCancelled ? '#e87e7e' : '#7ec8f0';
+      const evLabel     = evDone ? '⛰ completed' : evCancelled ? '❌ cancelled' : '🗺️ planned';
+      return `<div class="popup-exp-item" onclick="openExpeditionModal('${ev.id}')">
+        <span style="width:7px;height:7px;border-radius:50%;background:${evDotColor};flex-shrink:0;margin-top:1px;"></span>
+        <div style="flex:1;min-width:0;">
+          <span class="popup-exp-date" style="color:${evTextColor}">${formatDate(ev.planned_date)}</span>
+          <div class="popup-exp-info">${evLabel}${ev.companions ? ' · ' + esc(ev.companions) : ''}</div>
+        </div>
+        <span class="popup-exp-arrow">›</span>
+      </div>`;
+    }).join('');
+
+    const popup = `<div style="font-family:'DM Sans',sans-serif;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:0.4rem;margin-bottom:0.2rem;">
+        <div class="popup-name">${esc(e.peak_name)}</div>
+        ${isDone
+          ? `<span style="font-size:0.65rem;background:#27ae6022;color:#7ec87e;border:1px solid #27ae6044;border-radius:3px;padding:0.1rem 0.4rem;">✓ Completed</span>`
+          : isCancelled
+            ? `<span style="font-size:0.65rem;background:#c0392b22;color:#e87e7e;border:1px solid #c0392b44;border-radius:3px;padding:0.1rem 0.4rem;">❌ Cancelled</span>`
+            : `<span style="font-size:0.65rem;background:#4a9fd422;color:#7ec8f0;border:1px solid #4a9fd444;border-radius:3px;padding:0.1rem 0.4rem;">🗺️ Planned</span>`}
+      </div>
+      ${relatedEvents.length > 0 ? `<div class="popup-section-title">Expeditions</div>${expRows}` : ''}
+    </div>`;
+
+    const m = L.marker([e.latitude, e.longitude], { icon })
+      .addTo(map)
+      .bindPopup(popup, { maxWidth: 260, minWidth: 210 });
+    eventMarkers.push(m);
+  });
+}
+
+function buildPopupHTML(p) {
+  const type = peakType(p);
+  // All events for this peak (plans + ascents), recent first
+  const peakEvents = events
+    .filter(e => e.peak_name.toLowerCase() === p.name.toLowerCase())
+    .sort((a, b) => b.planned_date.localeCompare(a.planned_date));
+
+  const typeTag = {
+    done:      `<span style="font-size:0.65rem;background:#27ae6022;color:#7ec87e;border:1px solid #27ae6044;border-radius:3px;padding:0.1rem 0.4rem;">✓ Completed</span>`,
+    planned:   `<span style="font-size:0.65rem;background:#4a9fd422;color:#7ec8f0;border:1px solid #4a9fd444;border-radius:3px;padding:0.1rem 0.4rem;">🗺️ Planned</span>`,
+    cancelled: `<span style="font-size:0.65rem;background:#c0392b22;color:#e87e7e;border:1px solid #c0392b44;border-radius:3px;padding:0.1rem 0.4rem;">❌ Cancelled</span>`,
+    unplanned: `<span style="font-size:0.65rem;background:#ffffff0a;color:#7a9a7a;border:1px solid #ffffff15;border-radius:3px;padding:0.1rem 0.4rem;">Unplanned</span>`,
+  }[type] ?? `<span style="font-size:0.65rem;background:#ffffff0a;color:#7a9a7a;border:1px solid #ffffff15;border-radius:3px;padding:0.1rem 0.4rem;">Unplanned</span>`;
+
+  // Build expedition list — each row is clickable to open the edit modal
+  const expeditionsHTML = peakEvents.length > 0 ? `
+    <div class="popup-section-title">Expeditions</div>
+    ${peakEvents.map(e => {
+      const isDone = e.event_type === 'ascent';
+      const isCancelled = e.status === 'cancelled';
+      const dotColor  = isDone ? '#27ae60' : isCancelled ? '#c0392b' : '#4a9fd4';
+      const dateColor = isDone ? '#7ec87e' : isCancelled ? '#e87e7e' : '#7ec8f0';
+      const dateLabel = `<span class="popup-exp-date" style="color:${dateColor}">${formatDate(e.planned_date)}</span>`;
+      const info = [
+        e.companions ? e.companions : null,
+        e.duration_hours ? e.duration_hours + 'h' : null,
+        isDone ? '⛰ completed' : isCancelled ? '❌ cancelled' : '🗺️ planned',
+      ].filter(Boolean).join(' · ');
+      return `<div class="popup-exp-item" onclick="openExpeditionModal('${e.id}')">
+        <span style="width:7px;height:7px;border-radius:50%;background:${dotColor};flex-shrink:0;margin-top:1px;"></span>
+        <div style="flex:1;min-width:0;">
+          ${dateLabel}
+          <div class="popup-exp-info">${esc(info)}</div>
+        </div>
+        <span class="popup-exp-arrow">›</span>
+      </div>`;
+    }).join('')}
+  ` : '';
+
+  // "Mark done" button only if not already done
+  const doneButton = type !== 'done'
+    ? `<button class="btn-popup btn-popup-done" onclick="markPeakDoneFromMap('${p.id}','${esc(p.name)}')">✓ Mark as completed</button>`
+    : `<div style="font-size:0.72rem;color:#27ae60;padding:0.3rem 0;">✓ This peak is already completed</div>`;
+
+  return `<div style="font-family:'DM Sans',sans-serif;">
+    ${p.photo_url ? `<img class="popup-photo" src="${p.photo_url}" alt="${esc(p.name)}">` : ''}
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:0.4rem;margin-bottom:0.2rem;">
+      <div class="popup-name">${esc(p.name)}</div>
+      ${typeTag}
+    </div>
+    <div class="popup-elevation">▲ ${p.altitude.toLocaleString()} m</div>
+    ${p.ascent_date ? `<div class="popup-meta">Climbed: ${formatDate(p.ascent_date)}</div>` : ''}
+    ${p.difficulty ? `<div class="popup-meta">Difficulty: ${esc(p.difficulty)}${p.duration_hours ? ' · ' + p.duration_hours + 'h' : ''}</div>` : ''}
+    ${p.notes ? `<div class="popup-notes">${esc(p.notes)}</div>` : ''}
+    ${expeditionsHTML}
+    <div class="popup-actions">
+      ${type !== 'done' ? `<button class="btn-popup btn-popup-schedule" onclick="openPlanModal('${p.id}')">📅 Plan ascent</button>` : ''}
+      ${doneButton}
+      <button class="btn-popup btn-popup-delete" onclick="openDeleteModal('${p.id}','${esc(p.name)}')">🗑 Delete peak</button>
+    </div>
+  </div>`;
+}
+
+// ── Mark peak done from map popup ─────────────────────────────────────────────
+async function markPeakDoneFromMap(peakId, peakName) {
+  const today = new Date().toISOString().split('T')[0];
+
+  // Prefer converting an existing plan for this peak → ascent
+  const existingPlan = events.find(e =>
+    e.peak_name.toLowerCase() === peakName.toLowerCase() &&
+    e.event_type === 'plan' &&
+    e.status === 'planned'
+  );
+
+  try {
+    if (existingPlan) {
+      // Promote plan to ascent
+      const r = await fetch(`/api/calendar/${existingPlan.id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' }),
+      });
+      if (!r.ok) throw new Error();
+    } else {
+      // Create a new ascent record for today
+      const r = await fetch('/api/calendar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          peak_name:    peakName,
+          planned_date: today,
+          event_type:   'ascent',
+          status:       'completed',
+        }),
+      });
+      if (!r.ok) throw new Error();
+    }
+
+    map.closePopup();
+    await loadData();
+    showToast('⛰ ' + peakName + ' completed!');
+  } catch {
+    showToast('Error updating status', true);
+  }
+}
+
+// ── Peaks list ────────────────────────────────────────────────────────────────
+function renderList(list) {
+  const el = document.getElementById('peaks-list');
+
+  // Calendar-only events: not linked to any registered peak in the current list
+  const registeredNames = new Set(list.map(p => p.name.toLowerCase()));
+  // Deduplicate by peak_name: keep the most relevant event per peak name
+  const eventOnlyMap = new Map();
+  events.forEach(e => {
+    if (registeredNames.has(e.peak_name.toLowerCase())) return;
+    const key = e.peak_name.toLowerCase();
+    const prev = eventOnlyMap.get(key);
+    // Priority: ascent > planned > others; within same type, most recent date wins
+    if (!prev ||
+        (e.event_type === 'ascent' && prev.event_type !== 'ascent') ||
+        (e.event_type === prev.event_type && e.planned_date > prev.planned_date)) {
+      eventOnlyMap.set(key, e);
+    }
+  });
+  const eventOnlyList = [...eventOnlyMap.values()];
+
+  if (list.length === 0 && eventOnlyList.length === 0) {
+    el.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted);font-style:italic;font-size:0.82rem;">No peaks yet.<br>Use "+ New peak" to add one.</div>';
+    return;
+  }
+
+  const colors = { done: '#27ae60', planned: '#4a9fd4', cancelled: '#c0392b', unplanned: '#7a9a7a' };
+
+  const peakRows = list.map(p => {
+    const type  = peakType(p);
+    const color = colors[type] || colors.unplanned;
+    const upcoming = peakUpcomingEvents(p);
+    const nextStr  = upcoming.length > 0 ? ' · ' + formatDate(upcoming[0].planned_date) : '';
+    const meta = p.ascent_date
+      ? `<span style="color:#27ae60">✓ ${formatDate(p.ascent_date)}</span>`
+      : type === 'planned'
+        ? `<span style="color:#4a9fd4">🗺️ Planned${nextStr}</span>`
+        : type === 'cancelled'
+          ? `<span style="color:#c0392b">❌ Cancelled</span>`
+          : `<span style="color:#7a9a7a">Unplanned</span>`;
+
+    return `
+    <div class="peak-item${selectedPeakId === p.id ? ' selected' : ''}"
+         id="item-${p.id}"
+         onclick="selectPeak('${p.id}')"
+         style="border-left-color:${color}">
+      ${p.photo_url
+        ? `<img class="peak-thumb" src="${p.photo_url}" alt="${esc(p.name)}">`
+        : `<div class="peak-thumb-placeholder">⛰</div>`}
+      <div class="peak-info">
+        <div class="peak-name">${esc(p.name)}</div>
+        <div class="peak-meta">${meta}</div>
+      </div>
+      <div class="peak-elevation" style="color:${color}">${p.altitude.toLocaleString()}m</div>
+    </div>`;
+  });
+
+  const eventRows = eventOnlyList.map(e => {
+    const isDone       = e.event_type === 'ascent';
+    const isCancelled  = e.status === 'cancelled';
+    const color        = isDone ? '#27ae60' : isCancelled ? '#c0392b' : '#4a9fd4';
+    const icon         = isDone ? '⛰' : isCancelled ? '❌' : '🗺️';
+    const metaText     = isDone
+      ? `<span style="color:#27ae60">✓ ${formatDate(e.planned_date)}</span>`
+      : isCancelled
+        ? `<span style="color:#c0392b">❌ ${formatDate(e.planned_date)}</span>`
+        : `<span style="color:#4a9fd4">🗺️ ${formatDate(e.planned_date)}</span>`;
+    const bgStyle      = isDone ? '' : isCancelled ? 'background:#3a0a0a;' : 'background:#4a9fd408;';
+    const thumbStyle   = isDone ? '' : isCancelled ? 'background:#2a1010;border-color:#c0392b33;color:#c0392b;' : 'background:#1a3a5c;border-color:#4a9fd433;';
+
+    return `
+    <div class="peak-item" id="item-ev-${e.id}"
+         onclick="selectEvent('${e.id}')"
+         style="border-left-color:${color};${bgStyle}">
+      <div class="peak-thumb-placeholder" style="${thumbStyle}">${icon}</div>
+      <div class="peak-info">
+        <div class="peak-name">${esc(e.peak_name)}</div>
+        <div class="peak-meta">${metaText}${e.companions ? ' · ' + esc(e.companions) : ''}</div>
+      </div>
+      <div class="peak-elevation" style="color:${color};font-size:0.7rem;">${isDone ? 'ascent' : 'plan'}</div>
+    </div>`;
+  });
+
+  el.innerHTML = peakRows.join('') + eventRows.join('');
+}
+
+function selectPeak(id) {
+  selectedPeakId = id;
+  const peak = peaks.find(p => p.id === id);
+  if (!peak) return;
+  document.querySelectorAll('.peak-item').forEach(el => el.classList.remove('selected'));
+  const item = document.getElementById('item-' + id);
+  if (item) { item.classList.add('selected'); item.scrollIntoView({ block: 'nearest' }); }
+  const idx = peaks.indexOf(peak);
+  if (markers[idx]) {
+    map.flyTo([peak.latitude, peak.longitude], 13, { duration: 0.8 });
+    setTimeout(() => markers[idx].openPopup(), 850);
+  }
+}
+
+function selectEvent(id) {
+  const ev = eventById.get(id);
+  if (!ev) return;
+  document.querySelectorAll('.peak-item').forEach(el => el.classList.remove('selected'));
+  const item = document.getElementById('item-ev-' + id);
+  if (item) { item.classList.add('selected'); item.scrollIntoView({ block: 'nearest' }); }
+
+  // If the event has GPS coords, fly to it and open the map popup
+  if (ev.latitude != null && ev.longitude != null) {
+    const marker = eventMarkers.find(m => {
+      const ll = m.getLatLng();
+      return Math.abs(ll.lat - ev.latitude) < 0.0001 && Math.abs(ll.lng - ev.longitude) < 0.0001;
+    });
+    if (marker) {
+      map.flyTo([ev.latitude, ev.longitude], 13, { duration: 0.8 });
+      setTimeout(() => marker.openPopup(), 850);
+      return;
+    }
+  }
+
+  // If linked to a registered peak, fly to that peak's marker instead
+  const peak = peaks.find(p => p.name.toLowerCase() === ev.peak_name.toLowerCase());
+  if (peak) {
+    const idx = peaks.indexOf(peak);
+    if (markers[idx]) {
+      map.flyTo([peak.latitude, peak.longitude], 13, { duration: 0.8 });
+      setTimeout(() => markers[idx].openPopup(), 850);
+      return;
+    }
+  }
+
+  // No map location — open the expedition modal directly
+  openExpeditionModal(id);
+}
+
+function filterPeaks() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const filtered = peaks.filter(p => p.name.toLowerCase().includes(q));
+  renderList(filtered);
+  placeMarkers(filtered);
+}
+
+// ── Plan ascent modal ─────────────────────────────────────────────────────────
+let planningForPeakId = null;
+let planningLat = null;
+let planningLng = null;
+
+
+function openPlanModal(peakId, lat, lng) {
+  planningForPeakId = peakId;
+  planningLat = (lat !== undefined) ? lat : null;
+  planningLng = (lng !== undefined) ? lng : null;
+
+  let subtitle = '';
+  let peakName = '';
+
+  if (peakId) {
+    const peak = peaks.find(p => p.id === peakId);
+    if (peak) {
+      peakName = peak.name;
+      subtitle = peak.name + ' · ' + peak.altitude.toLocaleString() + 'm';
+    }
+  } else if (lat !== undefined) {
+    peakName = nearestOsmPeakName(lat, lng) || '';
+    subtitle = peakName || 'Looking up name…';
+  }
+
+  document.getElementById('plan-subtitle').textContent = subtitle;
+  document.getElementById('plan-peak-name').value = peakName;
+  document.getElementById('plan-date').value = '';
+  document.getElementById('plan-companions').value = '';
+  document.getElementById('plan-notes').value = '';
+  document.getElementById('plan-date').min = new Date().toISOString().split('T')[0];
+  document.getElementById('overlay-plan').classList.add('visible');
+  setTimeout(() => {
+    if (peakName) document.getElementById('plan-date').focus();
+    else document.getElementById('plan-peak-name').focus();
+  }, 100);
+
+  // If cache was empty, fetch asynchronously and fill in when ready
+  if (!peakId && lat !== undefined && !peakName) {
+    fetchNearestPeakName(lat, lng).then(name => {
+      if (!name) {
+        document.getElementById('plan-subtitle').textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
+        return;
+      }
+      document.getElementById('plan-peak-name').value = name;
+      document.getElementById('plan-subtitle').textContent = name;
+      document.getElementById('plan-date').focus();
+    });
+  }
+}
+
+function closePlanModal() {
+  document.getElementById('overlay-plan').classList.remove('visible');
+  planningForPeakId = null;
+}
+
+async function savePlan() {
+  const peakName = document.getElementById('plan-peak-name').value.trim();
+  const date = document.getElementById('plan-date').value;
+  if (!peakName) { document.getElementById('plan-peak-name').focus(); return; }
+  if (!date) { document.getElementById('plan-date').focus(); return; }
+
+  const btn = document.getElementById('btn-plan-save');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    const r = await fetch('/api/calendar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        peak_name:    peakName,
+        planned_date: date,
+        companions:   document.getElementById('plan-companions').value.trim() || null,
+        notes:        document.getElementById('plan-notes').value.trim() || null,
+        latitude:     planningLat,
+        longitude:    planningLng,
+      }),
+    });
+    if (!r.ok) throw new Error();
+    const ev = await r.json();
+    events.push(ev);
+    indexEvents();
+    closePlanModal();
+    placeMarkers(peaks);
+    placeEventMarkers();
+    renderList(peaks);
+    updateCounters();
+    showToast('📅 Plan added to calendar');
+  } catch {
+    showToast('Error saving plan', true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Add to calendar';
+  }
+}
+
+// ── Register peak mode ────────────────────────────────────────────────────────
+function startRegisterPeakMode() {
+  registerPeakMode = true;
+  document.getElementById('map-hint').textContent = 'Click on the map to locate the new peak';
+  document.getElementById('map-hint').style.borderColor = 'var(--sun)';
+  document.getElementById('map-hint').style.color = 'var(--sun)';
+  showToast('Register mode: click on the peak location');
+}
+
+function openNewPeakModal(lat, lng) {
+  registerPeakMode = false;
+  document.getElementById('map-hint').textContent = 'Click on the map to plan an ascent';
+  document.getElementById('map-hint').style.borderColor = '';
+  document.getElementById('map-hint').style.color = '';
+
+  newPeakCoords = { lat, lng };
+  if (tempMarker) map.removeLayer(tempMarker);
+  tempMarker = L.marker([lat, lng], { icon: createTempIcon() }).addTo(map);
+
+  document.getElementById('np-coords-label').textContent =
+    'Coordinates: ' + lat.toFixed(5) + ', ' + lng.toFixed(5);
+  document.getElementById('np-lat').value = lat.toFixed(6);
+  document.getElementById('np-lng').value = lng.toFixed(6);
+  const cachedName = nearestOsmPeakName(lat, lng) || '';
+  document.getElementById('np-name').value = cachedName;
+  if (!cachedName) {
+    fetchNearestPeakName(lat, lng).then(name => {
+      if (name) document.getElementById('np-name').value = name;
+    });
+  }
+  document.getElementById('np-alt').value = '';
+  document.getElementById('np-date').value = '';
+  document.getElementById('np-difficulty').value = '';
+  document.getElementById('np-duration').value = '';
+  document.getElementById('np-notes').value = '';
+
+  document.getElementById('inline-login-box').style.display = token ? 'none' : 'block';
+  document.getElementById('btn-np-save').style.display = token ? '' : 'none';
+  document.getElementById('overlay-new-peak').classList.add('visible');
+  setTimeout(() => document.getElementById('np-name').focus(), 100);
+}
+
+function closeNewPeakModal() {
+  document.getElementById('overlay-new-peak').classList.remove('visible');
+  if (tempMarker) { map.removeLayer(tempMarker); tempMarker = null; }
+  registerPeakMode = false;
+  document.getElementById('map-hint').textContent = 'Click on the map to plan an ascent';
+  document.getElementById('map-hint').style.borderColor = '';
+  document.getElementById('map-hint').style.color = '';
+}
+
+// ── Delete peak modal ─────────────────────────────────────────────────────────
+function openDeleteModal(id, name) {
+  deletePeakId = id;
+  document.getElementById('delete-peak-name').textContent = 'Delete "' + name + '" from the map?';
+  document.getElementById('delete-login-box').style.display = token ? 'none' : 'block';
+  document.getElementById('delete-confirm-actions').style.display = token ? 'flex' : 'none';
+  document.getElementById('delete-no-auth-actions').style.display = token ? 'none' : 'flex';
+  document.getElementById('overlay-delete').classList.add('visible');
+}
+
+function closeDeleteModal() {
+  document.getElementById('overlay-delete').classList.remove('visible');
+  deletePeakId = null;
+}
+
+async function inlineLoginForDelete() {
+  const user = document.getElementById('del-login-user').value.trim();
+  const pass = document.getElementById('del-login-pass').value;
+  const errEl = document.getElementById('del-login-error');
+  errEl.style.display = 'none';
+  try {
+    const r = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: user, password: pass }),
+    });
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    token = data.token;
+    sessionStorage.setItem('pt_token', token);
+    document.getElementById('delete-login-box').style.display = 'none';
+    document.getElementById('delete-confirm-actions').style.display = 'flex';
+    document.getElementById('delete-no-auth-actions').style.display = 'none';
+  } catch {
+    errEl.style.display = 'block';
+  }
+}
+
+async function confirmDeletePeak() {
+  if (!deletePeakId || !token) return;
+  const btn = document.getElementById('btn-confirm-delete');
+  btn.disabled = true;
+  btn.textContent = 'Deleting…';
+  try {
+    const r = await fetch('/api/peaks/' + deletePeakId, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token },
+    });
+    if (r.status === 401) {
+      token = null;
+      sessionStorage.removeItem('pt_token');
+      document.getElementById('delete-login-box').style.display = 'block';
+      document.getElementById('delete-confirm-actions').style.display = 'none';
+      showToast('Session expired, please sign in again', true);
+      return;
+    }
+    if (!r.ok) throw new Error();
+    map.closePopup();
+    closeDeleteModal();
+    await loadData();
+    showToast('Peak deleted');
+  } catch {
+    showToast('Error deleting peak', true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Delete peak';
+  }
+}
+
+// ── Inline login (new peak form) ──────────────────────────────────────────────
+async function inlineLogin() {
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+  try {
+    const r = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: user, password: pass }),
+    });
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    token = data.token;
+    sessionStorage.setItem('pt_token', token);
+    document.getElementById('inline-login-box').style.display = 'none';
+    document.getElementById('btn-np-save').style.display = '';
+    showToast('Signed in');
+  } catch {
+    errEl.style.display = 'block';
+  }
+}
+
+async function saveNewPeak() {
+  const name = document.getElementById('np-name').value.trim();
+  const alt  = parseInt(document.getElementById('np-alt').value);
+  if (!name) { document.getElementById('np-name').focus(); return; }
+  if (isNaN(alt) || alt <= 0) { document.getElementById('np-alt').focus(); return; }
+
+  const btn = document.getElementById('btn-np-save');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    const r = await fetch('/api/peaks', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token,
+      },
+      body: JSON.stringify({
+        name:          name,
+        latitude:      parseFloat(document.getElementById('np-lat').value),
+        longitude:     parseFloat(document.getElementById('np-lng').value),
+        altitude:      alt,
+        ascent_date:   document.getElementById('np-date').value || null,
+        difficulty:    document.getElementById('np-difficulty').value || null,
+        duration_hours: parseFloat(document.getElementById('np-duration').value) || null,
+        notes:         document.getElementById('np-notes').value.trim() || null,
+      }),
+    });
+    if (r.status === 401) {
+      token = null;
+      sessionStorage.removeItem('pt_token');
+      document.getElementById('inline-login-box').style.display = 'block';
+      document.getElementById('btn-np-save').style.display = 'none';
+      showToast('Session expired, please sign in again', true);
+      return;
+    }
+    if (!r.ok) throw new Error();
+    closeNewPeakModal();
+    await loadData();
+    showToast('⛰ ' + name + ' registered');
+  } catch {
+    showToast('Error saving peak', true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save peak';
+  }
+}
+
+// ── Generic modal backdrop close ──────────────────────────────────────────────
+function closeModal(e) {
+  if (e.target === e.currentTarget) {
+    e.currentTarget.classList.remove('visible');
+    if (tempMarker) { map.removeLayer(tempMarker); tempMarker = null; }
+    registerPeakMode = false;
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function showToast(msg, error = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = error ? '#e05050' : '#7ec87e';
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 3500);
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function formatDate(s) {
+  const [y, m, d] = s.split('-'); return `${d}/${m}/${y}`;
+}
+
+// ── Keyboard ──────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closePlanModal();
+    closeNewPeakModal();
+    closeDeleteModal();
+    registerPeakMode = false;
+  }
+});
+document.getElementById('login-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') inlineLogin();
+});
+
+// ── Expedition modal ──────────────────────────────────────────────────────────
+// Index events by ID for O(1) lookup from popup onclick handlers
+const eventById = new Map();
+
+function indexEvents() {
+  eventById.clear();
+  events.forEach(e => eventById.set(e.id, e));
+}
+
+let activeExpeditionId = null;
+
+function openExpeditionModal(id) {
+  const ev = eventById.get(id);
+  if (!ev) { showToast('Expedition not found', true); return; }
+  activeExpeditionId = id;
+
+  const isAscent    = ev.event_type === 'ascent';
+  const isCancelled = ev.status === 'cancelled';
+  const titleEmoji  = isAscent ? '⛰ ' : isCancelled ? '❌ ' : '🗺️ ';
+  const subtitle    = isAscent ? 'Recorded ascent' : isCancelled ? 'Cancelled expedition' : 'Planned expedition';
+  document.getElementById('exp-modal-title').textContent = titleEmoji + ev.peak_name;
+  document.getElementById('exp-modal-subtitle').textContent = subtitle;
+
+  // Status pills
+  const statuses = ['planned', 'completed', 'cancelled'];
+  const labels   = { planned: '🗺️ Planned', completed: '⛰ Completed', cancelled: '❌ Cancelled' };
+  document.getElementById('exp-status-pills').innerHTML = statuses.map(s => `
+    <button class="status-pill ${ev.status === s ? (s === 'completed' ? 'active-completed' : s === 'planned' ? 'active-planned' : 'active-cancelled') : ''}"
+            onclick="changeExpeditionStatus('${s}')">
+      ${labels[s]}
+    </button>
+  `).join('');
+
+  // Fill form fields
+  document.getElementById('exp-date').value        = ev.planned_date || '';
+  document.getElementById('exp-duration').value    = ev.duration_hours ?? '';
+  document.getElementById('exp-difficulty').value  = ev.difficulty || '';
+  document.getElementById('exp-companions').value  = ev.companions || '';
+  document.getElementById('exp-notes').value       = ev.notes || '';
+
+  document.getElementById('overlay-expedition').classList.add('visible');
+}
+
+function closeExpeditionModal(event) {
+  if (event && event.target !== event.currentTarget) return;
+  document.getElementById('overlay-expedition').classList.remove('visible');
+  activeExpeditionId = null;
+}
+
+async function changeExpeditionStatus(newStatus) {
+  if (!activeExpeditionId) return;
+  try {
+    const r = await fetch(`/api/calendar/${activeExpeditionId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    });
+    if (!r.ok) throw new Error();
+    const updated = await r.json();
+    // Update local state
+    events = events.map(e => e.id === activeExpeditionId ? updated : e);
+    indexEvents();
+    // Refresh status pills
+    const statuses = ['planned', 'completed', 'cancelled'];
+    const labels   = { planned: '🗺️ Planned', completed: '⛰ Completed', cancelled: '❌ Cancelled' };
+    document.getElementById('exp-status-pills').innerHTML = statuses.map(s => `
+      <button class="status-pill ${updated.status === s ? (s === 'completed' ? 'active-completed' : s === 'planned' ? 'active-planned' : 'active-cancelled') : ''}"
+              onclick="changeExpeditionStatus('${s}')">
+        ${labels[s]}
+      </button>
+    `).join('');
+    const updatedEmoji    = updated.event_type === 'ascent' ? '⛰ ' : updated.status === 'cancelled' ? '❌ ' : '🗺️ ';
+    const updatedSubtitle = updated.event_type === 'ascent' ? 'Recorded ascent' : updated.status === 'cancelled' ? 'Cancelled expedition' : 'Planned expedition';
+    document.getElementById('exp-modal-title').textContent = updatedEmoji + updated.peak_name;
+    document.getElementById('exp-modal-subtitle').textContent = updatedSubtitle;
+    placeMarkers(peaks);
+    placeEventMarkers();
+    renderList(peaks);
+    updateCounters();
+    if (newStatus === 'completed') showToast('⛰ Peak completed! Counter updated.');
+    else showToast('Status updated');
+  } catch {
+    showToast('Error updating status', true);
+  }
+}
+
+async function saveExpeditionEdits() {
+  if (!activeExpeditionId) return;
+  const ev = eventById.get(activeExpeditionId);
+  if (!ev) return;
+
+  const btn = document.getElementById('btn-exp-save');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    const body = {
+      peak_name:    ev.peak_name, // name stays the same
+      planned_date: document.getElementById('exp-date').value || ev.planned_date,
+      companions:   document.getElementById('exp-companions').value.trim() || null,
+      notes:        document.getElementById('exp-notes').value.trim() || null,
+      duration_hours: parseFloat(document.getElementById('exp-duration').value) || null,
+      difficulty:   document.getElementById('exp-difficulty').value || null,
+    };
+
+    const r = await fetch(`/api/calendar/${activeExpeditionId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) throw new Error();
+    const updated = await r.json();
+    events = events.map(e => e.id === activeExpeditionId ? updated : e);
+    indexEvents();
+    closeExpeditionModal();
+    placeMarkers(peaks);
+    placeEventMarkers();
+    renderList(peaks);
+    showToast('Expedition updated');
+  } catch {
+    showToast('Error saving changes', true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save changes';
+  }
+}
+
+async function deleteExpedition() {
+  if (!activeExpeditionId) return;
+  const ev = eventById.get(activeExpeditionId);
+  if (!confirm(`Delete expedition "${ev?.peak_name}"?`)) return;
+
+  try {
+    const r = await fetch(`/api/calendar/${activeExpeditionId}`, { method: 'DELETE' });
+    if (!r.ok) throw new Error();
+    events = events.filter(e => e.id !== activeExpeditionId);
+    indexEvents();
+    closeExpeditionModal();
+    placeMarkers(peaks);
+    placeEventMarkers();
+    renderList(peaks);
+    updateCounters();
+    showToast('Expedition deleted');
+  } catch {
+    showToast('Error deleting expedition', true);
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadData();
+loadOsmPeaks();
+// Reload OSM peaks when the user pans/zooms to a new area (debounced)
+map.on('moveend', () => {
+  clearTimeout(_loadPeaksTimer);
+  _loadPeaksTimer = setTimeout(loadOsmPeaks, 800);
+});
+</script>
+</body>
+</html>
