@@ -727,7 +727,7 @@ body {
     <div class="top-nav">
       <a class="logo" href="/">Peak<span>Tracker</span></a>
       <span class="nav-sep">/</span>
-      <a class="nav-link" href="/mapa.html">Map</a>
+      <a class="nav-link" href="/map.html">Map</a>
       <a class="nav-link active" href="/calendar/">Calendar</a>
     </div>
 
@@ -1212,7 +1212,7 @@ function renderDetailModal() {
   if (ev.companions)    bodyHTML += `<div class="detail-row"><span class="detail-label">Companions</span><span>${escapeHTML(ev.companions)}</span></div>`;
   if (ev.difficulty)    bodyHTML += `<div class="detail-row"><span class="detail-label">Difficulty</span><span>${escapeHTML(ev.difficulty)}</span></div>`;
   if (ev.duration_hours) bodyHTML += `<div class="detail-row"><span class="detail-label">Duration</span><span>${ev.duration_hours}h</span></div>`;
-  if (ev.notas)         bodyHTML += `<div class="detail-row"><span class="detail-label">Notas</span><span>${escapeHTML(ev.notas)}</span></div>`;
+  if (ev.notes)         bodyHTML += `<div class="detail-row"><span class="detail-label">Notes</span><span>${escapeHTML(ev.notes)}</span></div>`;
   document.getElementById('detail-body').innerHTML = bodyHTML;
 
   // Show "Mark done" button only if not already completed
