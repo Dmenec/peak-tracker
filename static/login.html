@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PeakTracker · Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rock:    #1a1a1a;
+    --granite: #2d2d2d;
+    --mist:    #8fa3b8;
+    --snow:    #f0f4f8;
+    --accent:  #7ec87e;
+    --sky:     #4a9fd4;
+    --danger:  #c0392b;
+    --radius:  10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--rock);
+    color: var(--snow);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 80%, #4a9fd418 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 20%, #5a8a6a18 0%, transparent 55%);
+    pointer-events: none;
+  }
+
+  .card {
+    background: var(--granite);
+    border: 1px solid #ffffff12;
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 360px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .logo {
+    text-align: center;
+    margin-bottom: 1.8rem;
+  }
+
+  .logo-mark { font-size: 2.5rem; display: block; margin-bottom: 0.3rem; }
+
+  .logo-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.4rem;
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, #ffffff 0%, #b8d8f5 40%, #c8e8c8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .logo-sub {
+    font-size: 0.75rem;
+    color: var(--mist);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 0.2rem;
+  }
+
+  label {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--mist);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.4rem;
+  }
+
+  input {
+    width: 100%;
+    background: #1a1a1a;
+    border: 1px solid #ffffff18;
+    border-radius: var(--radius);
+    color: var(--snow);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    padding: 0.65rem 0.85rem;
+    outline: none;
+    transition: border-color 0.15s;
+    margin-bottom: 1rem;
+  }
+
+  input:focus { border-color: var(--accent); }
+
+  .btn {
+    width: 100%;
+    background: var(--accent);
+    color: #141a14;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    margin-top: 0.25rem;
+  }
+
+  .btn:hover   { opacity: 0.9; }
+  .btn:active  { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.5; cursor: default; }
+
+  .error-msg {
+    font-size: 0.8rem;
+    color: var(--danger);
+    text-align: center;
+    margin-top: 0.9rem;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <span class="logo-mark">⛰</span>
+    <div class="logo-title">PeakTracker</div>
+    <div class="logo-sub">Sign in to continue</div>
+  </div>
+
+  <form id="login-form" onsubmit="doLogin(event)">
+    <label for="username">Username</label>
+    <input type="text" id="username" autocomplete="username" required autofocus>
+
+    <label for="password">Password</label>
+    <input type="password" id="password" autocomplete="current-password" required>
+
+    <button class="btn" type="submit" id="btn-submit">Sign in</button>
+  </form>
+
+  <div class="error-msg" id="error-msg">Invalid username or password</div>
+</div>
+
+<script>
+async function doLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btn-submit');
+  const err = document.getElementById('error-msg');
+  err.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+
+  try {
+    const r = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value,
+      }),
+    });
+
+    if (!r.ok) {
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Sign in';
+      return;
+    }
+
+    const data = await r.json();
+    // Store token so map.html admin buttons work without a second login
+    sessionStorage.setItem('pt_token', data.token);
+
+    const redirect = new URLSearchParams(window.location.search).get('next') || '/';
+    window.location.href = redirect;
+  } catch {
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Sign in';
+  }
+}
+</script>
+</body>
+</html>
