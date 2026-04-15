@@ -99,6 +99,18 @@
   }
   .stats-badge strong { color: var(--accent); }
 
+  .btn-logout {
+    font-size: 0.72rem;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid #ffffff18;
+    border-radius: 20px;
+    padding: 0.25rem 0.7rem;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .btn-logout:hover { color: var(--danger); border-color: var(--danger); }
+
   /* ── Layout ──────────────────────────────────────────────────────────── */
   .main-layout { flex: 1; display: flex; overflow: hidden; position: relative; }
   #map { flex: 1; z-index: 1; }
@@ -407,6 +419,7 @@
     <div class="stats-badge">
       <strong id="peak-count">0</strong> completed
     </div>
+    <button class="btn-logout" onclick="logout()">Sign out</button>
   </div>
 </header>
 
@@ -608,6 +621,12 @@
 let map, peaks = [], markers = [], eventMarkers = [], selectedPeakId = null;
 let token = sessionStorage.getItem('pt_token') || null;
 let events = [];
+
+async function logout() {
+  sessionStorage.removeItem('pt_token');
+  await fetch('/api/auth/logout', { method: 'POST' });
+  window.location.href = '/login.html';
+}
 let tempMarker = null;
 let newPeakCoords = null;
 let deletePeakId = null;
@@ -926,7 +945,7 @@ function buildPopupHTML(p) {
 
   // "Mark done" button only if not already done
   const doneButton = type !== 'done'
-    ? `<button class="btn-popup btn-popup-done" onclick="markPeakDoneFromMap('${p.id}','${esc(p.name)}')">✓ Mark as completed</button>`
+    ? `<button class="btn-popup btn-popup-done" data-id="${esc(p.id)}" data-name="${esc(p.name)}" onclick="markPeakDoneFromMap(this.dataset.id,this.dataset.name)">✓ Mark as completed</button>`
     : `<div style="font-size:0.72rem;color:#27ae60;padding:0.3rem 0;">✓ This peak is already completed</div>`;
 
   return `<div style="font-family:'DM Sans',sans-serif;">
@@ -943,7 +962,7 @@ function buildPopupHTML(p) {
     <div class="popup-actions">
       ${type !== 'done' ? `<button class="btn-popup btn-popup-schedule" onclick="openPlanModal('${p.id}')">📅 Plan ascent</button>` : ''}
       ${doneButton}
-      <button class="btn-popup btn-popup-delete" onclick="openDeleteModal('${p.id}','${esc(p.name)}')">🗑 Delete peak</button>
+      <button class="btn-popup btn-popup-delete" data-id="${esc(p.id)}" data-name="${esc(p.name)}" onclick="openDeleteModal(this.dataset.id,this.dataset.name)">🗑 Delete peak</button>
     </div>
   </div>`;
 }

@@ -2,7 +2,7 @@ use axum::{
     body::Body,
     http::{Request, StatusCode},
     middleware::Next,
-    response::Response,
+    response::{IntoResponse, Redirect, Response},
     Json,
 };
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
@@ -74,9 +74,48 @@ fn jwt_verify(token: &str) -> Result<Claims, &'static str> {
     Ok(claims)
 }
 
-pub async fn login(Json(body): Json<LoginRequest>) -> Result<Json<LoginResponse>, StatusCode> {
-    let username_ok = body.username == std::env::var("ADMIN_USER").unwrap_or_default();
-    let pass_ok     = body.password == std::env::var("ADMIN_PASS").unwrap_or_default();
+/// Extract token from Authorization header or session cookie.
+fn extract_token(req: &Request<Body>) -> Option<String> {
+    // Authorization: Bearer <token>
+    if let Some(auth) = req.headers().get("Authorization") {
+        if let Ok(s) = auth.to_str() {
+            if let Some(t) = s.strip_prefix("Bearer ") {
+                return Some(t.to_string());
+            }
+        }
+    }
+    // Cookie: pt_session=<token>
+    if let Some(cookie) = req.headers().get("Cookie") {
+        if let Ok(s) = cookie.to_str() {
+            for part in s.split(';') {
+                let part = part.trim();
+                if let Some(val) = part.strip_prefix("pt_session=") {
+                    return Some(val.to_string());
+                }
+            }
+        }
+    }
+    None
+}
+
+/// Constant-time string comparison to prevent timing attacks.
+fn ct_eq(a: &str, b: &str) -> bool {
+    if a.len() != b.len() { return false; }
+    a.bytes().zip(b.bytes()).fold(0u8, |acc, (x, y)| acc | (x ^ y)) == 0
+}
+
+pub async fn login(Json(body): Json<LoginRequest>) -> Result<impl IntoResponse, StatusCode> {
+    let expected_user = std::env::var("ADMIN_USER").unwrap_or_default();
+    let expected_pass = std::env::var("ADMIN_PASS").unwrap_or_default();
+
+    // Reject outright if server is misconfigured (no password set)
+    if expected_pass.is_empty() {
+        tracing::error!("Login rejected: ADMIN_PASS is not set");
+        return Err(StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    let username_ok = ct_eq(&body.username, &expected_user);
+    let pass_ok     = ct_eq(&body.password, &expected_pass);
 
     if !username_ok || !pass_ok {
         tracing::warn!("Failed login attempt for: {}", body.username);
@@ -92,21 +131,65 @@ pub async fn login(Json(body): Json<LoginRequest>) -> Result<Json<LoginResponse>
     })?;
 
     tracing::info!("Successful login: {}", body.username);
-    Ok(Json(LoginResponse { token, expires_in: duration_secs }))
+
+    let cookie = format!(
+        "pt_session={}; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age={}",
+        token, duration_secs
+    );
+
+    Ok((
+        [(axum::http::header::SET_COOKIE, cookie)],
+        Json(LoginResponse { token, expires_in: duration_secs }),
+    ))
 }
 
+pub async fn logout() -> impl IntoResponse {
+    let cookie = "pt_session=; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age=0";
+    (
+        [(axum::http::header::SET_COOKIE, cookie)],
+        Redirect::to("/login.html"),
+    )
+}
+
+/// Middleware for API write routes: requires valid token (header or cookie). Returns 401 if missing.
 pub async fn require_auth(req: Request<Body>, next: Next) -> Result<Response, StatusCode> {
-    let token = req
-        .headers()
-        .get("Authorization")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|h| h.strip_prefix("Bearer "))
+    let token = extract_token(&req)
         .ok_or_else(|| { tracing::debug!("Request without token"); StatusCode::UNAUTHORIZED })?;
 
-    jwt_verify(token).map_err(|e| {
+    jwt_verify(&token).map_err(|e| {
         tracing::warn!("Invalid token: {}", e);
         StatusCode::UNAUTHORIZED
     })?;
 
     Ok(next.run(req).await)
+}
+
+/// Global middleware: protects every route.
+/// - /login.html, /api/auth/login and /api/auth/logout are always public.
+/// - Unauthenticated API requests → 401.
+/// - Unauthenticated page requests → redirect to /login.html.
+pub async fn require_session(req: Request<Body>, next: Next) -> Response {
+    let path = req.uri().path();
+
+    let is_public = path == "/login.html"
+        || path == "/api/auth/login"
+        || path == "/api/auth/logout";
+
+    if is_public {
+        return next.run(req).await;
+    }
+
+    let authenticated = extract_token(&req)
+        .and_then(|t| jwt_verify(&t).ok())
+        .is_some();
+
+    if authenticated {
+        return next.run(req).await;
+    }
+
+    if path.starts_with("/api/") {
+        StatusCode::UNAUTHORIZED.into_response()
+    } else {
+        Redirect::to("/login.html").into_response()
+    }
 }

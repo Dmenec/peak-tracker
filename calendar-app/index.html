@@ -134,6 +134,19 @@ body {
 .nav-link:hover { color: var(--snow); background: #ffffff10; }
 .nav-link.active { color: var(--moss); background: #4aaa5a18; border-color: #4aaa5a30; }
 
+.btn-logout {
+  font-size: 0.72rem;
+  color: var(--mist);
+  background: transparent;
+  border: 1px solid #ffffff18;
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.65rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-left: auto;
+}
+.btn-logout:hover { color: #e05050; border-color: #e05050; }
+
 /* Title */
 .hero-title {
   font-family: 'Bebas Neue', sans-serif;
@@ -729,6 +742,7 @@ body {
       <span class="nav-sep">/</span>
       <a class="nav-link" href="/map.html">Map</a>
       <a class="nav-link active" href="/calendar/">Calendar</a>
+      <button class="btn-logout" onclick="logout()">Sign out</button>
     </div>
 
     <div class="hero-title">My Peaks</div>
@@ -1236,7 +1250,7 @@ function onPeakInput() {
   if (matches.length === 0) { list.classList.remove('open'); return; }
 
   list.innerHTML = matches.map(p => `
-    <div class="ac-item" onclick="pickPeak('${escapeHTML(p.name)}')">
+    <div class="ac-item" data-name="${escapeHTML(p.name)}" onclick="pickPeak(this.dataset.name)">
       <span>⛰ ${escapeHTML(p.name)}</span>
       <span class="ac-alt">${p.altitude.toLocaleString()}m</span>
     </div>
@@ -1303,6 +1317,12 @@ function safeJSON(obj) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeAddModal(); closeDetailModal(); }
 });
+
+async function logout() {
+  sessionStorage.removeItem('pt_token');
+  await fetch('/api/auth/logout', { method: 'POST' });
+  window.location.href = '/login.html';
+}
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 renderMonthLabel();

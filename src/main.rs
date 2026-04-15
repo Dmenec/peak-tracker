@@ -8,7 +8,7 @@ use axum::{
     routing::{delete, get, patch, post},
     Router,
 };
-use tower_http::{cors::CorsLayer, services::ServeDir};
+use tower_http::services::ServeDir;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -34,32 +34,28 @@ async fn main() -> anyhow::Result<()> {
 
     let store = store::init()?;
 
-    // ── Protected routes (require JWT) ───────────────────────────────────────
-    let protected_routes = Router::new()
+    // ── Write routes (require valid JWT via header or cookie) ────────────────
+    let write_routes = Router::new()
         .route("/api/peaks",              post(routes::peaks::create_peak))
         .route("/api/peaks/:id",          delete(routes::peaks::delete_peak))
         .route("/api/peaks/:id/photo",    post(routes::peaks::upload_photo))
         .layer(middleware::from_fn(auth::require_auth));
 
-    // ── Public routes (no authentication required) ────────────────────────────
-    // Calendar status update is public so users can mark peaks as done from the UI
-    let public_routes = Router::new()
-        .route("/api/peaks",                  get(routes::peaks::list_peaks))
-        .route("/api/peaks/:id",              get(routes::peaks::get_peak))
+    let app = Router::new()
+        .route("/api/auth/login",            post(auth::login))
+        .route("/api/auth/logout",           post(auth::logout))
+        .route("/api/peaks",                 get(routes::peaks::list_peaks))
+        .route("/api/peaks/:id",             get(routes::peaks::get_peak))
         .route("/api/calendar",              get(routes::calendar::list_events))
         .route("/api/calendar",              post(routes::calendar::create_event))
         .route("/api/calendar/:id",          delete(routes::calendar::delete_event))
         .route("/api/calendar/:id",          patch(routes::calendar::update_event))
         .route("/api/calendar/:id/status",   patch(routes::calendar::update_event_status))
-        .route("/api/auth/login",            post(auth::login));
-
-    let app = Router::new()
-        .merge(public_routes)
-        .merge(protected_routes)
+        .merge(write_routes)
         .nest_service("/uploads",  ServeDir::new("uploads"))
         .nest_service("/calendar", ServeDir::new("calendar-app").append_index_html_on_directories(true))
         .nest_service("/",         ServeDir::new("static").append_index_html_on_directories(true))
-        .layer(CorsLayer::permissive())
+        .layer(middleware::from_fn(auth::require_session))
         .with_state(store);
 
     let port = std::env::var("PORT").unwrap_or_else(|_| "3000".into());
