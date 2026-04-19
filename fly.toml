@@ -1,20 +1,23 @@
-app            = "peak-tracker"
-primary_region = "mad"
+# fly.toml app configuration file generated for peak-tracker on 2026-04-19T15:56:37Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'peak-tracker'
+primary_region = 'ams'
 
 [build]
 
-[mounts]
-  source      = "peak_tracker_data"
-  destination = "/data"
-
 [http_service]
-  internal_port       = 3000
-  force_https         = true
-  auto_stop_machines  = "off"
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
   auto_start_machines = true
-  min_machines_running = 1
+  min_machines_running = 0
+  processes = ['app']
 
 [[vm]]
-  memory   = "256mb"
-  cpu_kind = "shared"
-  cpus     = 1
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+  memory_mb = 256
