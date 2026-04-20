@@ -183,6 +183,52 @@ nav { display: flex; gap: 0.25rem; }
 .detail-title-block .detail-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.06em; line-height: 1.1; }
 .detail-title-block .detail-dates { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
 
+/* ── Hero photo (completed events with photo) ── */
+.detail-hero {
+  margin: -1.8rem -1.8rem 1.4rem;
+  height: 220px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px 14px 0 0;
+  display: none;
+}
+.detail-hero.visible { display: block; }
+.detail-hero-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: brightness(0.7);
+}
+.detail-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 35%,
+    rgba(10,16,10,0.55) 65%,
+    #1a2018 100%
+  );
+}
+.detail-hero-content {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 1rem 1.4rem 0.9rem;
+}
+.detail-hero-content .detail-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.9rem; letter-spacing: 0.06em; line-height: 1.1;
+  color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+}
+.detail-hero-content .detail-dates {
+  font-size: 0.78rem; color: rgba(255,255,255,0.75); margin-top: 0.2rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.detail-hero-badge {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 0.15rem 0.45rem; border-radius: 4px;
+  background: #27ae6040; color: #a0f0b0; border: 1px solid #27ae6060;
+  backdrop-filter: blur(4px);
+}
+
 .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.5rem; margin-bottom: 1rem; }
 .detail-item label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fog); font-weight: 600; }
 .detail-item p { font-size: 0.85rem; color: var(--snow); margin-top: 0.1rem; }
@@ -225,6 +271,74 @@ nav { display: flex; gap: 0.25rem; }
   padding: 0.15rem 0.5rem; font-size: 0.72rem; color: var(--sun); font-weight: 600;
 }
 
+/* ── View toggle ── */
+.view-toggle { display: flex; border: 1px solid #2a3a2a; border-radius: 8px; overflow: hidden; }
+.view-btn {
+  padding: 0.35rem 0.75rem; font-size: 0.78rem; font-weight: 600;
+  background: transparent; color: var(--muted); border: none; cursor: pointer;
+  transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+}
+.view-btn:hover { background: #ffffff10; color: var(--snow); }
+.view-btn.active { background: #2e3c2a; color: var(--snow); }
+
+/* ── Month calendar ── */
+.cal-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.cal-nav-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.06em; }
+.cal-nav-btn {
+  background: transparent; border: 1px solid #2a3a2a; color: var(--muted);
+  border-radius: 6px; padding: 0.35rem 0.7rem; cursor: pointer;
+  font-size: 1rem; transition: all 0.15s; line-height: 1;
+}
+.cal-nav-btn:hover { background: #ffffff10; color: var(--snow); }
+.cal-today-btn {
+  background: transparent; border: 1px solid #2a3a2a; color: var(--muted);
+  border-radius: 6px; padding: 0.3rem 0.65rem; cursor: pointer;
+  font-size: 0.72rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
+  text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.15s;
+}
+.cal-today-btn:hover { background: #ffffff10; color: var(--snow); }
+
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  border: 1px solid #2a3a2a; border-radius: 10px; overflow: hidden;
+}
+.cal-dow {
+  background: #0f1a0f; border-bottom: 1px solid #2a3a2a;
+  padding: 0.5rem 0; text-align: center;
+  font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 600;
+}
+.cal-cell {
+  min-height: 100px; background: var(--granite);
+  border-right: 1px solid #1e2a1e; border-bottom: 1px solid #1e2a1e;
+  padding: 0.4rem; vertical-align: top; position: relative;
+}
+.cal-cell:nth-child(7n) { border-right: none; }
+.cal-cell.other-month { background: #131a12; }
+.cal-cell.today { background: #1e3018; }
+.cal-cell.today .cal-day-num { color: #7ec87e; font-weight: 700; }
+.cal-day-num {
+  font-size: 0.75rem; color: var(--muted); margin-bottom: 0.3rem;
+  line-height: 1; display: block;
+}
+.cal-chip {
+  display: block; padding: 0.15rem 0.4rem; border-radius: 4px; margin-bottom: 0.2rem;
+  font-size: 0.67rem; font-weight: 600; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; cursor: pointer; transition: opacity 0.12s; line-height: 1.4;
+}
+.cal-chip:hover { opacity: 0.8; }
+.cal-chip-open      { background: #4a9fd430; color: #9dd4f0; border-left: 2px solid var(--sky); }
+.cal-chip-full      { background: #f5a62330; color: #ffd080; border-left: 2px solid var(--sun); }
+.cal-chip-completed { background: #27ae6030; color: #9eeaaa; border-left: 2px solid var(--done); }
+.cal-chip-cancelled { background: #c0392b25; color: #f09090; border-left: 2px solid var(--danger); opacity: 0.7; }
+.cal-more {
+  font-size: 0.62rem; color: var(--fog); cursor: pointer; padding: 0.1rem 0.3rem;
+  display: block; margin-top: 0.1rem;
+}
+.cal-more:hover { color: var(--muted); }
+
 /* ── Toast ── */
 .toast {
   position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(10px);
@@ -238,6 +352,10 @@ nav { display: flex; gap: 0.25rem; }
   .form-2col, .form-3col { grid-template-columns: 1fr; }
   .detail-grid { grid-template-columns: 1fr; }
   .event-right { display: none; }
+  .cal-cell { min-height: 64px; padding: 0.25rem; }
+  .cal-chip { font-size: 0.6rem; padding: 0.1rem 0.3rem; }
+  .cal-dow  { font-size: 0.55rem; padding: 0.3rem 0; }
+  .filter-pills { display: none; }
 }
 </style>
 </head>
@@ -259,24 +377,59 @@ nav { display: flex; gap: 0.25rem; }
 <div class="page">
   <div class="toolbar">
     <div class="toolbar-title">Group Calendar</div>
-    <div class="filter-pills">
+    <div class="filter-pills" id="filter-pills">
       <button class="pill active" data-filter="all" onclick="setFilter('all')">All</button>
       <button class="pill pill-open" data-filter="open" onclick="setFilter('open')">Open</button>
       <button class="pill pill-completed" data-filter="completed" onclick="setFilter('completed')">Completed</button>
       <button class="pill pill-cancelled" data-filter="cancelled" onclick="setFilter('cancelled')">Cancelled</button>
     </div>
+    <div class="view-toggle">
+      <button class="view-btn active" id="view-list-btn" onclick="setView('list')" title="List view">☰ List</button>
+      <button class="view-btn" id="view-cal-btn" onclick="setView('calendar')" title="Calendar view">⊞ Month</button>
+    </div>
     <button class="btn-new-event" onclick="openCreateModal()">+ New event</button>
   </div>
 
-  <div class="events-grid" id="events-grid">
-    <div class="empty-state"><p>Loading…</p></div>
+  <!-- List view -->
+  <div id="view-list">
+    <div class="events-grid" id="events-grid">
+      <div class="empty-state"><p>Loading…</p></div>
+    </div>
+  </div>
+
+  <!-- Month calendar view -->
+  <div id="view-calendar" style="display:none">
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span class="cal-nav-title" id="cal-title"></span>
+        <button class="cal-today-btn" onclick="calToday()">Today</button>
+      </div>
+      <button class="cal-nav-btn" onclick="calNext()">›</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
   </div>
 </div>
 
 <!-- ── Detail / View modal ── -->
 <div class="overlay" id="overlay-detail" onclick="closeDetailIfBackdrop(event)">
   <div class="modal" style="max-width:560px">
-    <div class="detail-header">
+
+    <!-- Hero photo (completed events with photo) -->
+    <div class="detail-hero" id="d-hero">
+      <img class="detail-hero-img" id="d-hero-img" src="" alt="">
+      <div class="detail-hero-overlay"></div>
+      <div class="detail-hero-content">
+        <div class="detail-name" id="d-name-hero"></div>
+        <div class="detail-dates" id="d-dates-hero">
+          <span id="d-dates-hero-text"></span>
+          <span class="detail-hero-badge">✓ Completed</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Normal header (no photo) -->
+    <div class="detail-header" id="d-header">
       <div class="detail-act-icon" id="d-act-icon">⛰</div>
       <div class="detail-title-block">
         <div class="detail-name" id="d-name"></div>
@@ -446,20 +599,36 @@ async function logout() {
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 let events = [];
+let peaks  = []; // loaded alongside events to look up photos
 let activeFilter = 'all';
+let viewMode     = 'list';
+let calYear, calMonth;
+const _today = new Date();
+calYear  = _today.getFullYear();
+calMonth = _today.getMonth(); // 0-based
 let detailEventId = null;
 let editEventId   = null;
 
 async function loadEvents() {
   try {
-    const r = await fetch('/api/calendar');
-    if (!r.ok) throw new Error();
-    events = await r.json();
+    const [rCal, rPeaks] = await Promise.all([
+      fetch('/api/calendar'),
+      fetch('/api/peaks'),
+    ]);
+    if (!rCal.ok) throw new Error();
+    events = await rCal.json();
+    peaks  = rPeaks.ok ? await rPeaks.json() : [];
     renderGrid();
+    if (viewMode === 'calendar') renderCalendar();
   } catch {
     document.getElementById('events-grid').innerHTML =
       '<div class="empty-state"><p>Error loading events</p></div>';
   }
+}
+
+function peakPhotoFor(peakName) {
+  const match = peaks.find(p => p.name.toLowerCase() === peakName.toLowerCase());
+  return match?.photo_url ?? null;
 }
 
 // ── Filter ────────────────────────────────────────────────────────────────────
@@ -469,6 +638,7 @@ function setFilter(f) {
     p.classList.toggle('active', p.dataset.filter === f);
   });
   renderGrid();
+  if (viewMode === 'calendar') renderCalendar();
 }
 
 function filtered() {
@@ -555,6 +725,121 @@ function formatCost(c, currency) {
   return sym + parseFloat(c).toFixed(2);
 }
 
+// ── View switch ───────────────────────────────────────────────────────────────
+function setView(v) {
+  viewMode = v;
+  document.getElementById('view-list-btn').classList.toggle('active', v === 'list');
+  document.getElementById('view-cal-btn').classList.toggle('active', v === 'calendar');
+  document.getElementById('view-list').style.display     = v === 'list'     ? '' : 'none';
+  document.getElementById('view-calendar').style.display = v === 'calendar' ? '' : 'none';
+  // Filter pills only meaningful in list view — keep visible both ways
+  if (v === 'calendar') renderCalendar();
+}
+
+// ── Month calendar ────────────────────────────────────────────────────────────
+const MONTHS = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+const DOW    = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+function calPrev()  { calMonth--; if (calMonth < 0)  { calMonth = 11; calYear--; } renderCalendar(); }
+function calNext()  { calMonth++; if (calMonth > 11) { calMonth = 0;  calYear++; } renderCalendar(); }
+function calToday() { calYear = _today.getFullYear(); calMonth = _today.getMonth(); renderCalendar(); }
+
+function renderCalendar() {
+  document.getElementById('cal-title').textContent = MONTHS[calMonth] + ' ' + calYear;
+
+  // First day of month and how many days
+  const firstDay = new Date(calYear, calMonth, 1);
+  const lastDay  = new Date(calYear, calMonth + 1, 0);
+  const totalDays = lastDay.getDate();
+
+  // Monday-first offset (0=Mon … 6=Sun)
+  let startOffset = firstDay.getDay() - 1;
+  if (startOffset < 0) startOffset = 6;
+
+  // Days from previous month to pad
+  const prevLastDay = new Date(calYear, calMonth, 0).getDate();
+
+  // Events indexed by date string "YYYY-MM-DD" — include multi-day spans
+  const byDate = new Map();
+  const addToDate = (dateStr, ev) => {
+    if (!byDate.has(dateStr)) byDate.set(dateStr, []);
+    byDate.get(dateStr).push(ev);
+  };
+
+  const list = filtered();
+  list.forEach(ev => {
+    const start = ev.planned_date;
+    const end   = ev.end_date && ev.end_date >= start ? ev.end_date : start;
+    // Iterate each day in the span (cap at 60 days to avoid runaway)
+    let cur = new Date(start + 'T00:00:00');
+    const endDate = new Date(end + 'T00:00:00');
+    let count = 0;
+    while (cur <= endDate && count < 60) {
+      addToDate(cur.toISOString().split('T')[0], ev);
+      cur.setDate(cur.getDate() + 1);
+      count++;
+    }
+  });
+
+  const todayStr = _today.toISOString().split('T')[0];
+
+  // Build grid cells
+  const totalCells = Math.ceil((startOffset + totalDays) / 7) * 7;
+  let html = DOW.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+  for (let i = 0; i < totalCells; i++) {
+    let dayNum, dateStr, otherMonth = false;
+    if (i < startOffset) {
+      dayNum = prevLastDay - startOffset + 1 + i;
+      const pm = calMonth === 0 ? 11 : calMonth - 1;
+      const py = calMonth === 0 ? calYear - 1 : calYear;
+      dateStr = `${py}-${String(pm+1).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`;
+      otherMonth = true;
+    } else if (i >= startOffset + totalDays) {
+      dayNum = i - startOffset - totalDays + 1;
+      const nm = calMonth === 11 ? 0 : calMonth + 1;
+      const ny = calMonth === 11 ? calYear + 1 : calYear;
+      dateStr = `${ny}-${String(nm+1).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`;
+      otherMonth = true;
+    } else {
+      dayNum = i - startOffset + 1;
+      dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`;
+    }
+
+    const isToday = dateStr === todayStr;
+    const cellEvs = byDate.get(dateStr) || [];
+    // Deduplicate by id (multi-day events appear once per cell)
+    const seen = new Set();
+    const uniq = cellEvs.filter(e => seen.has(e.id) ? false : (seen.add(e.id), true));
+
+    const MAX_CHIPS = 3;
+    const chips = uniq.slice(0, MAX_CHIPS).map(ev =>
+      `<span class="cal-chip cal-chip-${ev.status}" onclick="event.stopPropagation();openDetail('${ev.id}')" title="${esc(ev.peak_name)}">
+        ${actIcon(ev.activity_type)} ${esc(ev.peak_name)}
+      </span>`
+    ).join('');
+    const more = uniq.length > MAX_CHIPS
+      ? `<span class="cal-more" onclick="event.stopPropagation();showDayPopover('${dateStr}')">+${uniq.length - MAX_CHIPS} more</span>`
+      : '';
+
+    html += `<div class="cal-cell${otherMonth ? ' other-month' : ''}${isToday ? ' today' : ''}">
+      <span class="cal-day-num">${dayNum}</span>
+      ${chips}${more}
+    </div>`;
+  }
+
+  document.getElementById('cal-grid').innerHTML = html;
+}
+
+function showDayPopover(dateStr) {
+  // Show all events for a day — reuse the list filter approach by just rendering the day
+  // Simple approach: open a temporary "day" view (scroll to list, filter by date)
+  // For now, switch to list view filtered to show upcoming
+  setView('list');
+  showToast('Showing all events in list view');
+}
+
 // ── Detail modal ──────────────────────────────────────────────────────────────
 async function openDetail(id) {
   // Fetch fresh event with attendees
@@ -575,13 +860,30 @@ function showDetail(ev) {
   detailEventId = ev.id;
   const canManage = ev.created_by === myId;
 
-  // Header
-  document.getElementById('d-act-icon').textContent = actIcon(ev.activity_type);
-  document.getElementById('d-name').textContent = ev.peak_name;
+  // Dates string (shared)
   const endStr = ev.end_date && ev.end_date !== ev.planned_date
     ? ` — ${formatDate(ev.end_date)}` : '';
-  document.getElementById('d-dates').textContent =
-    formatDate(ev.planned_date) + endStr + '  ·  ' + ucFirst(ev.activity_type.replace('_', ' '));
+  const datesText = formatDate(ev.planned_date) + endStr + '  ·  ' + ucFirst(ev.activity_type.replace('_', ' '));
+
+  // Hero photo (completed events with a matching peak photo)
+  const photo = ev.status === 'completed' ? peakPhotoFor(ev.peak_name) : null;
+  const hero  = document.getElementById('d-hero');
+  const normalHeader = document.getElementById('d-header');
+
+  if (photo) {
+    hero.classList.add('visible');
+    normalHeader.style.display = 'none';
+    document.getElementById('d-hero-img').src = photo;
+    document.getElementById('d-hero-img').alt = ev.peak_name;
+    document.getElementById('d-name-hero').textContent  = ev.peak_name;
+    document.getElementById('d-dates-hero-text').textContent = datesText;
+  } else {
+    hero.classList.remove('visible');
+    normalHeader.style.display = '';
+    document.getElementById('d-act-icon').textContent = actIcon(ev.activity_type);
+    document.getElementById('d-name').textContent  = ev.peak_name;
+    document.getElementById('d-dates').textContent = datesText;
+  }
 
   // Status bar (only for managers)
   const statusSection = document.getElementById('d-status-section');
@@ -702,6 +1004,7 @@ async function rsvp(status) {
     if (idx !== -1) events[idx] = updated;
     showDetail(updated);
     renderGrid();
+    if (viewMode === 'calendar') renderCalendar();
     showToast(status === 'going' ? '✓ Joined!' : status === 'maybe' ? '? Marked as maybe' : '✗ Marked as not going');
   } catch { showToast('Error updating RSVP', true); }
 }
