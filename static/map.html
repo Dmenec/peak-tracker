@@ -115,6 +115,35 @@
   .main-layout { flex: 1; display: flex; overflow: hidden; position: relative; }
   #map { flex: 1; z-index: 1; }
 
+  /* ── Sidebar search OSM results ─────────────────────────────────────── */
+  .osm-result-item {
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    transition: background 0.12s;
+    border-bottom: 1px solid #1e2a1e;
+  }
+  .osm-result-item:last-child { border-bottom: none; }
+  .osm-result-item:hover { background: #ffffff08; border-left-color: var(--sky); }
+  .osm-result-icon { font-size: 0.95rem; flex-shrink: 0; padding-top: 0.1rem; }
+  .osm-result-info { flex: 1; min-width: 0; }
+  .osm-result-name { font-size: 0.85rem; font-weight: 600; }
+  .osm-result-meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.1rem; }
+  .osm-result-alt  { font-size: 0.75rem; font-weight: 700; color: var(--accent); flex-shrink: 0; }
+  .search-section-label {
+    padding: 0.4rem 1rem 0.2rem;
+    font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #5a8a5a; font-weight: 600; background: #0f1a0f;
+    border-bottom: 1px solid #1e2a1e;
+  }
+  .search-loading {
+    padding: 0.8rem 1rem; font-size: 0.78rem; color: var(--muted);
+    font-style: italic; text-align: center;
+  }
+
   /* ── Sidebar ─────────────────────────────────────────────────────────── */
   .sidebar {
     width: 300px;
@@ -428,6 +457,7 @@
   <div id="map"></div>
   <div class="map-hint" id="map-hint">Click on the map to plan an ascent</div>
 
+
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-top-row">
@@ -435,7 +465,9 @@
         <button class="btn-register-peak admin-only" id="btn-new-peak" onclick="startRegisterPeakMode()" title="Add a new peak to the map" style="display:none">+ New peak</button>
       </div>
       <div class="sidebar-stats-row" id="sidebar-stats"></div>
-      <input class="search-input" type="text" id="search-input" placeholder="Search peak…" oninput="filterPeaks()">
+      <input class="search-input" type="text" id="search-input"
+             placeholder="Search peaks…" autocomplete="off"
+             oninput="onSearchInput()" onkeydown="if(event.key==='Escape')clearSearch()">
     </div>
     <div class="peaks-list" id="peaks-list">
       <div style="padding:2rem;text-align:center;color:var(--muted);font-style:italic;font-size:0.82rem;">Loading…</div>
@@ -1139,11 +1171,156 @@ function selectEvent(id) {
   openExpeditionModal(id);
 }
 
-function filterPeaks() {
-  const q = document.getElementById('search-input').value.toLowerCase();
-  const filtered = peaks.filter(p => p.name.toLowerCase().includes(q));
-  renderList(filtered);
-  placeMarkers(filtered);
+// ── Search (sidebar — registered + OSM) ──────────────────────────────────────
+let _searchTimer = null;
+let _searchMode  = false; // true = showing search results in the list
+
+function onSearchInput() {
+  const q = document.getElementById('search-input').value.trim();
+  clearTimeout(_searchTimer);
+
+  if (!q) { clearSearch(); return; }
+
+  // Instant filter of registered peaks
+  const local = peaks.filter(p => p.name.toLowerCase().includes(q.toLowerCase()));
+  renderSearchList(local, [], q, true);
+  _searchMode = true;
+
+  // Debounced OSM query
+  _searchTimer = setTimeout(() => doOsmSearch(q, local), 400);
+}
+
+async function doOsmSearch(q, local) {
+  // Show loading indicator in OSM section
+  const el = document.getElementById('peaks-list');
+  const loadingRow = `<div class="search-section-label">OpenStreetMap</div>
+    <div class="search-loading">Searching…</div>`;
+  const currentHTML = el.innerHTML;
+  el.innerHTML = currentHTML.replace(/<div class="search-section-label">OpenStreetMap<\/div>[\s\S]*$/, '') + loadingRow;
+
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?` +
+      `q=${encodeURIComponent(q)}&format=json&limit=8&extratags=1&namedetails=1`;
+    const r = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+    const data = r.ok ? await r.json() : [];
+
+    const osm = data.filter(d =>
+      d.type === 'peak' || d.type === 'hill' || d.type === 'mountain' ||
+      d.class === 'natural' || d.extratags?.natural === 'peak'
+    );
+
+    // Only show OSM results not already in local
+    const localNames = new Set(local.map(p => p.name.toLowerCase()));
+    const freshOsm   = osm.filter(d => {
+      const name = d.namedetails?.name || d.display_name.split(',')[0];
+      return !localNames.has(name.toLowerCase());
+    });
+
+    renderSearchList(local, freshOsm, q, false);
+  } catch {
+    renderSearchList(local, [], q, false);
+  }
+}
+
+function renderSearchList(local, osm, q, loading) {
+  const el = document.getElementById('peaks-list');
+  let html = '';
+
+  // ── Registered peaks section ──
+  if (local.length) {
+    html += `<div class="search-section-label">Registered peaks</div>`;
+    const colors = { done: '#27ae60', planned: '#4a9fd4', cancelled: '#c0392b', unplanned: '#7a9a7a' };
+    html += local.map(p => {
+      const type  = peakType(p);
+      const color = colors[type] || colors.unplanned;
+      const meta  = p.ascent_date
+        ? `<span style="color:#27ae60">✓ ${formatDate(p.ascent_date)}</span>`
+        : type === 'planned' ? `<span style="color:#4a9fd4">Planned</span>`
+        : `<span style="color:#7a9a7a">Unplanned</span>`;
+      return `<div class="peak-item${selectedPeakId === p.id ? ' selected' : ''}"
+                   id="item-${p.id}" onclick="selectPeak('${p.id}')"
+                   style="border-left-color:${color}">
+        ${p.photo_url
+          ? `<img class="peak-thumb" src="${p.photo_url}" alt="">`
+          : `<div class="peak-thumb-placeholder">⛰</div>`}
+        <div class="peak-info">
+          <div class="peak-name">${hlEsc(p.name, q)}</div>
+          <div class="peak-meta">${meta}</div>
+        </div>
+        <div class="peak-elevation" style="color:${color}">${p.altitude.toLocaleString()}m</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── OSM section ──
+  html += `<div class="search-section-label">OpenStreetMap</div>`;
+  if (loading) {
+    html += `<div class="search-loading">Searching…</div>`;
+  } else if (osm.length) {
+    html += osm.map((d, i) => {
+      const name    = d.namedetails?.name || d.display_name.split(',')[0];
+      const country = d.display_name.split(',').slice(-1)[0].trim();
+      const ele     = d.extratags?.ele ? parseInt(d.extratags.ele) : null;
+      return `<div class="osm-result-item" onclick="selectOsmResult(${i})">
+        <span class="osm-result-icon">🗻</span>
+        <div class="osm-result-info">
+          <div class="osm-result-name">${hlEsc(name, q)}</div>
+          <div class="osm-result-meta">${esc(country)}</div>
+        </div>
+        ${ele ? `<span class="osm-result-alt">${ele.toLocaleString()}m</span>` : ''}
+      </div>`;
+    }).join('');
+    // stash for click handler
+    window._osmResults = osm;
+  } else {
+    html += `<div class="search-loading" style="font-style:normal">No results in OpenStreetMap</div>`;
+  }
+
+  if (!local.length && !osm.length && !loading) {
+    el.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--muted);font-style:italic;font-size:0.82rem;">No peaks found for "${esc(q)}"</div>`;
+    return;
+  }
+
+  el.innerHTML = html;
+}
+
+function selectOsmResult(idx) {
+  const d = (window._osmResults || [])[idx];
+  if (!d) return;
+  const lat  = parseFloat(d.lat);
+  const lon  = parseFloat(d.lon);
+  const name = d.namedetails?.name || d.display_name.split(',')[0];
+  const ele  = d.extratags?.ele ? parseInt(d.extratags.ele) : null;
+  const country = d.display_name.split(',').slice(-1)[0].trim();
+
+  map.flyTo([lat, lon], 13, { duration: 1.2 });
+
+  setTimeout(() => {
+    L.popup({ maxWidth: 240 })
+      .setLatLng([lat, lon])
+      .setContent(`<div style="font-family:'DM Sans',sans-serif;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.05em;margin-bottom:0.2rem;">${esc(name)}</div>
+        <div style="font-size:0.72rem;color:#8ab080;">${ele ? `▲ ${ele.toLocaleString()} m · ` : ''}${esc(country)}</div>
+        ${isAdmin ? `<button onclick="startRegisterPeakMode()" style="margin-top:0.5rem;background:#7ec87e;color:#141a14;border:none;border-radius:5px;padding:0.3rem 0.7rem;font-size:0.75rem;font-weight:700;cursor:pointer;width:100%">+ Register this peak</button>` : ''}
+      </div>`)
+      .openOn(map);
+  }, 1300);
+}
+
+function clearSearch() {
+  document.getElementById('search-input').value = '';
+  _searchMode = false;
+  window._osmResults = [];
+  renderList(peaks);
+  placeMarkers(peaks);
+}
+
+// Escape + highlight: escape first, then wrap matched text
+function hlEsc(text, q) {
+  const escaped = esc(text);
+  if (!q) return escaped;
+  const re = new RegExp(`(${esc(q).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+  return escaped.replace(re, '<strong style="color:#7ec87e">$1</strong>');
 }
 
 // ── Plan ascent modal ─────────────────────────────────────────────────────────
@@ -1552,6 +1729,7 @@ async function deleteExpedition() {
     showToast('Error deleting expedition', true);
   }
 }
+
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 loadData();
