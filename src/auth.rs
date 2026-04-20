@@ -1,6 +1,7 @@
 use axum::{
     body::Body,
-    http::{Request, StatusCode},
+    extract::FromRequestParts,
+    http::{request::Parts, Request, StatusCode},
     middleware::Next,
     response::{IntoResponse, Redirect, Response},
     Json,
@@ -11,11 +12,15 @@ use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Claims {
-    sub: String,
-    exp: u64,
-    iat: u64,
+use crate::store::Store;
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Claims {
+    pub sub: String,      // user_id
+    pub username: String,
+    pub role: String,     // "admin" | "user"
+    pub exp: u64,
+    pub iat: u64,
 }
 
 #[derive(Debug, Deserialize)]
@@ -28,6 +33,41 @@ pub struct LoginRequest {
 pub struct LoginResponse {
     pub token: String,
     pub expires_in: u64,
+    pub user_id: String,
+    pub username: String,
+    pub role: String,
+}
+
+/// Authenticated user extracted from JWT — use as axum extractor in handlers.
+#[derive(Debug, Clone)]
+pub struct CurrentUser {
+    pub user_id: String,
+    pub username: String,
+    pub role: String,
+}
+
+impl CurrentUser {
+    pub fn is_admin(&self) -> bool {
+        self.role == "admin"
+    }
+}
+
+#[axum::async_trait]
+impl<S> FromRequestParts<S> for CurrentUser
+where
+    S: Send + Sync,
+{
+    type Rejection = StatusCode;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        let token = extract_token_from_parts(parts).ok_or(StatusCode::UNAUTHORIZED)?;
+        let claims = jwt_verify(&token).map_err(|_| StatusCode::UNAUTHORIZED)?;
+        Ok(CurrentUser {
+            user_id: claims.sub,
+            username: claims.username,
+            role: claims.role,
+        })
+    }
 }
 
 fn jwt_secret() -> String {
@@ -49,17 +89,23 @@ fn jwt_sign(message: &str) -> anyhow::Result<String> {
     Ok(URL_SAFE_NO_PAD.encode(mac.finalize().into_bytes()))
 }
 
-fn jwt_create(username: &str, duration_secs: u64) -> anyhow::Result<String> {
+pub fn jwt_create(user_id: &str, username: &str, role: &str, duration_secs: u64) -> anyhow::Result<String> {
     let header  = URL_SAFE_NO_PAD.encode(r#"{"alg":"HS256","typ":"JWT"}"#);
     let now     = now_secs();
-    let claims  = Claims { sub: username.to_string(), iat: now, exp: now + duration_secs };
+    let claims  = Claims {
+        sub: user_id.to_string(),
+        username: username.to_string(),
+        role: role.to_string(),
+        iat: now,
+        exp: now + duration_secs,
+    };
     let payload = URL_SAFE_NO_PAD.encode(serde_json::to_string(&claims)?);
     let message = format!("{}.{}", header, payload);
     let sig     = jwt_sign(&message)?;
     Ok(format!("{}.{}", message, sig))
 }
 
-fn jwt_verify(token: &str) -> Result<Claims, &'static str> {
+pub fn jwt_verify(token: &str) -> Result<Claims, &'static str> {
     let parts: Vec<&str> = token.splitn(3, '.').collect();
     if parts.len() != 3 { return Err("Malformed token"); }
 
@@ -75,8 +121,28 @@ fn jwt_verify(token: &str) -> Result<Claims, &'static str> {
 }
 
 /// Extract token from Authorization header or session cookie.
+pub fn extract_token_from_parts(parts: &Parts) -> Option<String> {
+    if let Some(auth) = parts.headers.get("Authorization") {
+        if let Ok(s) = auth.to_str() {
+            if let Some(t) = s.strip_prefix("Bearer ") {
+                return Some(t.to_string());
+            }
+        }
+    }
+    if let Some(cookie) = parts.headers.get("Cookie") {
+        if let Ok(s) = cookie.to_str() {
+            for part in s.split(';') {
+                let part = part.trim();
+                if let Some(val) = part.strip_prefix("pt_session=") {
+                    return Some(val.to_string());
+                }
+            }
+        }
+    }
+    None
+}
+
 fn extract_token(req: &Request<Body>) -> Option<String> {
-    // Authorization: Bearer <token>
     if let Some(auth) = req.headers().get("Authorization") {
         if let Ok(s) = auth.to_str() {
             if let Some(t) = s.strip_prefix("Bearer ") {
@@ -84,7 +150,6 @@ fn extract_token(req: &Request<Body>) -> Option<String> {
             }
         }
     }
-    // Cookie: pt_session=<token>
     if let Some(cookie) = req.headers().get("Cookie") {
         if let Ok(s) = cookie.to_str() {
             for part in s.split(';') {
@@ -98,76 +163,82 @@ fn extract_token(req: &Request<Body>) -> Option<String> {
     None
 }
 
-/// Constant-time string comparison to prevent timing attacks.
-fn ct_eq(a: &str, b: &str) -> bool {
-    if a.len() != b.len() { return false; }
-    a.bytes().zip(b.bytes()).fold(0u8, |acc, (x, y)| acc | (x ^ y)) == 0
-}
+pub async fn login(
+    axum::extract::State(store): axum::extract::State<Store>,
+    Json(body): Json<LoginRequest>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let username = body.username.clone();
 
-pub async fn login(Json(body): Json<LoginRequest>) -> Result<impl IntoResponse, StatusCode> {
-    let expected_user = std::env::var("ADMIN_USER").unwrap_or_default();
-    let expected_pass = std::env::var("ADMIN_PASS").unwrap_or_default();
+    let row = tokio::task::spawn_blocking(move || {
+        let conn = store.lock().unwrap();
+        conn.query_row(
+            "SELECT id, username, password_hash, role FROM users WHERE username = ?1",
+            rusqlite::params![username],
+            |r| Ok((
+                r.get::<_, String>(0)?,
+                r.get::<_, String>(1)?,
+                r.get::<_, String>(2)?,
+                r.get::<_, String>(3)?,
+            )),
+        ).ok()
+    }).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    // Reject outright if server is misconfigured (no password set)
-    if expected_pass.is_empty() {
-        tracing::error!("Login rejected: ADMIN_PASS is not set");
-        return Err(StatusCode::INTERNAL_SERVER_ERROR);
-    }
+    let (user_id, username, hash, role) = match row {
+        Some(r) => r,
+        None => {
+            tracing::warn!("Failed login: user '{}' not found", body.username);
+            return Err(StatusCode::UNAUTHORIZED);
+        }
+    };
 
-    let username_ok = ct_eq(&body.username, &expected_user);
-    let pass_ok     = ct_eq(&body.password, &expected_pass);
+    let password = body.password.clone();
+    let valid = tokio::task::spawn_blocking(move || {
+        bcrypt::verify(&password, &hash).unwrap_or(false)
+    }).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    if !username_ok || !pass_ok {
-        tracing::warn!("Failed login attempt for: {}", body.username);
+    if !valid {
+        tracing::warn!("Failed login: wrong password for '{}'", body.username);
         return Err(StatusCode::UNAUTHORIZED);
     }
 
     let duration_secs: u64 = std::env::var("JWT_EXPIRY_HOURS")
         .ok().and_then(|h| h.parse().ok()).unwrap_or(24) * 3600;
 
-    let token = jwt_create(&body.username, duration_secs).map_err(|e| {
+    let token = jwt_create(&user_id, &username, &role, duration_secs).map_err(|e| {
         tracing::error!("Error creating token: {}", e);
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
 
-    tracing::info!("Successful login: {}", body.username);
+    tracing::info!("Login: {}", username);
 
+    // Use Secure flag only when running in production (Fly.io sets FLY_APP_NAME automatically)
+    let secure = std::env::var("FLY_APP_NAME").is_ok();
     let cookie = format!(
-        "pt_session={}; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age={}",
-        token, duration_secs
+        "pt_session={}; HttpOnly;{} Path=/; SameSite=Lax; Max-Age={}",
+        token,
+        if secure { " Secure;" } else { "" },
+        duration_secs
     );
 
     Ok((
         [(axum::http::header::SET_COOKIE, cookie)],
-        Json(LoginResponse { token, expires_in: duration_secs }),
+        Json(LoginResponse { token, expires_in: duration_secs, user_id, username, role }),
     ))
 }
 
 pub async fn logout() -> impl IntoResponse {
-    let cookie = "pt_session=; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age=0";
+    let secure = std::env::var("FLY_APP_NAME").is_ok();
+    let cookie = format!(
+        "pt_session=; HttpOnly;{} Path=/; SameSite=Lax; Max-Age=0",
+        if secure { " Secure;" } else { "" }
+    );
     (
         [(axum::http::header::SET_COOKIE, cookie)],
         Redirect::to("/login.html"),
     )
 }
 
-/// Middleware for API write routes: requires valid token (header or cookie). Returns 401 if missing.
-pub async fn require_auth(req: Request<Body>, next: Next) -> Result<Response, StatusCode> {
-    let token = extract_token(&req)
-        .ok_or_else(|| { tracing::debug!("Request without token"); StatusCode::UNAUTHORIZED })?;
-
-    jwt_verify(&token).map_err(|e| {
-        tracing::warn!("Invalid token: {}", e);
-        StatusCode::UNAUTHORIZED
-    })?;
-
-    Ok(next.run(req).await)
-}
-
-/// Global middleware: protects every route.
-/// - /login.html, /api/auth/login and /api/auth/logout are always public.
-/// - Unauthenticated API requests → 401.
-/// - Unauthenticated page requests → redirect to /login.html.
+/// Global session middleware — protects all routes except login page and auth endpoints.
 pub async fn require_session(req: Request<Body>, next: Next) -> Response {
     let path = req.uri().path();
 

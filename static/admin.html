@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PeakTracker · Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rock:    #1a1a1a;
+    --granite: #252525;
+    --surface: #2d2d2d;
+    --border:  #3a3a3a;
+    --muted:   #7a8a9a;
+    --text:    #e8f0f8;
+    --accent:  #7ec87e;
+    --sky:     #4a9fd4;
+    --danger:  #e05050;
+    --sun:     #f5a623;
+    --radius:  8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--rock);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    height: 52px;
+    background: #111;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    gap: 1rem;
+  }
+
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.08em; color: var(--text); text-decoration: none; }
+  .logo span { color: var(--accent); }
+
+  nav { display: flex; gap: 0.25rem; margin-left: 0.5rem; }
+  .nav-link { padding: 0.35rem 0.8rem; border-radius: 6px; font-size: 0.8rem; color: var(--muted); text-decoration: none; transition: all 0.15s; border: 1px solid transparent; }
+  .nav-link:hover { color: var(--text); background: #ffffff10; }
+  .nav-link.active { color: var(--accent); background: #7ec87e18; border-color: #7ec87e30; }
+
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+  .user-badge { font-size: 0.75rem; color: var(--muted); background: #ffffff08; border: 1px solid #ffffff12; border-radius: 20px; padding: 0.25rem 0.7rem; }
+  .btn-logout { font-size: 0.72rem; color: var(--muted); background: transparent; border: 1px solid #ffffff18; border-radius: 20px; padding: 0.25rem 0.7rem; cursor: pointer; transition: color 0.15s, border-color 0.15s; }
+  .btn-logout:hover { color: var(--danger); border-color: var(--danger); }
+
+  .page { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 0.06em; margin-bottom: 0.3rem; }
+  .page-sub { font-size: 0.8rem; color: var(--muted); margin-bottom: 2rem; }
+
+  .section { background: var(--granite); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 0.06em; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 600; padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 0.65rem 0.75rem; font-size: 0.85rem; border-bottom: 1px solid #ffffff08; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #ffffff04; }
+
+  .role-badge {
+    font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 0.15rem 0.5rem; border-radius: 4px;
+  }
+  .role-admin { background: #f5a62320; color: var(--sun); border: 1px solid #f5a62340; }
+  .role-user  { background: #4a9fd420; color: var(--sky); border: 1px solid #4a9fd440; }
+
+  .btn { padding: 0.5rem 1rem; border-radius: 6px; border: none; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .btn-primary   { background: var(--accent); color: #141a14; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary { background: #ffffff10; color: var(--muted); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: #ffffff18; }
+  .btn-danger { background: transparent; color: var(--danger); border: 1px solid #e0505030; padding: 0.3rem 0.65rem; font-size: 0.76rem; }
+  .btn-danger:hover { background: #e0505015; border-color: #e0505060; }
+  .btn-sm { padding: 0.3rem 0.65rem; font-size: 0.76rem; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .field { margin-bottom: 0; }
+  .field label { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.3rem; font-weight: 600; }
+  .field input, .field select {
+    width: 100%; background: var(--rock); border: 1px solid var(--border); border-radius: 6px;
+    padding: 0.55rem 0.75rem; color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; outline: none; transition: border-color 0.15s;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .field select option { background: var(--surface); }
+  .form-actions { display: flex; gap: 0.6rem; margin-top: 1rem; }
+
+  .msg { font-size: 0.78rem; padding: 0.5rem 0.75rem; border-radius: 6px; margin-top: 0.75rem; display: none; }
+  .msg-ok  { background: #7ec87e18; border: 1px solid #7ec87e40; color: var(--accent); }
+  .msg-err { background: #e0505018; border: 1px solid #e0505040; color: var(--danger); }
+
+  .overlay {
+    position: fixed; inset: 0; background: #00000085; backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .overlay.visible { opacity: 1; pointer-events: all; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.8rem; width: 100%; max-width: 400px; transform: translateY(16px); transition: transform 0.2s; }
+  .overlay.visible .modal { transform: translateY(0); }
+  .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.06em; margin-bottom: 0.2rem; }
+  .modal-sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 1.2rem; }
+
+  .empty-state { text-align: center; color: var(--muted); font-style: italic; font-size: 0.82rem; padding: 1.5rem 0; }
+
+  .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--surface); border: 1px solid var(--accent); border-radius: 6px; padding: 0.65rem 1.2rem; font-size: 0.82rem; z-index: 3000; opacity: 0; transition: all 0.25s; pointer-events: none; white-space: nowrap; }
+  .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .access-denied { text-align: center; padding: 4rem 1rem; }
+  .access-denied h1 { font-size: 1.4rem; color: var(--danger); margin-bottom: 0.5rem; }
+  .access-denied p { color: var(--muted); font-size: 0.88rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">Peak<span>Tracker</span></a>
+  <nav>
+    <a class="nav-link" href="/map.html">Map</a>
+    <a class="nav-link" href="/calendar/">Calendar</a>
+    <a class="nav-link active" href="/admin.html">Admin</a>
+  </nav>
+  <div class="header-right">
+    <span class="user-badge" id="user-badge">—</span>
+    <button class="btn-logout" onclick="logout()">Sign out</button>
+  </div>
+</header>
+
+<div class="page" id="main-content" style="display:none">
+  <div class="page-title">Admin Panel</div>
+  <div class="page-sub">Manage users and application settings</div>
+
+  <!-- Users section -->
+  <div class="section">
+    <div class="section-title">
+      <span>Users</span>
+      <button class="btn btn-primary btn-sm" onclick="openCreateModal()">+ New user</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Display name</th>
+          <th>Role</th>
+          <th>Created</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="users-tbody">
+        <tr><td colspan="5" class="empty-state">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="access-denied" id="access-denied" style="display:none">
+  <h1>Access denied</h1>
+  <p>This page requires admin privileges.</p>
+</div>
+
+<!-- Modal: Create user -->
+<div class="overlay" id="overlay-create" onclick="closeCreateModal(event)">
+  <div class="modal">
+    <div class="modal-title">New user</div>
+    <div class="modal-sub">The user will be able to log in immediately.</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Username *</label>
+        <input type="text" id="new-username" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Display name</label>
+        <input type="text" id="new-displayname" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Password * (min 6)</label>
+        <input type="password" id="new-password" autocomplete="new-password">
+      </div>
+      <div class="field">
+        <label>Role</label>
+        <select id="new-role">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+    </div>
+    <div class="msg" id="create-msg"></div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+      <button class="btn btn-primary" id="btn-create" onclick="createUser()">Create user</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Change password -->
+<div class="overlay" id="overlay-password" onclick="closePasswordModal(event)">
+  <div class="modal">
+    <div class="modal-title">Change password</div>
+    <div class="modal-sub" id="pw-modal-sub"></div>
+    <div class="field">
+      <label>New password * (min 6)</label>
+      <input type="password" id="new-pw" autocomplete="new-password">
+    </div>
+    <div class="field" style="margin-top:0.75rem">
+      <label>Confirm password</label>
+      <input type="password" id="confirm-pw" autocomplete="new-password">
+    </div>
+    <div class="msg" id="pw-msg"></div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
+      <button class="btn btn-primary" id="btn-pw-save" onclick="savePassword()">Save password</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirm delete user -->
+<div class="overlay" id="overlay-delete" onclick="closeDeleteModal(event)">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-title">Delete user</div>
+    <div class="modal-sub" id="del-modal-sub"></div>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.2rem;">This action is permanent and cannot be undone. All their event RSVPs will be removed.</p>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger" style="flex:1" id="btn-confirm-del" onclick="confirmDelete()">Delete user</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Auth check ────────────────────────────────────────────────────────────────
+function decodeJwtPayload(t) {
+  try { return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }
+  catch { return null; }
+}
+
+const _token  = sessionStorage.getItem('pt_token');
+const _claims = _token ? decodeJwtPayload(_token) : null;
+
+if (!_claims || _claims.role !== 'admin') {
+  document.getElementById('main-content').style.display = 'none';
+  document.getElementById('access-denied').style.display = 'block';
+} else {
+  document.getElementById('main-content').style.display = 'block';
+  document.getElementById('user-badge').textContent = _claims.username + ' (admin)';
+  loadUsers();
+}
+
+async function logout() {
+  sessionStorage.removeItem('pt_token');
+  await fetch('/api/auth/logout', { method: 'POST' });
+  window.location.href = '/login.html';
+}
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+let users = [];
+let currentUserId = _claims?.sub;
+
+async function loadUsers() {
+  try {
+    const r = await fetch('/api/users');
+    if (!r.ok) throw new Error();
+    users = await r.json();
+    renderUsers();
+  } catch {
+    document.getElementById('users-tbody').innerHTML =
+      '<tr><td colspan="5" class="empty-state">Error loading users</td></tr>';
+  }
+}
+
+function renderUsers() {
+  const tbody = document.getElementById('users-tbody');
+  if (!users.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No users found</td></tr>';
+    return;
+  }
+  tbody.innerHTML = users.map(u => {
+    const isMe = u.id === currentUserId;
+    const created = u.created_at.split('T')[0];
+    return `<tr>
+      <td><strong>${esc(u.username)}</strong>${isMe ? ' <span style="font-size:0.65rem;color:var(--muted)">(you)</span>' : ''}</td>
+      <td style="color:var(--muted)">${u.display_name ? esc(u.display_name) : '—'}</td>
+      <td><span class="role-badge role-${u.role}">${u.role}</span></td>
+      <td style="color:var(--muted);font-size:0.78rem">${created}</td>
+      <td style="text-align:right">
+        <button class="btn btn-secondary btn-sm" style="margin-right:0.4rem" onclick="openPasswordModal('${u.id}','${esc(u.username)}')">Password</button>
+        ${!isMe ? `<button class="btn btn-danger" onclick="openDeleteModal('${u.id}','${esc(u.username)}')">Delete</button>` : ''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Create user modal ─────────────────────────────────────────────────────────
+function openCreateModal() {
+  document.getElementById('new-username').value = '';
+  document.getElementById('new-displayname').value = '';
+  document.getElementById('new-password').value = '';
+  document.getElementById('new-role').value = 'user';
+  showMsg('create-msg', '', '');
+  document.getElementById('overlay-create').classList.add('visible');
+  setTimeout(() => document.getElementById('new-username').focus(), 80);
+}
+
+function closeCreateModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('overlay-create').classList.remove('visible');
+}
+
+async function createUser() {
+  const username    = document.getElementById('new-username').value.trim();
+  const displayName = document.getElementById('new-displayname').value.trim();
+  const password    = document.getElementById('new-password').value;
+  const role        = document.getElementById('new-role').value;
+
+  if (!username) { document.getElementById('new-username').focus(); return; }
+  if (password.length < 6) { showMsg('create-msg', 'Password must be at least 6 characters', 'err'); return; }
+
+  const btn = document.getElementById('btn-create');
+  btn.disabled = true; btn.textContent = 'Creating…';
+
+  try {
+    const r = await fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, display_name: displayName || null, role }),
+    });
+    if (r.status === 409) { showMsg('create-msg', 'Username already taken', 'err'); return; }
+    if (!r.ok) throw new Error();
+    closeCreateModal();
+    await loadUsers();
+    showToast('User "' + username + '" created');
+  } catch {
+    showMsg('create-msg', 'Error creating user', 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create user';
+  }
+}
+
+// ── Change password modal ─────────────────────────────────────────────────────
+let pwTargetId = null;
+
+function openPasswordModal(userId, username) {
+  pwTargetId = userId;
+  document.getElementById('pw-modal-sub').textContent = 'Changing password for: ' + username;
+  document.getElementById('new-pw').value = '';
+  document.getElementById('confirm-pw').value = '';
+  showMsg('pw-msg', '', '');
+  document.getElementById('overlay-password').classList.add('visible');
+  setTimeout(() => document.getElementById('new-pw').focus(), 80);
+}
+
+function closePasswordModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('overlay-password').classList.remove('visible');
+  pwTargetId = null;
+}
+
+async function savePassword() {
+  const newPw    = document.getElementById('new-pw').value;
+  const confirmPw = document.getElementById('confirm-pw').value;
+
+  if (newPw.length < 6) { showMsg('pw-msg', 'Password must be at least 6 characters', 'err'); return; }
+  if (newPw !== confirmPw) { showMsg('pw-msg', 'Passwords do not match', 'err'); return; }
+
+  const btn = document.getElementById('btn-pw-save');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  try {
+    const r = await fetch(`/api/users/${pwTargetId}/password`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ new_password: newPw }),
+    });
+    if (!r.ok) throw new Error();
+    closePasswordModal();
+    showToast('Password updated');
+  } catch {
+    showMsg('pw-msg', 'Error updating password', 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save password';
+  }
+}
+
+// ── Delete user modal ─────────────────────────────────────────────────────────
+let delTargetId = null;
+
+function openDeleteModal(userId, username) {
+  delTargetId = userId;
+  document.getElementById('del-modal-sub').textContent = 'Delete user "' + username + '"?';
+  document.getElementById('overlay-delete').classList.add('visible');
+}
+
+function closeDeleteModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('overlay-delete').classList.remove('visible');
+  delTargetId = null;
+}
+
+async function confirmDelete() {
+  if (!delTargetId) return;
+  const btn = document.getElementById('btn-confirm-del');
+  btn.disabled = true; btn.textContent = 'Deleting…';
+  try {
+    const r = await fetch(`/api/users/${delTargetId}`, { method: 'DELETE' });
+    if (!r.ok) throw new Error();
+    closeDeleteModal();
+    await loadUsers();
+    showToast('User deleted');
+  } catch {
+    showToast('Error deleting user', true);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Delete user';
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg' + (type === 'ok' ? ' msg-ok' : type === 'err' ? ' msg-err' : '');
+  el.style.display = text ? 'block' : 'none';
+}
+
+function showToast(msg, error = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = error ? '#e05050' : '#7ec87e';
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 3500);
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeCreateModal(); closePasswordModal(); closeDeleteModal();
+  }
+});
+</script>
+</body>
+</html>

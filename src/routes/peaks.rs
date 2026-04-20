@@ -8,6 +8,7 @@ use std::path::PathBuf;
 use uuid::Uuid;
 
 use crate::{
+    auth::CurrentUser,
     models::{CreatePeak, Peak},
     store::Store,
 };
@@ -29,15 +30,14 @@ fn row_to_peak(row: &rusqlite::Row) -> rusqlite::Result<Peak> {
 }
 
 pub async fn list_peaks(State(store): State<Store>) -> Result<Json<Vec<Peak>>, StatusCode> {
-    let store = store.clone();
     let peaks = tokio::task::spawn_blocking(move || {
         let conn = store.lock().unwrap();
         let mut stmt = conn.prepare(
             "SELECT id,name,latitude,longitude,altitude,ascent_date,notes,photo_url,difficulty,duration_hours,created_at \
              FROM peaks ORDER BY ascent_date DESC, created_at DESC"
-        ).map_err(|e| { tracing::error!("Error prepare: {}", e); StatusCode::INTERNAL_SERVER_ERROR })?;
+        ).map_err(|e| { tracing::error!("prepare: {}", e); StatusCode::INTERNAL_SERVER_ERROR })?;
         let peaks: Vec<Peak> = stmt.query_map([], row_to_peak)
-            .map_err(|e| { tracing::error!("Error query: {}", e); StatusCode::INTERNAL_SERVER_ERROR })?
+            .map_err(|e| { tracing::error!("query: {}", e); StatusCode::INTERNAL_SERVER_ERROR })?
             .filter_map(|r| r.ok())
             .collect();
         Ok::<Vec<Peak>, StatusCode>(peaks)
@@ -49,7 +49,6 @@ pub async fn get_peak(
     State(store): State<Store>,
     Path(id): Path<String>,
 ) -> Result<Json<Peak>, StatusCode> {
-    let store = store.clone();
     let peak = tokio::task::spawn_blocking(move || {
         let conn = store.lock().unwrap();
         conn.query_row(
@@ -64,9 +63,12 @@ pub async fn get_peak(
 
 pub async fn create_peak(
     State(store): State<Store>,
+    current: CurrentUser,
     Json(body): Json<CreatePeak>,
 ) -> Result<Json<Peak>, StatusCode> {
-    let id = Uuid::new_v4().to_string();
+    if !current.is_admin() { return Err(StatusCode::FORBIDDEN); }
+
+    let id  = Uuid::new_v4().to_string();
     let now = Utc::now().to_rfc3339();
     let id2 = id.clone();
     let store2 = store.clone();
@@ -80,7 +82,7 @@ pub async fn create_peak(
                 id2, body.name, body.latitude, body.longitude, body.altitude,
                 body.ascent_date, body.notes, body.difficulty, body.duration_hours, now
             ],
-        ).map_err(|e| { tracing::error!("Error inserting peak: {}", e); StatusCode::INTERNAL_SERVER_ERROR })
+        ).map_err(|e| { tracing::error!("insert peak: {}", e); StatusCode::INTERNAL_SERVER_ERROR })
     }).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)??;
 
     get_peak(State(store), Path(id)).await
@@ -88,12 +90,13 @@ pub async fn create_peak(
 
 pub async fn delete_peak(
     State(store): State<Store>,
+    current: CurrentUser,
     Path(id): Path<String>,
 ) -> Result<StatusCode, StatusCode> {
-    let store = store.clone();
+    if !current.is_admin() { return Err(StatusCode::FORBIDDEN); }
+
     tokio::task::spawn_blocking(move || {
         let conn = store.lock().unwrap();
-        // Delete photo file if it exists
         if let Ok(photo_url) = conn.query_row(
             "SELECT photo_url FROM peaks WHERE id=?1", rusqlite::params![id],
             |r| r.get::<_, Option<String>>(0)
@@ -111,9 +114,12 @@ pub async fn delete_peak(
 
 pub async fn upload_photo(
     State(store): State<Store>,
+    current: CurrentUser,
     Path(peak_id): Path<String>,
     mut multipart: Multipart,
 ) -> Result<Json<serde_json::Value>, StatusCode> {
+    if !current.is_admin() { return Err(StatusCode::FORBIDDEN); }
+
     while let Some(field) = multipart.next_field().await.map_err(|_| StatusCode::BAD_REQUEST)? {
         if field.name() == Some("foto") {
             let bytes = field.bytes().await.map_err(|_| StatusCode::BAD_REQUEST)?;
@@ -124,17 +130,17 @@ pub async fn upload_photo(
             })?;
             let resized = img.resize(1200, 1200, image::imageops::FilterType::Lanczos3);
 
-            let filename = format!("{}.jpg", Uuid::new_v4());
-            let dir = PathBuf::from("uploads");
+            let filename  = format!("{}.jpg", Uuid::new_v4());
+            let dir       = PathBuf::from("uploads");
             std::fs::create_dir_all(&dir).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
             resized.save(dir.join(&filename)).map_err(|e| {
                 tracing::error!("Error saving image: {}", e); StatusCode::INTERNAL_SERVER_ERROR
             })?;
 
             let photo_url = format!("/uploads/{}", filename);
-            let url2 = photo_url.clone();
-            let id2 = peak_id.clone();
-            let store2 = store.clone();
+            let url2      = photo_url.clone();
+            let id2       = peak_id.clone();
+            let store2    = store.clone();
 
             tokio::task::spawn_blocking(move || {
                 let conn = store2.lock().unwrap();

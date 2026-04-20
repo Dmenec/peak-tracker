@@ -3,895 +3,417 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PeakTracker · My Peaks</title>
+<title>PeakTracker · Calendar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
 <style>
-/* ── Design tokens ──────────────────────────────────────────────────────── */
 :root {
-  /* Palette */
-  --rock:       #0f1510;
-  --granite:    #1a2018;
-  --cliff:      #232d20;
-  --slate:      #2e3c2a;
-  --fog:        #6a9060;
-  --mist:       #8ab080;
-  --snow:       #e8f5e0;
-  --summit:     #f0fae8;
-  --sun:        #f5a623;
-  --sky:        #4a9fd4;
-  --ice:        #a8daf8;
-  --moss:       #4aaa5a;
-  --moss-dark:  #27ae60;
-  --pine:       #2a6a3a;
-  --cancel:     #7f8c8d;
-  --danger:     #c0392b;
-  --radius:     10px;
-  --radius-sm:  6px;
+  --rock:    #0f1510;
+  --granite: #1a2018;
+  --cliff:   #232d20;
+  --slate:   #2e3c2a;
+  --fog:     #5a8055;
+  --muted:   #8ab080;
+  --snow:    #e8f5e0;
+  --sun:     #f5a623;
+  --sky:     #4a9fd4;
+  --moss:    #4aaa5a;
+  --done:    #27ae60;
+  --danger:  #c0392b;
+  --radius:  10px;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'DM Sans', sans-serif; background: var(--rock); color: var(--snow); min-height: 100vh; }
 
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--rock);
-  color: var(--snow);
-  min-height: 100vh;
+/* ── Header ── */
+header {
+  height: 52px; background: #0a100a; border-bottom: 1px solid #2a3a2a;
+  display: flex; align-items: center; padding: 0 1.2rem; gap: 1rem; position: sticky; top: 0; z-index: 100;
 }
-
-/* ══════════════════════════════════════════════════════════════════════════
-   HEADER — Mountain hero section
-══════════════════════════════════════════════════════════════════════════ */
-.hero {
-  position: relative;
-  background: linear-gradient(180deg,
-    #060d08 0%,
-    #0a1a10 30%,
-    #0d2015 60%,
-    #0a180e 100%
-  );
-  padding: 2.5rem 2rem 4.5rem;
-  overflow: hidden;
-}
-
-/* Stars */
-.hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(1px 1px at 10% 15%, #fff 0%, transparent 100%),
-    radial-gradient(1px 1px at 25% 8%,  #fff 0%, transparent 100%),
-    radial-gradient(1px 1px at 40% 20%, #fff 0%, transparent 100%),
-    radial-gradient(1px 1px at 55% 5%,  #fff 0%, transparent 100%),
-    radial-gradient(1px 1px at 70% 12%, #fff 0%, transparent 100%),
-    radial-gradient(1px 1px at 83% 7%,  #fff 0%, transparent 100%),
-    radial-gradient(1px 1px at 92% 18%, #fff 0%, transparent 100%),
-    radial-gradient(1px 1px at 18% 35%, #ffffffaa 0%, transparent 100%),
-    radial-gradient(1px 1px at 62% 28%, #ffffffaa 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 48% 10%, #fff 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 77% 25%, #fff 0%, transparent 100%);
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-/* Moon */
-.hero::after {
-  content: '';
-  position: absolute;
-  top: 1.2rem; right: 3rem;
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #fff8e0, #f0e8a0);
-  box-shadow: 0 0 12px #f5e07060, 0 0 30px #f5e07030;
-  pointer-events: none;
-}
-
-/* Mountain silhouette layers */
-.mountains {
-  position: absolute;
-  bottom: 0; left: 0;
-  width: 100%; height: 80px;
-  pointer-events: none;
-}
-
-.hero-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 1;
-}
-
-/* Nav */
-.top-nav {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.logo {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1rem;
-  letter-spacing: 0.1em;
-  color: var(--mist);
-  text-decoration: none;
-  opacity: 0.75;
-}
-.logo span { color: var(--moss); }
-
-.nav-sep { color: #ffffff20; font-size: 0.9rem; }
-
-.nav-link {
-  padding: 0.25rem 0.65rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.75rem;
-  color: var(--mist);
-  text-decoration: none;
-  border: 1px solid transparent;
-  transition: all 0.15s;
-}
+.logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.08em; color: var(--snow); text-decoration: none; flex-shrink: 0; }
+.logo span { color: #7ec87e; }
+nav { display: flex; gap: 0.25rem; }
+.nav-link { padding: 0.35rem 0.8rem; border-radius: 6px; font-size: 0.8rem; color: var(--muted); text-decoration: none; transition: all 0.15s; border: 1px solid transparent; }
 .nav-link:hover { color: var(--snow); background: #ffffff10; }
-.nav-link.active { color: var(--moss); background: #4aaa5a18; border-color: #4aaa5a30; }
+.nav-link.active { color: #7ec87e; background: #7ec87e18; border-color: #7ec87e30; }
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+.user-badge { font-size: 0.72rem; color: var(--muted); }
+.btn-logout { font-size: 0.72rem; color: var(--muted); background: transparent; border: 1px solid #ffffff18; border-radius: 20px; padding: 0.25rem 0.7rem; cursor: pointer; transition: color 0.15s, border-color 0.15s; }
+.btn-logout:hover { color: var(--danger); border-color: var(--danger); }
 
-.btn-logout {
-  font-size: 0.72rem;
-  color: var(--mist);
-  background: transparent;
-  border: 1px solid #ffffff18;
-  border-radius: var(--radius-sm);
-  padding: 0.25rem 0.65rem;
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-  margin-left: auto;
+/* ── Page ── */
+.page { max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+.toolbar {
+  display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap;
 }
-.btn-logout:hover { color: #e05050; border-color: #e05050; }
-
-/* Title */
-.hero-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(3.5rem, 9vw, 6.5rem);
-  letter-spacing: 0.04em;
-  line-height: 0.9;
-  background: linear-gradient(140deg, #ffffff 0%, #d0f0d0 40%, #a0e0a0 75%, #80d080 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 0.4rem;
+.toolbar-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 0.06em; flex: 1; }
+.filter-pills { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.pill {
+  padding: 0.3rem 0.75rem; border-radius: 20px; font-size: 0.72rem; font-weight: 600;
+  border: 1px solid #ffffff20; background: transparent; color: var(--muted);
+  cursor: pointer; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.04em;
 }
+.pill:hover { background: #ffffff10; color: var(--snow); }
+.pill.active { background: #7ec87e20; color: #7ec87e; border-color: #7ec87e50; }
+.pill-open      { }
+.pill-full      { }
+.pill-completed { }
+.pill-cancelled { }
+.pill.active.pill-open      { background: #4a9fd420; color: var(--sky); border-color: #4a9fd450; }
+.pill.active.pill-completed { background: #27ae6020; color: #7ec87e; border-color: #27ae6050; }
+.pill.active.pill-cancelled { background: #c0392b20; color: #e87e7e; border-color: #c0392b50; }
 
-.hero-sub {
-  font-size: 0.8rem;
-  color: var(--fog);
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-weight: 300;
-  margin-bottom: 1.6rem;
+.btn-new-event {
+  background: #7ec87e; color: #141a14; border: none; border-radius: 8px;
+  padding: 0.55rem 1.1rem; font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+  font-weight: 700; cursor: pointer; transition: opacity 0.15s; white-space: nowrap;
 }
+.btn-new-event:hover { opacity: 0.85; }
 
-/* Stats strip */
-.stats-strip {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
+/* ── Events grid ── */
+.events-grid { display: flex; flex-direction: column; gap: 0.75rem; }
 
-.stat-pill {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: #ffffff08;
-  border: 1px solid #ffffff12;
-  border-radius: 30px;
-  padding: 0.4rem 1rem;
-  font-size: 0.78rem;
-  color: var(--mist);
-  transition: border-color 0.2s;
-}
-
-.stat-pill:hover { border-color: #ffffff25; }
-
-.stat-pill .num {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.4rem;
-  line-height: 1;
-  letter-spacing: 0.03em;
-}
-
-.stat-pill.s-plans     { border-color: #4a9fd430; }
-.stat-pill.s-plans .num     { color: var(--sky); }
-.stat-pill.s-ascents   { border-color: #4aaa5a40; }
-.stat-pill.s-ascents .num   { color: var(--moss); }
-.stat-pill.s-hours     .num { color: var(--sun); }
-
-/* ══════════════════════════════════════════════════════════════════════════
-   MONTH NAVIGATION
-══════════════════════════════════════════════════════════════════════════ */
-.month-nav {
-  max-width: 1100px;
-  margin: 2rem auto 0;
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  padding: 0 2rem;
-}
-
-.nav-btn {
-  background: #ffffff0a;
-  border: 1px solid #ffffff18;
-  color: var(--snow);
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 1.2rem;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
-}
-.nav-btn:hover { background: #ffffff15; border-color: var(--moss); color: var(--moss); }
-
-.month-label {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 2rem;
-  letter-spacing: 0.1em;
-  color: var(--summit);
-  min-width: 260px;
-  text-align: center;
-}
-
-.today-btn {
-  background: transparent;
-  border: 1px solid #ffffff18;
-  color: var(--fog);
-  padding: 0.3rem 0.8rem;
-  border-radius: var(--radius-sm);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.72rem;
-  cursor: pointer;
-  transition: all 0.15s;
-  margin-left: auto;
-}
-.today-btn:hover { border-color: var(--moss); color: var(--moss); }
-
-/* ══════════════════════════════════════════════════════════════════════════
-   CALENDAR GRID
-══════════════════════════════════════════════════════════════════════════ */
-.calendar-wrap {
-  max-width: 1100px;
-  margin: 1.2rem auto 0;
-  padding: 0 2rem;
-}
-
-.week-header {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 3px;
-  margin-bottom: 3px;
-}
-
-.day-name {
-  text-align: center;
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--fog);
-  padding: 0.3rem 0;
-  font-weight: 600;
-}
-
-.days-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 3px;
-}
-
-/* Individual day cell */
-.day-cell {
-  background: var(--granite);
-  border-radius: var(--radius-sm);
-  min-height: 110px;
-  padding: 0.45rem;
-  border: 1px solid #ffffff06;
-  cursor: pointer;
-  position: relative;
-  transition: border-color 0.15s, background 0.15s;
-}
-
-.day-cell:hover         { border-color: #4aaa5a50; background: #1e271c; }
-.day-cell.empty         { background: #131810; border-color: transparent; cursor: default; }
-.day-cell.empty:hover   { background: #131810; border-color: transparent; }
-.day-cell.past          { opacity: 0.4; }
-.day-cell.past:hover    { border-color: #ffffff15; }
-
-.day-cell.today {
-  border-color: var(--sun) !important;
-  background: #2a1e00;
-}
-.day-cell.today:hover { background: #2e2400; }
-
-/* Day number */
-.day-num {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--fog);
-  line-height: 1;
-  margin-bottom: 0.3rem;
-}
-.day-cell.today .day-num { color: var(--sun); }
-
-/* "+" hint on hover */
-.add-hint {
-  position: absolute;
-  top: 0.3rem; right: 0.35rem;
-  font-size: 0.7rem;
-  color: transparent;
-  transition: color 0.15s;
-  pointer-events: none;
-}
-.day-cell:not(.empty):not(.past):hover .add-hint { color: var(--moss); }
-
-/* Event chips */
-.chip {
-  font-size: 0.6rem;
-  padding: 2px 5px;
-  border-radius: 3px;
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.15s;
-  letter-spacing: 0.01em;
-}
-.chip:hover { opacity: 0.75; }
-
-/* Plan chip */
-.chip.plan {
-  background: #0d1e35;
-  color: var(--ice);
-  border-left: 2px solid var(--sky);
-}
-/* Ascension chip */
-.chip.ascension {
-  background: #0a2012;
-  color: #80dd80;
-  border-left: 2px solid var(--moss-dark);
-}
-/* Cancelled chip */
-.chip.cancelled {
-  background: #1e1e1e;
-  color: #666;
-  border-left: 2px solid #444;
-  text-decoration: line-through;
-}
-
-.chip-more {
-  font-size: 0.56rem;
-  color: var(--fog);
-  padding-top: 1px;
-  cursor: pointer;
-}
-
-/* ══════════════════════════════════════════════════════════════════════════
-   BOTTOM PANELS — Plans + Ascensions side by side
-══════════════════════════════════════════════════════════════════════════ */
-.bottom-panels {
-  max-width: 1100px;
-  margin: 2.5rem auto 3rem;
-  padding: 0 2rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-
-.panel {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #ffffff0c;
-}
-
-.panel-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.3rem;
-  letter-spacing: 0.1em;
-}
-
-.panel-plans     .panel-title { color: var(--sky); }
-.panel-ascents   .panel-title { color: var(--moss); }
-
-.panel-count {
-  font-size: 0.7rem;
-  background: #ffffff0a;
-  border: 1px solid #ffffff12;
-  border-radius: 20px;
-  padding: 0.15rem 0.55rem;
-  color: var(--fog);
-}
-
-/* Event cards */
 .event-card {
-  background: var(--granite);
-  border: 1px solid #ffffff0a;
-  border-radius: var(--radius);
-  padding: 0.85rem 1rem;
-  cursor: pointer;
-  transition: border-color 0.15s, transform 0.15s;
+  background: var(--granite); border: 1px solid #2a3a2a; border-radius: 12px;
+  padding: 1rem 1.2rem; cursor: pointer; transition: border-color 0.15s, background 0.12s;
+  display: flex; gap: 1rem; align-items: flex-start;
 }
-.event-card:hover { transform: translateY(-2px); }
+.event-card:hover { border-color: #4a7a4a; background: #1e281e; }
+.event-card.status-completed { border-left: 3px solid var(--done); }
+.event-card.status-open      { border-left: 3px solid var(--sky); }
+.event-card.status-full      { border-left: 3px solid var(--sun); }
+.event-card.status-cancelled { border-left: 3px solid var(--danger); opacity: 0.65; }
 
-.panel-plans   .event-card { border-left: 3px solid var(--sky); }
-.panel-plans   .event-card:hover { border-color: var(--sky); }
-.panel-ascents .event-card { border-left: 3px solid var(--moss-dark); background: #141e12; }
-.panel-ascents .event-card:hover { border-color: var(--moss-dark); }
-
-.card-peak { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.2rem; }
-.card-date { font-size: 0.74rem; color: var(--fog); margin-bottom: 0.2rem; }
-.card-meta { font-size: 0.72rem; color: var(--fog); }
-
-.card-quick-done {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  margin-top: 0.5rem;
-  padding: 0.28rem 0.65rem;
-  background: #0a2012;
-  color: #6dd06d;
-  border: 1px solid #27ae6035;
-  border-radius: 4px;
-  font-size: 0.68rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
+.event-date-block {
+  min-width: 52px; text-align: center; flex-shrink: 0; padding-top: 0.1rem;
 }
-.card-quick-done:hover { background: #142a1a; }
+.event-day   { font-family: 'Bebas Neue', sans-serif; font-size: 1.7rem; line-height: 1; color: var(--snow); }
+.event-month { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
 
-.ascent-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-top: 0.4rem;
-  font-size: 0.7rem;
-  color: var(--moss);
+.event-body { flex: 1; min-width: 0; }
+.event-header { display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.35rem; flex-wrap: wrap; }
+.event-name { font-size: 1rem; font-weight: 700; }
+.event-status-badge {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 0.15rem 0.45rem; border-radius: 4px; flex-shrink: 0; margin-top: 0.15rem;
 }
+.badge-open      { background: #4a9fd420; color: var(--sky); border: 1px solid #4a9fd440; }
+.badge-full      { background: #f5a62320; color: var(--sun); border: 1px solid #f5a62340; }
+.badge-completed { background: #27ae6020; color: #7ec87e; border: 1px solid #27ae6040; }
+.badge-cancelled { background: #c0392b20; color: #e87e7e; border: 1px solid #c0392b40; }
 
-.empty-panel {
-  text-align: center;
-  padding: 2rem 1rem;
-  color: var(--fog);
-  font-size: 0.82rem;
-  border: 1px dashed #ffffff12;
-  border-radius: var(--radius);
+.event-meta {
+  display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;
+  font-size: 0.73rem; color: var(--muted); margin-bottom: 0.35rem;
 }
+.meta-chip { display: flex; align-items: center; gap: 0.25rem; }
+.event-notes { font-size: 0.78rem; color: #6a9a6a; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   MODALS
-══════════════════════════════════════════════════════════════════════════ */
+.event-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.4rem; flex-shrink: 0; }
+.participants-badge {
+  background: #2e3c2a; border: 1px solid #3a5a3a; border-radius: 20px;
+  padding: 0.2rem 0.6rem; font-size: 0.7rem; color: var(--muted);
+  white-space: nowrap;
+}
+.participants-badge strong { color: #7ec87e; }
+.rsvp-pill {
+  font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  padding: 0.15rem 0.5rem; border-radius: 4px;
+}
+.rsvp-going     { background: #27ae6025; color: #7ec87e; border: 1px solid #27ae6045; }
+.rsvp-maybe     { background: #f5a62325; color: var(--sun); border: 1px solid #f5a62345; }
+.rsvp-not_going { background: #c0392b25; color: #e87e7e; border: 1px solid #c0392b45; }
+
+.empty-state {
+  text-align: center; padding: 4rem 1rem; color: var(--muted);
+}
+.empty-state p { font-size: 0.88rem; font-style: italic; }
+
+/* ── Activity type icons ── */
+.act-icon { font-size: 0.95rem; }
+
+/* ── Overlay & Modal ── */
 .overlay {
-  position: fixed; inset: 0;
-  background: #000000a0;
-  backdrop-filter: blur(5px);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 100; padding: 1rem;
+  position: fixed; inset: 0; background: #00000088; backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem;
   opacity: 0; pointer-events: none; transition: opacity 0.2s;
 }
 .overlay.visible { opacity: 1; pointer-events: all; }
-
 .modal {
-  background: var(--cliff);
-  border: 1px solid #ffffff18;
-  border-radius: 16px;
-  padding: 2rem;
-  width: 100%; max-width: 500px;
-  transform: translateY(24px); transition: transform 0.22s;
-  box-shadow: 0 24px 64px #00000080;
-  max-height: 92vh; overflow-y: auto;
+  background: var(--granite); border: 1px solid #4a7a4a; border-radius: 14px;
+  padding: 1.8rem; width: 100%; max-width: 520px;
+  transform: translateY(16px); transition: transform 0.2s;
+  max-height: 90vh; overflow-y: auto;
 }
 .overlay.visible .modal { transform: translateY(0); }
+.modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 0.06em; margin-bottom: 0.25rem; }
+.modal-sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 1.3rem; }
 
-/* Type selector (shown before the form) */
-.type-selector {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.type-btn {
-  padding: 1rem;
-  border-radius: var(--radius);
-  border: 2px solid #ffffff12;
-  background: transparent;
-  color: var(--fog);
-  cursor: pointer;
-  transition: all 0.15s;
-  text-align: center;
-  font-family: 'DM Sans', sans-serif;
-}
-
-.type-btn:hover { border-color: #ffffff25; background: #ffffff08; }
-
-.type-btn.selected-plan {
-  border-color: var(--sky);
-  background: #0d1e35;
-  color: var(--ice);
-}
-.type-btn.selected-ascension {
-  border-color: var(--moss-dark);
-  background: #0a2012;
-  color: #80dd80;
-}
-
-.type-btn-icon { font-size: 1.6rem; display: block; margin-bottom: 0.3rem; }
-.type-btn-label {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 0.95rem;
-  letter-spacing: 0.08em;
-  display: block;
-}
-.type-btn-desc { font-size: 0.65rem; opacity: 0.7; margin-top: 0.15rem; display: block; }
-
-.modal-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.7rem;
-  letter-spacing: 0.07em;
-  color: var(--summit);
-  margin-bottom: 0.2rem;
-}
-.modal-date {
-  font-size: 0.8rem;
-  color: var(--fog);
-  margin-bottom: 1.4rem;
-}
-
-.field { margin-bottom: 0.9rem; }
-.field label {
-  display: block;
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--mist);
-  margin-bottom: 0.35rem;
-  font-weight: 600;
-}
+.field { margin-bottom: 0.85rem; }
+.field label { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.3rem; font-weight: 600; }
 .field input, .field textarea, .field select {
-  width: 100%;
-  background: #0f1810;
-  border: 1px solid #ffffff15;
-  border-radius: var(--radius-sm);
-  padding: 0.6rem 0.8rem;
-  color: var(--snow);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.88rem;
-  outline: none;
-  transition: border-color 0.15s;
-  resize: vertical;
+  width: 100%; background: var(--rock); border: 1px solid #2a3a2a; border-radius: 6px;
+  padding: 0.55rem 0.75rem; color: var(--snow); font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem; outline: none; transition: border-color 0.15s; resize: vertical;
 }
-.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--moss); }
+.field input:focus, .field textarea:focus, .field select:focus { border-color: #7ec87e; }
 .field input::placeholder, .field textarea::placeholder { color: #3a5a3a; }
-.field select option { background: #1a2a1a; }
+.field select option { background: var(--cliff); }
 
 .form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.form-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
 
-.modal-actions { display: flex; gap: 0.65rem; margin-top: 1.4rem; }
+.section-divider { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fog); margin: 1rem 0 0.5rem; font-weight: 600; }
 
-.btn {
-  padding: 0.65rem 1.2rem;
-  border-radius: var(--radius-sm);
-  border: none;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.83rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-  letter-spacing: 0.02em;
-}
-.btn-cancel  { background: #ffffff0e; color: var(--fog); border: 1px solid #ffffff15; }
-.btn-cancel:hover { background: #ffffff18; }
-.btn-save-plan {
-  flex: 1;
-  background: linear-gradient(135deg, #1a4a7a, #2260a0);
-  color: var(--ice);
-  border: 1px solid #4a9fd440;
-}
-.btn-save-plan:hover { opacity: 0.9; }
-.btn-save-plan:disabled { opacity: 0.45; cursor: not-allowed; }
-.btn-save-ascent {
-  flex: 1;
-  background: linear-gradient(135deg, #1a4a2a, #236030);
-  color: #80dd80;
-  border: 1px solid #4aaa5a40;
-}
-.btn-save-ascent:hover { opacity: 0.9; }
-.btn-save-ascent:disabled { opacity: 0.45; cursor: not-allowed; }
-.btn-delete {
-  width: 100%;
-  background: #2a0e0e;
-  color: #f09090;
-  border: 1px solid #c0392b35;
-  margin-top: 0.5rem;
-}
-.btn-delete:hover { background: #3a1414; }
-.btn-complete {
-  flex: 1;
-  background: #0a2012;
-  color: #6dd06d;
-  border: 1px solid #27ae6040;
-}
-.btn-complete:hover { background: #142a1a; }
+.modal-actions { display: flex; gap: 0.6rem; margin-top: 1.3rem; }
+.btn { padding: 0.6rem 1.1rem; border-radius: 6px; border: none; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.btn-primary { background: #7ec87e; color: #141a14; flex: 1; }
+.btn-primary:hover { opacity: 0.85; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary { background: #ffffff10; color: var(--muted); border: 1px solid #2a3a2a; }
+.btn-secondary:hover { background: #ffffff18; }
+.btn-danger { background: #3a1a1a; color: #f09090; border: 1px solid #e0505030; }
+.btn-danger:hover { background: #4a1a1a; }
 
-/* Detail modal — status pills */
-.status-row {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.2rem;
-  flex-wrap: wrap;
-}
-.status-pill {
-  padding: 0.35rem 0.85rem;
-  border-radius: 20px;
-  border: 1px solid #ffffff18;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.7rem;
-  cursor: pointer;
-  transition: all 0.15s;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  background: transparent;
-  color: var(--fog);
-}
-.status-pill.active-plan       { background: #0d1e35; color: var(--ice); border-color: var(--sky); }
-.status-pill.active-completado { background: #0a2012; color: #7ed87e; border-color: var(--moss-dark); }
-.status-pill.active-cancelado  { background: #1e1e1e; color: #888; border-color: #555; }
+/* ── Detail modal specific ── */
+.detail-header { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1rem; }
+.detail-act-icon { font-size: 2rem; flex-shrink: 0; padding-top: 0.1rem; }
+.detail-title-block .detail-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.06em; line-height: 1.1; }
+.detail-title-block .detail-dates { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
 
-.detail-row { display: flex; gap: 0.5rem; align-items: flex-start; margin-bottom: 0.55rem; font-size: 0.86rem; }
-.detail-label {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--fog);
-  min-width: 85px;
-  padding-top: 3px;
-  font-weight: 600;
-}
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.5rem; margin-bottom: 1rem; }
+.detail-item label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fog); font-weight: 600; }
+.detail-item p { font-size: 0.85rem; color: var(--snow); margin-top: 0.1rem; }
 
-/* Autocomplete */
-.ac-wrap { position: relative; }
-.ac-list {
-  position: absolute; top: 100%; left: 0; right: 0;
-  background: #1e2a1e;
-  border: 1px solid #ffffff15;
-  border-top: none;
-  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-  max-height: 150px; overflow-y: auto;
-  z-index: 20; display: none;
+.status-bar { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.status-btn {
+  padding: 0.3rem 0.75rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em; border: 1px solid #ffffff20;
+  background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
 }
-.ac-list.open { display: block; }
-.ac-item {
-  padding: 0.5rem 0.8rem;
-  font-size: 0.83rem;
-  cursor: pointer;
+.status-btn:hover { background: #ffffff10; color: var(--snow); }
+.status-btn.cur-open      { background: #4a9fd420; color: var(--sky); border-color: #4a9fd450; }
+.status-btn.cur-full      { background: #f5a62320; color: var(--sun); border-color: #f5a62350; }
+.status-btn.cur-completed { background: #27ae6020; color: #7ec87e; border-color: #27ae6050; }
+.status-btn.cur-cancelled { background: #c0392b20; color: #e87e7e; border-color: #c0392b50; }
+
+.rsvp-bar { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.rsvp-btn {
+  flex: 1; padding: 0.5rem; border-radius: 8px; border: 1px solid #2a3a2a;
+  background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.15s; text-align: center;
+}
+.rsvp-btn:hover { background: #ffffff10; color: var(--snow); }
+.rsvp-btn.active-going     { background: #27ae6025; color: #7ec87e; border-color: #27ae6055; }
+.rsvp-btn.active-maybe     { background: #f5a62325; color: var(--sun); border-color: #f5a62355; }
+.rsvp-btn.active-not_going { background: #c0392b25; color: #e87e7e; border-color: #c0392b55; }
+
+.attendees-list { display: flex; flex-direction: column; gap: 0.35rem; max-height: 200px; overflow-y: auto; }
+.attendee-row {
   display: flex; align-items: center; justify-content: space-between;
-  transition: background 0.1s;
+  background: var(--rock); border-radius: 6px; padding: 0.4rem 0.6rem;
+  font-size: 0.78rem;
 }
-.ac-item:hover { background: #ffffff10; }
-.ac-alt { font-size: 0.7rem; color: var(--moss); }
+.attendee-name { color: var(--snow); }
+.attendee-status { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   TOAST
-══════════════════════════════════════════════════════════════════════════ */
+/* ── Cost badge ── */
+.cost-tag {
+  background: #f5a62315; border: 1px solid #f5a62330; border-radius: 5px;
+  padding: 0.15rem 0.5rem; font-size: 0.72rem; color: var(--sun); font-weight: 600;
+}
+
+/* ── Toast ── */
 .toast {
-  position: fixed; bottom: 1.8rem; right: 1.8rem;
-  background: var(--cliff);
-  border: 1px solid var(--moss);
-  border-radius: var(--radius-sm);
-  padding: 0.75rem 1.2rem;
-  font-size: 0.83rem;
-  z-index: 200;
-  transform: translateY(8px);
-  opacity: 0;
-  transition: all 0.28s;
-  pointer-events: none;
-  max-width: 320px;
+  position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(10px);
+  background: var(--cliff); border: 1px solid #7ec87e; border-radius: 6px;
+  padding: 0.65rem 1.2rem; font-size: 0.82rem; z-index: 3000;
+  opacity: 0; transition: all 0.25s; pointer-events: none; white-space: nowrap;
 }
-.toast.visible { transform: translateY(0); opacity: 1; }
+.toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   RESPONSIVE
-══════════════════════════════════════════════════════════════════════════ */
-@media (max-width: 700px) {
-  .bottom-panels { grid-template-columns: 1fr; }
-  .day-cell { min-height: 70px; padding: 0.3rem; }
-  .day-num  { font-size: 0.68rem; }
-  .chip     { font-size: 0.52rem; }
-  .hero     { padding-bottom: 3.5rem; }
+@media (max-width: 600px) {
+  .form-2col, .form-3col { grid-template-columns: 1fr; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .event-right { display: none; }
 }
 </style>
 </head>
 <body>
 
-<!-- ══ HERO ═════════════════════════════════════════════════════════════════ -->
-<header class="hero">
-  <!-- Mountain silhouette SVG -->
-  <svg class="mountains" viewBox="0 0 1440 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-    <!-- Far mountains (lighter) -->
-    <path d="M0,80 L0,55 L80,20 L140,48 L220,12 L290,42 L370,18 L440,50 L520,22 L590,55 L680,8 L750,38 L840,15 L910,45 L1000,20 L1070,50 L1160,25 L1230,52 L1320,30 L1440,48 L1440,80 Z"
-          fill="#0a1a0a" opacity="0.9"/>
-    <!-- Snow caps on far peaks -->
-    <path d="M80,20 L95,35 L65,35 Z M220,12 L238,30 L202,30 Z M370,18 L385,32 L355,32 Z M520,22 L536,36 L504,36 Z M680,8 L700,28 L660,28 Z M840,15 L858,32 L822,32 Z M1000,20 L1016,34 L984,34 Z M1160,25 L1175,38 L1145,38 Z"
-          fill="#1a3a1a" opacity="0.6"/>
-    <!-- Near mountains (darker) -->
-    <path d="M0,80 L0,62 L100,38 L170,60 L260,40 L340,65 L430,45 L510,68 L600,50 L680,70 L770,52 L850,72 L940,54 L1020,70 L1110,55 L1190,72 L1280,58 L1360,70 L1440,60 L1440,80 Z"
-          fill="#060e06" opacity="1"/>
-    <!-- Snow on near peaks -->
-    <path d="M100,38 L114,50 L86,50 Z M260,40 L274,52 L246,52 Z M430,45 L444,56 L416,56 Z M600,50 L614,60 L586,60 Z M770,52 L784,62 L756,62 Z M940,54 L954,64 L926,64 Z M1110,55 L1124,65 L1096,65 Z M1280,58 L1294,68 L1266,68 Z"
-          fill="#1e3a1e" opacity="0.8"/>
-  </svg>
-
-  <div class="hero-inner">
-    <div class="top-nav">
-      <a class="logo" href="/">Peak<span>Tracker</span></a>
-      <span class="nav-sep">/</span>
-      <a class="nav-link" href="/map.html">Map</a>
-      <a class="nav-link active" href="/calendar/">Calendar</a>
-      <button class="btn-logout" onclick="logout()">Sign out</button>
-    </div>
-
-    <div class="hero-title">My Peaks</div>
-    <div class="hero-sub">Plans · Ascents · Adventures</div>
-
-    <div class="stats-strip" id="stats-strip">
-      <div class="stat-pill s-plans">
-        <span class="num" id="stat-plans">—</span>
-        <span>active plans</span>
-      </div>
-      <div class="stat-pill s-ascents">
-        <span class="num" id="stat-ascents">—</span>
-        <span>completed peaks</span>
-      </div>
-      <div class="stat-pill s-hours">
-        <span class="num" id="stat-hours">—</span>
-        <span>hours on mountain</span>
-      </div>
-    </div>
+<header>
+  <a class="logo" href="/">Peak<span>Tracker</span></a>
+  <nav>
+    <a class="nav-link" href="/map.html">Map</a>
+    <a class="nav-link active" href="/calendar/">Calendar</a>
+    <a class="nav-link admin-only" href="/admin.html" id="admin-link" style="display:none">Admin</a>
+  </nav>
+  <div class="header-right">
+    <span class="user-badge" id="user-badge"></span>
+    <button class="btn-logout" onclick="logout()">Sign out</button>
   </div>
 </header>
 
-<!-- ══ MONTH NAV ═══════════════════════════════════════════════════════════ -->
-<div class="month-nav">
-  <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
-  <div class="month-label" id="month-label"></div>
-  <button class="nav-btn" onclick="changeMonth(1)">›</button>
-  <button class="today-btn" onclick="goToToday()">Today</button>
-</div>
-
-<!-- ══ CALENDAR ════════════════════════════════════════════════════════════ -->
-<div class="calendar-wrap">
-  <div class="week-header">
-    <div class="day-name">Mon</div><div class="day-name">Tue</div>
-    <div class="day-name">Wed</div><div class="day-name">Thu</div>
-    <div class="day-name">Fri</div><div class="day-name">Sat</div>
-    <div class="day-name">Sun</div>
-  </div>
-  <div class="days-grid" id="days-grid"></div>
-</div>
-
-<!-- ══ BOTTOM PANELS ═══════════════════════════════════════════════════════ -->
-<div class="bottom-panels">
-  <!-- Plans panel -->
-  <div class="panel panel-plans">
-    <div class="panel-header">
-      <div class="panel-title">🗺️ Upcoming Plans</div>
-      <div class="panel-count" id="plans-count">0</div>
+<div class="page">
+  <div class="toolbar">
+    <div class="toolbar-title">Group Calendar</div>
+    <div class="filter-pills">
+      <button class="pill active" data-filter="all" onclick="setFilter('all')">All</button>
+      <button class="pill pill-open" data-filter="open" onclick="setFilter('open')">Open</button>
+      <button class="pill pill-completed" data-filter="completed" onclick="setFilter('completed')">Completed</button>
+      <button class="pill pill-cancelled" data-filter="cancelled" onclick="setFilter('cancelled')">Cancelled</button>
     </div>
-    <div id="plans-list"><div class="empty-panel">Loading…</div></div>
+    <button class="btn-new-event" onclick="openCreateModal()">+ New event</button>
   </div>
 
-  <!-- Ascensions panel -->
-  <div class="panel panel-ascents">
-    <div class="panel-header">
-      <div class="panel-title">⛰ Completed Peaks</div>
-      <div class="panel-count" id="ascents-count">0</div>
-    </div>
-    <div id="ascents-list"><div class="empty-panel">Loading…</div></div>
+  <div class="events-grid" id="events-grid">
+    <div class="empty-state"><p>Loading…</p></div>
   </div>
 </div>
 
-<!-- ══ MODAL: Add event ════════════════════════════════════════════════════ -->
-<div class="overlay" id="overlay-add" onclick="closeAddModal(event)">
+<!-- ── Detail / View modal ── -->
+<div class="overlay" id="overlay-detail" onclick="closeDetailIfBackdrop(event)">
+  <div class="modal" style="max-width:560px">
+    <div class="detail-header">
+      <div class="detail-act-icon" id="d-act-icon">⛰</div>
+      <div class="detail-title-block">
+        <div class="detail-name" id="d-name"></div>
+        <div class="detail-dates" id="d-dates"></div>
+      </div>
+    </div>
+
+    <!-- Status control (owner + admin only) -->
+    <div id="d-status-section" style="display:none">
+      <div class="section-divider">Status</div>
+      <div class="status-bar" id="d-status-bar"></div>
+    </div>
+
+    <!-- Info grid -->
+    <div class="detail-grid" id="d-info-grid"></div>
+
+    <!-- Notes -->
+    <div id="d-notes-wrap" style="display:none">
+      <div class="section-divider">Notes</div>
+      <p id="d-notes" style="font-size:0.82rem;color:#8ab080;font-style:italic;"></p>
+    </div>
+
+    <!-- RSVP -->
+    <div id="d-rsvp-section">
+      <div class="section-divider">My RSVP</div>
+      <div class="rsvp-bar" id="d-rsvp-bar"></div>
+    </div>
+
+    <!-- Attendees -->
+    <div id="d-attendees-section" style="display:none">
+      <div class="section-divider">Participants (<span id="d-count">0</span>)</div>
+      <div class="attendees-list" id="d-attendees"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="modal-actions" id="d-actions">
+      <button class="btn btn-secondary" onclick="closeDetailModal()">Close</button>
+      <button class="btn btn-secondary" id="d-btn-edit" onclick="openEditFromDetail()" style="display:none">Edit</button>
+      <button class="btn btn-danger" id="d-btn-delete" onclick="deleteEvent()" style="display:none">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Create / Edit modal ── -->
+<div class="overlay" id="overlay-form" onclick="closeFormIfBackdrop(event)">
   <div class="modal">
-    <div class="modal-title">New entry</div>
-    <div class="modal-date" id="add-date-label"></div>
+    <div class="modal-title" id="form-title">New event</div>
+    <div class="modal-sub" id="form-sub">Plan a group activity</div>
 
-    <!-- Type selector -->
-    <div class="type-selector">
-      <button class="type-btn" id="type-btn-plan" onclick="selectType('plan')">
-        <span class="type-btn-icon">📅</span>
-        <span class="type-btn-label">Plan</span>
-        <span class="type-btn-desc">Future ascent</span>
-      </button>
-      <button class="type-btn" id="type-btn-ascension" onclick="selectType('ascent')">
-        <span class="type-btn-icon">⛰</span>
-        <span class="type-btn-label">Log ascent</span>
-        <span class="type-btn-desc">Already completed</span>
-      </button>
-    </div>
-
-    <!-- Peak name with autocomplete -->
-    <div class="field">
-      <label>Peak *</label>
-      <div class="ac-wrap">
-        <input type="text" id="add-peak" placeholder="Puigmal, Carlit, Aneto…"
-               oninput="onPeakInput()" autocomplete="off">
-        <div class="ac-list" id="ac-list"></div>
+    <div class="form-2col">
+      <div class="field" style="grid-column:1/-1">
+        <label>Activity / Peak name *</label>
+        <input type="text" id="f-name" placeholder="Mont Blanc, Canigó, Ski day…">
+      </div>
+      <div class="field">
+        <label>Activity type</label>
+        <select id="f-activity">
+          <option value="hike">🥾 Hike</option>
+          <option value="via_ferrata">🪝 Via ferrata</option>
+          <option value="ski">⛷️ Ski / Snowboard</option>
+          <option value="trail_run">🏃 Trail run</option>
+          <option value="cycling">🚵 Cycling / MTB</option>
+          <option value="camping">🏕️ Camping</option>
+          <option value="other">🗺️ Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Difficulty</label>
+        <select id="f-difficulty">
+          <option value="">— Not specified —</option>
+          <option value="Easy">Easy</option>
+          <option value="Moderate">Moderate</option>
+          <option value="Hard">Hard</option>
+          <option value="Very hard">Very hard</option>
+          <option value="Alpine">Alpine</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Start date *</label>
+        <input type="date" id="f-date-start">
+      </div>
+      <div class="field">
+        <label>End date (optional)</label>
+        <input type="date" id="f-date-end">
+      </div>
+      <div class="field">
+        <label>Duration (hours)</label>
+        <input type="number" id="f-duration" step="0.5" min="0" placeholder="6.5">
+      </div>
+      <div class="field">
+        <label>Max participants</label>
+        <input type="number" id="f-max-p" min="1" placeholder="12">
       </div>
     </div>
 
+    <div class="section-divider">Meeting & Cost</div>
     <div class="field">
-      <label id="add-date-label-field">Date *</label>
-      <input type="date" id="add-date">
+      <label>Meeting point</label>
+      <input type="text" id="f-meeting" placeholder="Parking at Refugi X, trailhead GPS…">
     </div>
-
-    <!-- Extra fields for ascensions -->
-    <div id="ascension-fields" style="display:none;">
-      <div class="form-2col">
-        <div class="field">
-          <label>Duration (h)</label>
-          <input type="number" id="add-duration" step="0.5" placeholder="6.5">
-        </div>
-        <div class="field">
-          <label>Difficulty</label>
-          <select id="add-difficulty">
-            <option value="">— Select —</option>
-            <option value="Easy">Easy</option>
-            <option value="Moderate">Moderate</option>
-            <option value="Hard">Hard</option>
-            <option value="Very hard">Very hard</option>
-            <option value="Alpine">Alpine</option>
-          </select>
-        </div>
+    <div class="form-3col">
+      <div class="field" style="grid-column:span 2">
+        <label>Cost per person</label>
+        <input type="number" id="f-cost" step="0.01" min="0" placeholder="25.00">
+      </div>
+      <div class="field">
+        <label>Currency</label>
+        <select id="f-currency">
+          <option value="EUR">EUR €</option>
+          <option value="USD">USD $</option>
+          <option value="GBP">GBP £</option>
+          <option value="CHF">CHF</option>
+        </select>
       </div>
     </div>
 
-    <div class="field">
-      <label>Companions</label>
-      <input type="text" id="add-companions" placeholder="Alice, Bob…">
-    </div>
+    <div class="section-divider">Details</div>
     <div class="field">
       <label>Notes</label>
-      <textarea id="add-notes" rows="2" placeholder="Route, meeting point…"></textarea>
+      <textarea id="f-notes" rows="3" placeholder="What to bring, car sharing, etc…"></textarea>
+    </div>
+
+    <div id="f-status-row" style="display:none">
+      <div class="section-divider">Status</div>
+      <div class="field">
+        <select id="f-status">
+          <option value="open">Open — accepting participants</option>
+          <option value="full">Full — no more spots</option>
+          <option value="completed">Completed — ascent done</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
     </div>
 
     <div class="modal-actions">
-      <button class="btn btn-cancel" onclick="closeAddModal()">Cancel</button>
-      <button class="btn btn-save-plan" id="btn-add-save" onclick="saveEvent()">Add plan</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MODAL: Event detail ══════════════════════════════════════════════════ -->
-<div class="overlay" id="overlay-detail" onclick="closeDetailModal(event)">
-  <div class="modal">
-    <div class="modal-title" id="detail-title"></div>
-    <div class="modal-date"  id="detail-date"></div>
-
-    <div class="status-row" id="status-row"></div>
-    <div id="detail-body"></div>
-
-    <div class="modal-actions" style="flex-direction:column; gap:0.5rem; margin-top:1.2rem;">
-      <div style="display:flex;gap:0.65rem;">
-        <button class="btn btn-cancel" onclick="closeDetailModal()">Close</button>
-        <button class="btn btn-complete" id="btn-detail-done" onclick="quickComplete()">✓ Mark as done</button>
-      </div>
-      <button class="btn btn-delete" onclick="deleteEvent()">🗑 Delete</button>
+      <button class="btn btn-secondary" onclick="closeFormModal()">Cancel</button>
+      <button class="btn btn-primary" id="btn-form-save" onclick="saveForm()">Create event</button>
     </div>
   </div>
 </div>
@@ -899,424 +421,22 @@ body {
 <div class="toast" id="toast"></div>
 
 <script>
-// ── State ─────────────────────────────────────────────────────────────────────
-const TODAY = new Date();
-let currentMonth = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
-let events = [];
-let peaks  = [];
-let selectedDate = null;
-let selectedEvent = null;
-let addType = 'plan'; // current type selection in add modal
-
-const MONTHS = [
-  'January','February','March','April','May','June',
-  'July','August','September','October','November','December'
-];
-
-// ── API ───────────────────────────────────────────────────────────────────────
-async function loadAll() {
-  try {
-    const [rEvents, rPeaks] = await Promise.all([
-      fetch('/api/calendar'),
-      fetch('/api/peaks'),
-    ]);
-    events = await rEvents.json();
-    peaks  = await rPeaks.json();
-    render();
-  } catch (e) {
-    console.error(e);
-    showToast('Error loading data', true);
-  }
+// ── Auth / session ────────────────────────────────────────────────────────────
+function decodeJwtPayload(t) {
+  try { return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }
+  catch { return null; }
 }
 
-async function saveEvent() {
-  const peakName = document.getElementById('add-peak').value.trim();
-  const date     = document.getElementById('add-date').value;
-  if (!peakName) { document.getElementById('add-peak').focus(); return; }
-  if (!date)     { document.getElementById('add-date').focus(); return; }
+const _token  = sessionStorage.getItem('pt_token');
+const _claims = _token ? decodeJwtPayload(_token) : null;
+const isAdmin = _claims?.role === 'admin';
+const myId    = _claims?.sub ?? '';
+const myName  = _claims?.username ?? '';
 
-  const btn = document.getElementById('btn-add-save');
-  btn.disabled = true;
-  btn.textContent = 'Saving…';
-
-  try {
-    const body = {
-      peak_name:       peakName,
-      planned_date: date,
-      event_type:              addType,
-      status:            addType === 'ascent' ? 'completed' : 'planned',
-      companions:  document.getElementById('add-companions').value.trim()  || null,
-      notes:       document.getElementById('add-notes').value.trim()       || null,
-      duration_hours: addType === 'ascent' ? (parseFloat(document.getElementById('add-duration').value) || null) : null,
-      difficulty:     addType === 'ascent' ? (document.getElementById('add-difficulty').value || null) : null,
-    };
-
-    const r = await fetch('/api/calendar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (!r.ok) throw new Error();
-    const ev = await r.json();
-    events.push(ev);
-    closeAddModal();
-    render();
-    showToast(addType === 'ascent' ? '⛰ Peak logged!' : '📅 Plan added to calendar');
-  } catch {
-    showToast('Error saving', true);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = addType === 'ascent' ? 'Log ascent' : 'Add plan';
-  }
+if (_claims) {
+  document.getElementById('user-badge').textContent = _claims.username;
+  if (isAdmin) document.getElementById('admin-link').style.display = '';
 }
-
-async function changeEventStatus(id, newStatus) {
-  try {
-    const r = await fetch(`/api/calendar/${id}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: newStatus }),
-    });
-    if (!r.ok) throw new Error();
-    const updated = await r.json();
-    events = events.map(e => e.id === id ? updated : e);
-    if (selectedEvent?.id === id) selectedEvent = updated;
-    renderDetailModal();
-    render();
-    if (newStatus === 'completed') showToast('⛰ Peak completed! Counter updated.');
-    else showToast('Status updated');
-  } catch {
-    showToast('Error updating', true);
-  }
-}
-
-async function quickComplete() {
-  if (!selectedEvent || selectedEvent.status === 'completed') return;
-  await changeEventStatus(selectedEvent.id, 'completed');
-}
-
-async function deleteEvent() {
-  if (!selectedEvent) return;
-  if (!confirm(`Delete "${selectedEvent.peak_name}"?`)) return;
-  try {
-    const r = await fetch(`/api/calendar/${selectedEvent.id}`, { method: 'DELETE' });
-    if (!r.ok) throw new Error();
-    events = events.filter(e => e.id !== selectedEvent.id);
-    closeDetailModal();
-    render();
-    showToast('Entry deleted');
-  } catch {
-    showToast('Error deleting', true);
-  }
-}
-
-// ── Render ────────────────────────────────────────────────────────────────────
-function render() {
-  renderMonthLabel();
-  renderGrid();
-  renderPanels();
-  renderStats();
-}
-
-function renderStats() {
-  const todayStr  = formatDateObj(TODAY);
-  const planCount = events.filter(e => e.event_type === 'plan' && e.status === 'planned' && e.planned_date >= todayStr).length;
-  const doneCount = events.filter(e => e.event_type === 'ascent').length;
-  const totalHours = events.filter(e => e.event_type === 'ascent').reduce((s, e) => s + (e.duration_hours || 0), 0);
-
-  document.getElementById('stat-plans').textContent   = planCount;
-  document.getElementById('stat-ascents').textContent = doneCount;
-  document.getElementById('stat-hours').textContent   = totalHours > 0 ? totalHours.toFixed(1) + 'h' : '0h';
-}
-
-function renderMonthLabel() {
-  document.getElementById('month-label').textContent =
-    `${MONTHS[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
-}
-
-function renderGrid() {
-  const grid  = document.getElementById('days-grid');
-  grid.innerHTML = '';
-
-  const year  = currentMonth.getFullYear();
-  const month = currentMonth.getMonth();
-  let firstDay = new Date(year, month, 1).getDay();
-  firstDay = (firstDay + 6) % 7;
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const todayStr = formatDateObj(TODAY);
-
-  for (let i = 0; i < firstDay; i++) {
-    const c = document.createElement('div');
-    c.className = 'day-cell empty';
-    grid.appendChild(c);
-  }
-
-  for (let day = 1; day <= daysInMonth; day++) {
-    const date    = new Date(year, month, day);
-    const dateStr = formatDate(year, month + 1, day);
-    const isToday = isSameDate(date, TODAY);
-    const isPast  = date < TODAY && !isToday;
-    const dayEvs  = events.filter(e => e.planned_date === dateStr);
-
-    const cell = document.createElement('div');
-    cell.className = `day-cell${isToday ? ' today' : ''}${isPast ? ' past' : ''}`;
-    cell.onclick   = () => openAddModal(dateStr);
-
-    const num = document.createElement('div');
-    num.className   = 'day-num';
-    num.textContent = day;
-    cell.appendChild(num);
-
-    const hint = document.createElement('span');
-    hint.className   = 'add-hint';
-    hint.textContent = '+';
-    cell.appendChild(hint);
-
-    const MAX = 3;
-    dayEvs.slice(0, MAX).forEach(ev => {
-      const chip = document.createElement('div');
-      chip.className   = `chip ${ev.event_type === 'ascent' ? 'ascent' : ev.status === 'cancelled' ? 'cancelled' : 'plan'}`;
-      chip.textContent = (ev.event_type === 'ascent' ? '⛰ ' : '🗺️ ') + ev.peak_name;
-      chip.onclick     = e => { e.stopPropagation(); openDetailModal(ev); };
-      cell.appendChild(chip);
-    });
-
-    if (dayEvs.length > MAX) {
-      const more = document.createElement('div');
-      more.className   = 'chip-more';
-      more.textContent = `+${dayEvs.length - MAX} más`;
-      more.onclick     = e => { e.stopPropagation(); openDetailModal(dayEvs[MAX]); };
-      cell.appendChild(more);
-    }
-
-    grid.appendChild(cell);
-  }
-}
-
-function renderPanels() {
-  const todayStr = formatDateObj(TODAY);
-
-  // Plans — upcoming, sorted by date
-  const plans = events
-    .filter(e => e.event_type === 'plan' && e.status !== 'cancelled' && e.planned_date >= todayStr)
-    .sort((a, b) => a.planned_date.localeCompare(b.planned_date))
-    .slice(0, 10);
-
-  document.getElementById('plans-count').textContent = plans.length;
-  const plansList = document.getElementById('plans-list');
-  if (plans.length === 0) {
-    plansList.innerHTML = '<div class="empty-panel">No upcoming plans.<br>Click a date to add one.</div>';
-  } else {
-    plansList.innerHTML = plans.map(ev => `
-      <div class="event-card" onclick="openDetailModal(${safeJSON(ev)})">
-        <div class="card-peak">🗺️ ${escapeHTML(ev.peak_name)}</div>
-        <div class="card-date">📅 ${formatReadable(ev.planned_date)}</div>
-        ${ev.companions ? `<div class="card-meta">👥 ${escapeHTML(ev.companions)}</div>` : ''}
-        <button class="card-quick-done" onclick="event.stopPropagation(); quickDoneCard('${ev.id}')">
-          ✓ I've completed this peak
-        </button>
-      </div>
-    `).join('');
-  }
-
-  // Ascensions — all completed, sorted recent first
-  const ascents = events
-    .filter(e => e.event_type === 'ascent')
-    .sort((a, b) => b.planned_date.localeCompare(a.planned_date))
-    .slice(0, 10);
-
-  document.getElementById('ascents-count').textContent = ascents.length;
-  const ascentsList = document.getElementById('ascents-list');
-  if (ascents.length === 0) {
-    ascentsList.innerHTML = '<div class="empty-panel">No completed peaks yet.</div>';
-  } else {
-    ascentsList.innerHTML = ascents.map(ev => `
-      <div class="event-card" onclick="openDetailModal(${safeJSON(ev)})">
-        <div class="card-peak">⛰ ${escapeHTML(ev.peak_name)}</div>
-        <div class="card-date">📅 ${formatReadable(ev.planned_date)}</div>
-        ${ev.duration_hours ? `<div class="ascent-badge">⏱ ${ev.duration_hours}h</div>` : ''}
-        ${ev.difficulty     ? `<div class="card-meta">▲ ${escapeHTML(ev.difficulty)}</div>` : ''}
-        ${ev.companions     ? `<div class="card-meta">👥 ${escapeHTML(ev.companions)}</div>` : ''}
-      </div>
-    `).join('');
-  }
-}
-
-async function quickDoneCard(id) {
-  await changeEventStatus(id, 'completed');
-}
-
-// ── Modals ────────────────────────────────────────────────────────────────────
-function selectType(type) {
-  addType = type;
-  const planBtn    = document.getElementById('type-btn-plan');
-  const ascentBtn  = document.getElementById('type-btn-ascension');
-  const saveBtn    = document.getElementById('btn-add-save');
-  const extraFields = document.getElementById('ascension-fields');
-  const dateLabel  = document.getElementById('add-date-label-field');
-
-  planBtn.className   = `type-btn ${type === 'plan' ? 'selected-plan' : ''}`;
-  ascentBtn.className = `type-btn ${type === 'ascent' ? 'selected-ascension' : ''}`;
-
-  if (type === 'ascent') {
-    extraFields.style.display = '';
-    saveBtn.className = 'btn btn-save-ascent';
-    saveBtn.textContent = 'Log ascent';
-    dateLabel.textContent = 'Ascent date *';
-  } else {
-    extraFields.style.display = 'none';
-    saveBtn.className = 'btn btn-save-plan';
-    saveBtn.textContent = 'Add plan';
-    dateLabel.textContent = 'Date *';
-  }
-}
-
-function openAddModal(dateStr) {
-  selectedDate = dateStr;
-  document.getElementById('add-date-label').textContent = '📅 ' + formatReadable(dateStr);
-  document.getElementById('add-peak').value       = '';
-  document.getElementById('add-date').value       = dateStr;
-  document.getElementById('add-companions').value = '';
-  document.getElementById('add-notes').value      = '';
-  document.getElementById('add-duration').value   = '';
-  document.getElementById('add-difficulty').value = '';
-  document.getElementById('ac-list').classList.remove('open');
-
-  // Reset to plan type
-  selectType('plan');
-
-  document.getElementById('overlay-add').classList.add('visible');
-  setTimeout(() => document.getElementById('add-peak').focus(), 100);
-}
-
-function closeAddModal(event) {
-  if (event && event.target !== event.currentTarget) return;
-  document.getElementById('overlay-add').classList.remove('visible');
-  document.getElementById('ac-list').classList.remove('open');
-}
-
-function openDetailModal(ev) {
-  selectedEvent = typeof ev === 'string' ? JSON.parse(ev) : ev;
-  renderDetailModal();
-  document.getElementById('overlay-detail').classList.add('visible');
-}
-
-function renderDetailModal() {
-  if (!selectedEvent) return;
-  const ev = selectedEvent;
-  const isAscent = ev.event_type === 'ascent';
-
-  document.getElementById('detail-title').textContent =
-    (isAscent ? '⛰ ' : '🗺️ ') + ev.peak_name;
-  document.getElementById('detail-date').textContent =
-    '📅 ' + formatReadable(ev.planned_date);
-
-  // Status pills
-  const statuses = ['planned', 'completed', 'cancelled'];
-  const labels   = { planned: '🗺️ Planned', completed: '⛰ Completed', cancelled: '❌ Cancelled' };
-  document.getElementById('status-row').innerHTML = statuses.map(s => `
-    <button class="status-pill ${ev.status === s ? (s === 'completed' ? 'active-completado' : s === 'planned' ? 'active-plan' : 'active-cancelado') : ''}"
-            onclick="changeEventStatus('${ev.id}', '${s}')">
-      ${labels[s]}
-    </button>
-  `).join('');
-
-  // Body details
-  let bodyHTML = '';
-  if (ev.companions)    bodyHTML += `<div class="detail-row"><span class="detail-label">Companions</span><span>${escapeHTML(ev.companions)}</span></div>`;
-  if (ev.difficulty)    bodyHTML += `<div class="detail-row"><span class="detail-label">Difficulty</span><span>${escapeHTML(ev.difficulty)}</span></div>`;
-  if (ev.duration_hours) bodyHTML += `<div class="detail-row"><span class="detail-label">Duration</span><span>${ev.duration_hours}h</span></div>`;
-  if (ev.notes)         bodyHTML += `<div class="detail-row"><span class="detail-label">Notes</span><span>${escapeHTML(ev.notes)}</span></div>`;
-  document.getElementById('detail-body').innerHTML = bodyHTML;
-
-  // Show "Mark done" button only if not already completed
-  document.getElementById('btn-detail-done').style.display =
-    ev.status === 'completed' ? 'none' : '';
-}
-
-function closeDetailModal(event) {
-  if (event && event.target !== event.currentTarget) return;
-  document.getElementById('overlay-detail').classList.remove('visible');
-  selectedEvent = null;
-}
-
-// ── Autocomplete ──────────────────────────────────────────────────────────────
-function onPeakInput() {
-  const q    = document.getElementById('add-peak').value.toLowerCase().trim();
-  const list = document.getElementById('ac-list');
-  if (!q || peaks.length === 0) { list.classList.remove('open'); return; }
-
-  const matches = peaks.filter(p => p.name.toLowerCase().includes(q)).slice(0, 6);
-  if (matches.length === 0) { list.classList.remove('open'); return; }
-
-  list.innerHTML = matches.map(p => `
-    <div class="ac-item" data-name="${escapeHTML(p.name)}" onclick="pickPeak(this.dataset.name)">
-      <span>⛰ ${escapeHTML(p.name)}</span>
-      <span class="ac-alt">${p.altitude.toLocaleString()}m</span>
-    </div>
-  `).join('');
-  list.classList.add('open');
-}
-
-function pickPeak(name) {
-  document.getElementById('add-peak').value = name;
-  document.getElementById('ac-list').classList.remove('open');
-}
-
-document.addEventListener('click', e => {
-  if (!e.target.closest('.ac-wrap')) {
-    document.getElementById('ac-list').classList.remove('open');
-  }
-});
-
-// ── Month nav ─────────────────────────────────────────────────────────────────
-function changeMonth(delta) {
-  currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + delta, 1);
-  render();
-}
-function goToToday() {
-  currentMonth = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
-  render();
-}
-
-// ── Toast ─────────────────────────────────────────────────────────────────────
-function showToast(msg, error = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.borderColor = error ? 'var(--danger)' : 'var(--moss)';
-  t.classList.add('visible');
-  setTimeout(() => t.classList.remove('visible'), 3200);
-}
-
-// ── Utilities ─────────────────────────────────────────────────────────────────
-function formatDate(y, m, d) {
-  return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-}
-function formatDateObj(date) {
-  return formatDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
-}
-function formatReadable(s) {
-  const [y, m, d] = s.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString('en-GB', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-  });
-}
-function isSameDate(a, b) {
-  return a.getFullYear() === b.getFullYear() &&
-         a.getMonth()    === b.getMonth()    &&
-         a.getDate()     === b.getDate();
-}
-function escapeHTML(s) {
-  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function safeJSON(obj) {
-  return JSON.stringify(obj).replace(/"/g, '&quot;');
-}
-
-// ── Keyboard ──────────────────────────────────────────────────────────────────
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeAddModal(); closeDetailModal(); }
-});
 
 async function logout() {
   sessionStorage.removeItem('pt_token');
@@ -1324,9 +444,460 @@ async function logout() {
   window.location.href = '/login.html';
 }
 
+// ── Data ──────────────────────────────────────────────────────────────────────
+let events = [];
+let activeFilter = 'all';
+let detailEventId = null;
+let editEventId   = null;
+
+async function loadEvents() {
+  try {
+    const r = await fetch('/api/calendar');
+    if (!r.ok) throw new Error();
+    events = await r.json();
+    renderGrid();
+  } catch {
+    document.getElementById('events-grid').innerHTML =
+      '<div class="empty-state"><p>Error loading events</p></div>';
+  }
+}
+
+// ── Filter ────────────────────────────────────────────────────────────────────
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.filter === f);
+  });
+  renderGrid();
+}
+
+function filtered() {
+  if (activeFilter === 'all') return events;
+  return events.filter(e => e.status === activeFilter);
+}
+
+// ── Render grid ───────────────────────────────────────────────────────────────
+const ACT_ICONS = {
+  hike: '🥾', via_ferrata: '🪝', ski: '⛷️', trail_run: '🏃',
+  cycling: '🚵', camping: '🏕️', other: '🗺️'
+};
+
+function actIcon(t) { return ACT_ICONS[t] || '🗺️'; }
+
+function renderGrid() {
+  const list = filtered();
+  const grid = document.getElementById('events-grid');
+  if (!list.length) {
+    grid.innerHTML = '<div class="empty-state"><p>No events to show. Create one!</p></div>';
+    return;
+  }
+
+  grid.innerHTML = list.map(ev => {
+    const [y, m, d] = ev.planned_date.split('-');
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const month  = months[parseInt(m,10)-1] ?? m;
+    const myRsvp = getMyRsvp(ev);
+
+    const metaParts = [
+      ev.difficulty ? `<span class="meta-chip">📊 ${esc(ev.difficulty)}</span>` : '',
+      ev.duration_hours ? `<span class="meta-chip">⏱ ${ev.duration_hours}h</span>` : '',
+      ev.meeting_point ? `<span class="meta-chip">📍 ${esc(ev.meeting_point)}</span>` : '',
+      ev.cost_per_person ? `<span class="meta-chip cost-tag">${formatCost(ev.cost_per_person, ev.currency)}/person</span>` : '',
+    ].filter(Boolean).join('');
+
+    const endDateStr = ev.end_date && ev.end_date !== ev.planned_date
+      ? ` → ${formatDate(ev.end_date)}` : '';
+
+    return `
+    <div class="event-card status-${ev.status}" onclick="openDetail('${ev.id}')">
+      <div class="event-date-block">
+        <div class="event-day">${d}</div>
+        <div class="event-month">${month} ${y}</div>
+      </div>
+      <div class="event-body">
+        <div class="event-header">
+          <span class="act-icon">${actIcon(ev.activity_type)}</span>
+          <span class="event-name">${esc(ev.peak_name)}</span>
+          <span class="event-status-badge badge-${ev.status}">${statusLabel(ev.status)}</span>
+        </div>
+        <div class="event-meta">
+          <span class="meta-chip" style="color:#8ab080">by ${esc(ev.created_by_name)}</span>
+          ${endDateStr ? `<span class="meta-chip">${endDateStr}</span>` : ''}
+          ${metaParts}
+        </div>
+        ${ev.notes ? `<div class="event-notes">${esc(ev.notes)}</div>` : ''}
+      </div>
+      <div class="event-right">
+        <div class="participants-badge"><strong>${ev.participant_count}</strong> going</div>
+        ${myRsvp ? `<div class="rsvp-pill rsvp-${myRsvp}">${rsvpLabel(myRsvp)}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function getMyRsvp(ev) {
+  if (!ev.attendees) return null;
+  const me = ev.attendees.find(a => a.user_id === myId);
+  return me?.status ?? null;
+}
+
+function statusLabel(s) {
+  return { open: 'Open', full: 'Full', completed: 'Done', cancelled: 'Cancelled' }[s] ?? s;
+}
+
+function rsvpLabel(s) {
+  return { going: '✓ Going', maybe: '? Maybe', not_going: '✗ Not going' }[s] ?? s;
+}
+
+function formatCost(c, currency) {
+  const symbols = { EUR: '€', USD: '$', GBP: '£', CHF: 'CHF ' };
+  const sym = symbols[currency] || currency + ' ';
+  return sym + parseFloat(c).toFixed(2);
+}
+
+// ── Detail modal ──────────────────────────────────────────────────────────────
+async function openDetail(id) {
+  // Fetch fresh event with attendees
+  try {
+    const r = await fetch(`/api/calendar/${id}`);
+    if (!r.ok) throw new Error();
+    const ev = await r.json();
+    // Update local cache
+    const idx = events.findIndex(e => e.id === id);
+    if (idx !== -1) events[idx] = ev;
+    showDetail(ev);
+  } catch {
+    showToast('Error loading event', true);
+  }
+}
+
+function showDetail(ev) {
+  detailEventId = ev.id;
+  const canManage = ev.created_by === myId;
+
+  // Header
+  document.getElementById('d-act-icon').textContent = actIcon(ev.activity_type);
+  document.getElementById('d-name').textContent = ev.peak_name;
+  const endStr = ev.end_date && ev.end_date !== ev.planned_date
+    ? ` — ${formatDate(ev.end_date)}` : '';
+  document.getElementById('d-dates').textContent =
+    formatDate(ev.planned_date) + endStr + '  ·  ' + ucFirst(ev.activity_type.replace('_', ' '));
+
+  // Status bar (only for managers)
+  const statusSection = document.getElementById('d-status-section');
+  if (canManage) {
+    statusSection.style.display = 'block';
+    const statuses = ['open','full','completed','cancelled'];
+    const labels   = { open:'Open', full:'Full', completed:'Done', cancelled:'Cancelled' };
+    document.getElementById('d-status-bar').innerHTML = statuses.map(s =>
+      `<button class="status-btn ${ev.status === s ? 'cur-' + s : ''}"
+               onclick="changeStatus('${s}')">${labels[s]}</button>`
+    ).join('');
+  } else {
+    statusSection.style.display = 'none';
+  }
+
+  // Info grid
+  const items = [
+    ev.difficulty ? { label: 'Difficulty', val: ev.difficulty } : null,
+    ev.duration_hours ? { label: 'Duration', val: ev.duration_hours + 'h' } : null,
+    ev.max_participants ? { label: 'Max participants', val: ev.max_participants } : null,
+    ev.cost_per_person ? { label: 'Cost / person', val: formatCost(ev.cost_per_person, ev.currency) } : null,
+    ev.meeting_point ? { label: 'Meeting point', val: ev.meeting_point } : null,
+    { label: 'Organised by', val: ev.created_by_name },
+    { label: 'Status', val: statusLabel(ev.status) },
+  ].filter(Boolean);
+
+  document.getElementById('d-info-grid').innerHTML = items.map(i =>
+    `<div class="detail-item"><label>${esc(i.label)}</label><p>${esc(String(i.val))}</p></div>`
+  ).join('');
+
+  // Notes
+  if (ev.notes) {
+    document.getElementById('d-notes-wrap').style.display = 'block';
+    document.getElementById('d-notes').textContent = ev.notes;
+  } else {
+    document.getElementById('d-notes-wrap').style.display = 'none';
+  }
+
+  // RSVP (only for open/full events — not completed or cancelled)
+  const rsvpSection = document.getElementById('d-rsvp-section');
+  if (ev.status !== 'cancelled' && ev.status !== 'completed') {
+    rsvpSection.style.display = 'block';
+    const myRsvp = (ev.attendees || []).find(a => a.user_id === myId)?.status ?? null;
+    document.getElementById('d-rsvp-bar').innerHTML = `
+      <button class="rsvp-btn ${myRsvp === 'going' ? 'active-going' : ''}" onclick="rsvp('going')">✓ Going</button>
+      <button class="rsvp-btn ${myRsvp === 'maybe' ? 'active-maybe' : ''}" onclick="rsvp('maybe')">? Maybe</button>
+      <button class="rsvp-btn ${myRsvp === 'not_going' ? 'active-not_going' : ''}" onclick="rsvp('not_going')">✗ Not going</button>
+      ${myRsvp ? `<button class="rsvp-btn" style="background:#ffffff08;flex:0;padding:0.5rem 0.6rem;" onclick="cancelRsvp()" title="Remove RSVP">✕</button>` : ''}
+    `;
+  } else {
+    rsvpSection.style.display = 'none';
+  }
+
+  // Attendees
+  const attendees = ev.attendees || [];
+  const attSection = document.getElementById('d-attendees-section');
+  if (attendees.length) {
+    attSection.style.display = 'block';
+    document.getElementById('d-count').textContent = ev.participant_count;
+    const attColors = { going: '#7ec87e', maybe: '#f5a623', not_going: '#e87e7e' };
+    document.getElementById('d-attendees').innerHTML = attendees.map(a => `
+      <div class="attendee-row">
+        <span class="attendee-name">${esc(a.display_name || a.username)}</span>
+        <span class="attendee-status" style="color:${attColors[a.status] || '#8ab080'}">${rsvpLabel(a.status)}</span>
+      </div>
+    `).join('');
+  } else {
+    attSection.style.display = 'none';
+  }
+
+  // Edit / Delete buttons
+  document.getElementById('d-btn-edit').style.display   = canManage ? '' : 'none';
+  document.getElementById('d-btn-delete').style.display = canManage ? '' : 'none';
+
+  document.getElementById('overlay-detail').classList.add('visible');
+}
+
+function closeDetailModal() {
+  document.getElementById('overlay-detail').classList.remove('visible');
+  detailEventId = null;
+}
+
+function closeDetailIfBackdrop(e) {
+  if (e.target === e.currentTarget) closeDetailModal();
+}
+
+// ── Status change ─────────────────────────────────────────────────────────────
+async function changeStatus(newStatus) {
+  if (!detailEventId) return;
+  try {
+    const r = await fetch(`/api/calendar/${detailEventId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    });
+    if (!r.ok) throw new Error();
+    const updated = await r.json();
+    const idx = events.findIndex(e => e.id === detailEventId);
+    if (idx !== -1) events[idx] = { ...events[idx], ...updated };
+    showDetail(updated);
+    renderGrid();
+    showToast('Status updated');
+  } catch { showToast('Error updating status', true); }
+}
+
+// ── RSVP ──────────────────────────────────────────────────────────────────────
+async function rsvp(status) {
+  if (!detailEventId) return;
+  try {
+    const r = await fetch(`/api/calendar/${detailEventId}/rsvp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    if (!r.ok) throw new Error();
+    const updated = await r.json();
+    const idx = events.findIndex(e => e.id === detailEventId);
+    if (idx !== -1) events[idx] = updated;
+    showDetail(updated);
+    renderGrid();
+    showToast(status === 'going' ? '✓ Joined!' : status === 'maybe' ? '? Marked as maybe' : '✗ Marked as not going');
+  } catch { showToast('Error updating RSVP', true); }
+}
+
+async function cancelRsvp() {
+  if (!detailEventId) return;
+  try {
+    const r = await fetch(`/api/calendar/${detailEventId}/rsvp`, { method: 'DELETE' });
+    if (!r.ok) throw new Error();
+    const updated = await r.json();
+    const idx = events.findIndex(e => e.id === detailEventId);
+    if (idx !== -1) events[idx] = updated;
+    showDetail(updated);
+    renderGrid();
+    showToast('RSVP removed');
+  } catch { showToast('Error removing RSVP', true); }
+}
+
+// ── Delete event ──────────────────────────────────────────────────────────────
+async function deleteEvent() {
+  if (!detailEventId) return;
+  const ev = events.find(e => e.id === detailEventId);
+  if (!confirm(`Delete "${ev?.peak_name}"?`)) return;
+  try {
+    const r = await fetch(`/api/calendar/${detailEventId}`, { method: 'DELETE' });
+    if (!r.ok) throw new Error();
+    events = events.filter(e => e.id !== detailEventId);
+    closeDetailModal();
+    renderGrid();
+    showToast('Event deleted');
+  } catch { showToast('Error deleting event', true); }
+}
+
+// ── Create / Edit form modal ──────────────────────────────────────────────────
+function openCreateModal() {
+  editEventId = null;
+  document.getElementById('form-title').textContent = 'New event';
+  document.getElementById('form-sub').textContent   = 'Plan a group activity';
+  document.getElementById('btn-form-save').textContent = 'Create event';
+  document.getElementById('f-status-row').style.display = 'none';
+  clearForm();
+  document.getElementById('overlay-form').classList.add('visible');
+  setTimeout(() => document.getElementById('f-name').focus(), 80);
+}
+
+function openEditFromDetail() {
+  const ev = events.find(e => e.id === detailEventId);
+  if (!ev) return;
+  editEventId = ev.id;
+  closeDetailModal();
+  document.getElementById('form-title').textContent = 'Edit event';
+  document.getElementById('form-sub').textContent   = ev.peak_name;
+  document.getElementById('btn-form-save').textContent = 'Save changes';
+  document.getElementById('f-status-row').style.display = 'block';
+  fillForm(ev);
+  document.getElementById('overlay-form').classList.add('visible');
+}
+
+function clearForm() {
+  document.getElementById('f-name').value      = '';
+  document.getElementById('f-activity').value  = 'hike';
+  document.getElementById('f-difficulty').value = '';
+  document.getElementById('f-date-start').value = '';
+  document.getElementById('f-date-end').value   = '';
+  document.getElementById('f-duration').value   = '';
+  document.getElementById('f-max-p').value      = '';
+  document.getElementById('f-meeting').value    = '';
+  document.getElementById('f-cost').value       = '';
+  document.getElementById('f-currency').value   = 'EUR';
+  document.getElementById('f-notes').value      = '';
+  document.getElementById('f-status').value     = 'open';
+}
+
+function fillForm(ev) {
+  document.getElementById('f-name').value      = ev.peak_name;
+  document.getElementById('f-activity').value  = ev.activity_type;
+  document.getElementById('f-difficulty').value = ev.difficulty || '';
+  document.getElementById('f-date-start').value = ev.planned_date;
+  document.getElementById('f-date-end').value   = ev.end_date || '';
+  document.getElementById('f-duration').value   = ev.duration_hours ?? '';
+  document.getElementById('f-max-p').value      = ev.max_participants ?? '';
+  document.getElementById('f-meeting').value    = ev.meeting_point || '';
+  document.getElementById('f-cost').value       = ev.cost_per_person ?? '';
+  document.getElementById('f-currency').value   = ev.currency || 'EUR';
+  document.getElementById('f-notes').value      = ev.notes || '';
+  document.getElementById('f-status').value     = ev.status;
+}
+
+function closeFormModal() {
+  document.getElementById('overlay-form').classList.remove('visible');
+  editEventId = null;
+}
+
+function closeFormIfBackdrop(e) {
+  if (e.target === e.currentTarget) closeFormModal();
+}
+
+async function saveForm() {
+  const name = document.getElementById('f-name').value.trim();
+  const date = document.getElementById('f-date-start').value;
+  if (!name) { document.getElementById('f-name').focus(); return; }
+  if (!date) { document.getElementById('f-date-start').focus(); return; }
+
+  const body = {
+    peak_name:      name,
+    activity_type:  document.getElementById('f-activity').value,
+    planned_date:   date,
+    end_date:       document.getElementById('f-date-end').value || null,
+    difficulty:     document.getElementById('f-difficulty').value || null,
+    duration_hours: parseFloat(document.getElementById('f-duration').value) || null,
+    max_participants: parseInt(document.getElementById('f-max-p').value) || null,
+    meeting_point:  document.getElementById('f-meeting').value.trim() || null,
+    cost_per_person: parseFloat(document.getElementById('f-cost').value) || null,
+    currency:       document.getElementById('f-currency').value,
+    notes:          document.getElementById('f-notes').value.trim() || null,
+  };
+
+  const btn = document.getElementById('btn-form-save');
+  btn.disabled = true;
+  btn.textContent = editEventId ? 'Saving…' : 'Creating…';
+
+  try {
+    let r;
+    if (editEventId) {
+      r = await fetch(`/api/calendar/${editEventId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      // Also update status if changed
+      const newStatus = document.getElementById('f-status').value;
+      const ev = events.find(e => e.id === editEventId);
+      if (ev && ev.status !== newStatus) {
+        await fetch(`/api/calendar/${editEventId}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus }),
+        });
+      }
+    } else {
+      r = await fetch('/api/calendar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+    }
+
+    if (r.status === 401 || r.status === 403) { window.location.href = '/login.html'; return; }
+    if (!r.ok) throw new Error();
+    const saved = await r.json();
+
+    if (editEventId) {
+      events = events.map(e => e.id === editEventId ? saved : e);
+    } else {
+      events.push(saved);
+    }
+
+    closeFormModal();
+    renderGrid();
+    showToast(editEventId ? 'Event updated' : 'Event created!');
+  } catch {
+    showToast('Error saving event', true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = editEventId ? 'Save changes' : 'Create event';
+  }
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatDate(s) {
+  if (!s) return '';
+  const [y, m, d] = s.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${parseInt(d)} ${months[parseInt(m,10)-1]} ${y}`;
+}
+
+function ucFirst(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+
+function showToast(msg, error = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = error ? '#c0392b' : '#7ec87e';
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 3200);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeDetailModal(); closeFormModal(); }
+});
+
 // ── Init ──────────────────────────────────────────────────────────────────────
-renderMonthLabel();
-loadAll();
+loadEvents();
 </script>
 </body>
 </html>

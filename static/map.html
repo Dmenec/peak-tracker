@@ -400,6 +400,7 @@
   <nav>
     <a class="nav-link active" href="/map.html">Map</a>
     <a class="nav-link" href="/calendar/">Calendar</a>
+    <a class="nav-link admin-only" href="/admin.html" style="display:none">Admin</a>
   </nav>
   <div class="header-right">
     <div class="legend-items">
@@ -431,7 +432,7 @@
     <div class="sidebar-header">
       <div class="sidebar-top-row">
         <div class="sidebar-title">Registered peaks</div>
-        <button class="btn-register-peak" onclick="startRegisterPeakMode()" title="Add a new peak to the map (requires authentication)">+ New peak</button>
+        <button class="btn-register-peak admin-only" id="btn-new-peak" onclick="startRegisterPeakMode()" title="Add a new peak to the map" style="display:none">+ New peak</button>
       </div>
       <div class="sidebar-stats-row" id="sidebar-stats"></div>
       <input class="search-input" type="text" id="search-input" placeholder="Search peak…" oninput="filterPeaks()">
@@ -521,21 +522,11 @@
   </div>
 </div>
 
-<!-- Modal: Register new peak (requires auth) -->
+<!-- Modal: Register new peak (admin only) -->
 <div class="overlay" id="overlay-new-peak" onclick="closeModal(event)">
   <div class="modal">
     <div class="modal-title">Register peak</div>
     <div class="modal-subtitle" id="np-coords-label">Click on the map to select the location</div>
-
-    <div class="inline-login" id="inline-login-box">
-      <div class="inline-login-title">Sign in to register peaks</div>
-      <div class="inline-login-row">
-        <input type="text"     id="login-user" placeholder="Username">
-        <input type="password" id="login-pass" placeholder="Password">
-        <button class="btn-inline-login" onclick="inlineLogin()">Sign in</button>
-      </div>
-      <div class="login-error" id="login-error">Invalid username or password</div>
-    </div>
 
     <div id="new-peak-form">
       <div class="field">
@@ -583,7 +574,7 @@
 
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeNewPeakModal()">Cancel</button>
-      <button class="btn btn-primary" id="btn-np-save" style="display:none;" onclick="saveNewPeak()">Save peak</button>
+      <button class="btn btn-primary" id="btn-np-save" onclick="saveNewPeak()">Save peak</button>
     </div>
   </div>
 </div>
@@ -594,22 +585,9 @@
     <div class="modal-title">Delete peak</div>
     <div class="modal-subtitle" id="delete-peak-name"></div>
 
-    <div class="inline-login" id="delete-login-box">
-      <div class="inline-login-title">Sign in to delete</div>
-      <div class="inline-login-row">
-        <input type="text"     id="del-login-user" placeholder="Username">
-        <input type="password" id="del-login-pass" placeholder="Password">
-        <button class="btn-inline-login" onclick="inlineLoginForDelete()">Sign in</button>
-      </div>
-      <div class="login-error" id="del-login-error">Invalid username or password</div>
-    </div>
-
-    <div id="delete-confirm-actions" style="display:none;" class="modal-actions">
+    <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
       <button class="btn btn-danger" id="btn-confirm-delete" onclick="confirmDeletePeak()">Delete peak</button>
-    </div>
-    <div id="delete-no-auth-actions" class="modal-actions" style="margin-top:0;">
-      <button class="btn btn-secondary" style="flex:1;" onclick="closeDeleteModal()">Cancel</button>
     </div>
   </div>
 </div>
@@ -619,8 +597,24 @@
 <script>
 // ── State ─────────────────────────────────────────────────────────────────────
 let map, peaks = [], markers = [], eventMarkers = [], selectedPeakId = null;
-let token = sessionStorage.getItem('pt_token') || null;
 let events = [];
+
+// Decode JWT payload to determine role (token stored in sessionStorage by login page)
+function decodeJwtPayload(token) {
+  try {
+    const payload = token.split('.')[1];
+    return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+  } catch { return null; }
+}
+
+const _rawToken = sessionStorage.getItem('pt_token');
+const _claims   = _rawToken ? decodeJwtPayload(_rawToken) : null;
+const isAdmin   = _claims?.role === 'admin';
+
+// Show admin-only UI elements
+if (isAdmin) {
+  document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+}
 
 async function logout() {
   sessionStorage.removeItem('pt_token');
@@ -962,7 +956,7 @@ function buildPopupHTML(p) {
     <div class="popup-actions">
       ${type !== 'done' ? `<button class="btn-popup btn-popup-schedule" onclick="openPlanModal('${p.id}')">📅 Plan ascent</button>` : ''}
       ${doneButton}
-      <button class="btn-popup btn-popup-delete" data-id="${esc(p.id)}" data-name="${esc(p.name)}" onclick="openDeleteModal(this.dataset.id,this.dataset.name)">🗑 Delete peak</button>
+      ${isAdmin ? `<button class="btn-popup btn-popup-delete" data-id="${esc(p.id)}" data-name="${esc(p.name)}" onclick="openDeleteModal(this.dataset.id,this.dataset.name)">🗑 Delete peak</button>` : ''}
     </div>
   </div>`;
 }
@@ -1285,8 +1279,6 @@ function openNewPeakModal(lat, lng) {
   document.getElementById('np-duration').value = '';
   document.getElementById('np-notes').value = '';
 
-  document.getElementById('inline-login-box').style.display = token ? 'none' : 'block';
-  document.getElementById('btn-np-save').style.display = token ? '' : 'none';
   document.getElementById('overlay-new-peak').classList.add('visible');
   setTimeout(() => document.getElementById('np-name').focus(), 100);
 }
@@ -1304,9 +1296,6 @@ function closeNewPeakModal() {
 function openDeleteModal(id, name) {
   deletePeakId = id;
   document.getElementById('delete-peak-name').textContent = 'Delete "' + name + '" from the map?';
-  document.getElementById('delete-login-box').style.display = token ? 'none' : 'block';
-  document.getElementById('delete-confirm-actions').style.display = token ? 'flex' : 'none';
-  document.getElementById('delete-no-auth-actions').style.display = token ? 'none' : 'flex';
   document.getElementById('overlay-delete').classList.add('visible');
 }
 
@@ -1315,45 +1304,15 @@ function closeDeleteModal() {
   deletePeakId = null;
 }
 
-async function inlineLoginForDelete() {
-  const user = document.getElementById('del-login-user').value.trim();
-  const pass = document.getElementById('del-login-pass').value;
-  const errEl = document.getElementById('del-login-error');
-  errEl.style.display = 'none';
-  try {
-    const r = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: user, password: pass }),
-    });
-    if (!r.ok) throw new Error();
-    const data = await r.json();
-    token = data.token;
-    sessionStorage.setItem('pt_token', token);
-    document.getElementById('delete-login-box').style.display = 'none';
-    document.getElementById('delete-confirm-actions').style.display = 'flex';
-    document.getElementById('delete-no-auth-actions').style.display = 'none';
-  } catch {
-    errEl.style.display = 'block';
-  }
-}
-
 async function confirmDeletePeak() {
-  if (!deletePeakId || !token) return;
+  if (!deletePeakId) return;
   const btn = document.getElementById('btn-confirm-delete');
   btn.disabled = true;
   btn.textContent = 'Deleting…';
   try {
-    const r = await fetch('/api/peaks/' + deletePeakId, {
-      method: 'DELETE',
-      headers: { 'Authorization': 'Bearer ' + token },
-    });
-    if (r.status === 401) {
-      token = null;
-      sessionStorage.removeItem('pt_token');
-      document.getElementById('delete-login-box').style.display = 'block';
-      document.getElementById('delete-confirm-actions').style.display = 'none';
-      showToast('Session expired, please sign in again', true);
+    const r = await fetch('/api/peaks/' + deletePeakId, { method: 'DELETE' });
+    if (r.status === 401 || r.status === 403) {
+      window.location.href = '/login.html';
       return;
     }
     if (!r.ok) throw new Error();
@@ -1366,30 +1325,6 @@ async function confirmDeletePeak() {
   } finally {
     btn.disabled = false;
     btn.textContent = 'Delete peak';
-  }
-}
-
-// ── Inline login (new peak form) ──────────────────────────────────────────────
-async function inlineLogin() {
-  const user = document.getElementById('login-user').value.trim();
-  const pass = document.getElementById('login-pass').value;
-  const errEl = document.getElementById('login-error');
-  errEl.style.display = 'none';
-  try {
-    const r = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: user, password: pass }),
-    });
-    if (!r.ok) throw new Error();
-    const data = await r.json();
-    token = data.token;
-    sessionStorage.setItem('pt_token', token);
-    document.getElementById('inline-login-box').style.display = 'none';
-    document.getElementById('btn-np-save').style.display = '';
-    showToast('Signed in');
-  } catch {
-    errEl.style.display = 'block';
   }
 }
 
@@ -1406,10 +1341,7 @@ async function saveNewPeak() {
   try {
     const r = await fetch('/api/peaks', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name:          name,
         latitude:      parseFloat(document.getElementById('np-lat').value),
@@ -1421,12 +1353,8 @@ async function saveNewPeak() {
         notes:         document.getElementById('np-notes').value.trim() || null,
       }),
     });
-    if (r.status === 401) {
-      token = null;
-      sessionStorage.removeItem('pt_token');
-      document.getElementById('inline-login-box').style.display = 'block';
-      document.getElementById('btn-np-save').style.display = 'none';
-      showToast('Session expired, please sign in again', true);
+    if (r.status === 401 || r.status === 403) {
+      window.location.href = '/login.html';
       return;
     }
     if (!r.ok) throw new Error();
@@ -1475,9 +1403,6 @@ document.addEventListener('keydown', e => {
     closeDeleteModal();
     registerPeakMode = false;
   }
-});
-document.getElementById('login-pass').addEventListener('keydown', e => {
-  if (e.key === 'Enter') inlineLogin();
 });
 
 // ── Expedition modal ──────────────────────────────────────────────────────────

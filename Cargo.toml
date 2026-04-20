@@ -24,3 +24,4 @@ dotenvy    = "0.15"
 rusqlite   = { version = "0.31", features = ["bundled"] }
 hmac       = "0.12"
 sha2       = "0.10"
+bcrypt     = "0.15"
