@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PeakTracker · Calendar</title>
+<script src="/i18n.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
 <style>
@@ -364,30 +365,30 @@ nav { display: flex; gap: 0.25rem; }
 <header>
   <a class="logo" href="/">Peak<span>Tracker</span></a>
   <nav>
-    <a class="nav-link" href="/map.html">Map</a>
-    <a class="nav-link active" href="/calendar/">Calendar</a>
-    <a class="nav-link admin-only" href="/admin.html" id="admin-link" style="display:none">Admin</a>
+    <a class="nav-link" href="/map.html" data-i18n="nav_map">Map</a>
+    <a class="nav-link active" href="/calendar/" data-i18n="nav_calendar">Calendar</a>
+    <a class="nav-link admin-only" href="/admin.html" id="admin-link" data-i18n="nav_admin" style="display:none">Admin</a>
   </nav>
   <div class="header-right">
     <span class="user-badge" id="user-badge"></span>
-    <button class="btn-logout" onclick="logout()">Sign out</button>
+    <button class="btn-logout" onclick="logout()" data-i18n="sign_out">Sign out</button>
   </div>
 </header>
 
 <div class="page">
   <div class="toolbar">
-    <div class="toolbar-title">Group Calendar</div>
+    <div class="toolbar-title" data-i18n="group_calendar">Group Calendar</div>
     <div class="filter-pills" id="filter-pills">
-      <button class="pill active" data-filter="all" onclick="setFilter('all')">All</button>
-      <button class="pill pill-open" data-filter="open" onclick="setFilter('open')">Open</button>
-      <button class="pill pill-completed" data-filter="completed" onclick="setFilter('completed')">Completed</button>
-      <button class="pill pill-cancelled" data-filter="cancelled" onclick="setFilter('cancelled')">Cancelled</button>
+      <button class="pill active" data-filter="all" onclick="setFilter('all')" data-i18n="filter_all">All</button>
+      <button class="pill pill-open" data-filter="open" onclick="setFilter('open')" data-i18n="filter_open">Open</button>
+      <button class="pill pill-completed" data-filter="completed" onclick="setFilter('completed')" data-i18n="filter_completed">Completed</button>
+      <button class="pill pill-cancelled" data-filter="cancelled" onclick="setFilter('cancelled')" data-i18n="filter_cancelled">Cancelled</button>
     </div>
     <div class="view-toggle">
-      <button class="view-btn active" id="view-list-btn" onclick="setView('list')" title="List view">☰ List</button>
-      <button class="view-btn" id="view-cal-btn" onclick="setView('calendar')" title="Calendar view">⊞ Month</button>
+      <button class="view-btn active" id="view-list-btn" onclick="setView('list')" data-i18n="view_list">☰ List</button>
+      <button class="view-btn" id="view-cal-btn" onclick="setView('calendar')" data-i18n="view_month">⊞ Month</button>
     </div>
-    <button class="btn-new-event" onclick="openCreateModal()">+ New event</button>
+    <button class="btn-new-event" onclick="openCreateModal()" data-i18n="btn_new_event">+ New event</button>
   </div>
 
   <!-- List view -->
@@ -423,7 +424,7 @@ nav { display: flex; gap: 0.25rem; }
         <div class="detail-name" id="d-name-hero"></div>
         <div class="detail-dates" id="d-dates-hero">
           <span id="d-dates-hero-text"></span>
-          <span class="detail-hero-badge">✓ Completed</span>
+          <span class="detail-hero-badge" data-i18n="completed_hero_badge">✓ Completed</span>
         </div>
       </div>
     </div>
@@ -439,7 +440,7 @@ nav { display: flex; gap: 0.25rem; }
 
     <!-- Status control (owner + admin only) -->
     <div id="d-status-section" style="display:none">
-      <div class="section-divider">Status</div>
+      <div class="section-divider" data-i18n="section_status">Status</div>
       <div class="status-bar" id="d-status-bar"></div>
     </div>
 
@@ -448,27 +449,27 @@ nav { display: flex; gap: 0.25rem; }
 
     <!-- Notes -->
     <div id="d-notes-wrap" style="display:none">
-      <div class="section-divider">Notes</div>
+      <div class="section-divider" data-i18n="section_notes">Notes</div>
       <p id="d-notes" style="font-size:0.82rem;color:#8ab080;font-style:italic;"></p>
     </div>
 
     <!-- RSVP -->
     <div id="d-rsvp-section">
-      <div class="section-divider">My RSVP</div>
+      <div class="section-divider" data-i18n="section_rsvp">My RSVP</div>
       <div class="rsvp-bar" id="d-rsvp-bar"></div>
     </div>
 
     <!-- Attendees -->
     <div id="d-attendees-section" style="display:none">
-      <div class="section-divider">Participants (<span id="d-count">0</span>)</div>
+      <div class="section-divider">Participants</div>
       <div class="attendees-list" id="d-attendees"></div>
     </div>
 
     <!-- Actions -->
     <div class="modal-actions" id="d-actions">
-      <button class="btn btn-secondary" onclick="closeDetailModal()">Close</button>
-      <button class="btn btn-secondary" id="d-btn-edit" onclick="openEditFromDetail()" style="display:none">Edit</button>
-      <button class="btn btn-danger" id="d-btn-delete" onclick="deleteEvent()" style="display:none">Delete</button>
+      <button class="btn btn-secondary" onclick="closeDetailModal()" data-i18n="btn_close">Close</button>
+      <button class="btn btn-secondary" id="d-btn-edit" onclick="openEditFromDetail()" data-i18n="btn_edit" style="display:none">Edit</button>
+      <button class="btn btn-danger" id="d-btn-delete" onclick="deleteEvent()" data-i18n="btn_delete" style="display:none">Delete</button>
     </div>
   </div>
 </div>
@@ -481,62 +482,62 @@ nav { display: flex; gap: 0.25rem; }
 
     <div class="form-2col">
       <div class="field" style="grid-column:1/-1">
-        <label>Activity / Peak name *</label>
-        <input type="text" id="f-name" placeholder="Mont Blanc, Canigó, Ski day…">
+        <label data-i18n="lbl_activity_name">Activity / Peak name *</label>
+        <input type="text" id="f-name" data-i18n-placeholder="ph_activity_name" placeholder="Mont Blanc, Canigó, Ski day…">
       </div>
       <div class="field">
-        <label>Activity type</label>
+        <label data-i18n="lbl_activity_type">Activity type</label>
         <select id="f-activity">
-          <option value="hike">🥾 Hike</option>
-          <option value="via_ferrata">🪝 Via ferrata</option>
-          <option value="ski">⛷️ Ski / Snowboard</option>
-          <option value="trail_run">🏃 Trail run</option>
-          <option value="cycling">🚵 Cycling / MTB</option>
-          <option value="camping">🏕️ Camping</option>
-          <option value="other">🗺️ Other</option>
+          <option value="hike" data-i18n="act_hike">🥾 Hike</option>
+          <option value="via_ferrata" data-i18n="act_via_ferrata">🪝 Via ferrata</option>
+          <option value="ski" data-i18n="act_ski">⛷️ Ski / Snowboard</option>
+          <option value="trail_run" data-i18n="act_trail_run">🏃 Trail run</option>
+          <option value="cycling" data-i18n="act_cycling">🚵 Cycling / MTB</option>
+          <option value="camping" data-i18n="act_camping">🏕️ Camping</option>
+          <option value="other" data-i18n="act_other">🗺️ Other</option>
         </select>
       </div>
       <div class="field">
-        <label>Difficulty</label>
+        <label data-i18n="lbl_difficulty">Difficulty</label>
         <select id="f-difficulty">
-          <option value="">— Not specified —</option>
-          <option value="Easy">Easy</option>
-          <option value="Moderate">Moderate</option>
-          <option value="Hard">Hard</option>
-          <option value="Very hard">Very hard</option>
-          <option value="Alpine">Alpine</option>
+          <option value="" data-i18n="diff_none">— Not specified —</option>
+          <option value="Easy" data-i18n="diff_easy">Easy</option>
+          <option value="Moderate" data-i18n="diff_moderate">Moderate</option>
+          <option value="Hard" data-i18n="diff_hard">Hard</option>
+          <option value="Very hard" data-i18n="diff_very_hard">Very hard</option>
+          <option value="Alpine" data-i18n="diff_alpine">Alpine</option>
         </select>
       </div>
       <div class="field">
-        <label>Start date *</label>
+        <label data-i18n="lbl_start_date">Start date *</label>
         <input type="date" id="f-date-start">
       </div>
       <div class="field">
-        <label>End date (optional)</label>
+        <label data-i18n="lbl_end_date">End date (optional)</label>
         <input type="date" id="f-date-end">
       </div>
       <div class="field">
-        <label>Duration (hours)</label>
+        <label data-i18n="lbl_duration">Duration (h)</label>
         <input type="number" id="f-duration" step="0.5" min="0" placeholder="6.5">
       </div>
       <div class="field">
-        <label>Max participants</label>
+        <label data-i18n="lbl_max_participants">Max participants</label>
         <input type="number" id="f-max-p" min="1" placeholder="12">
       </div>
     </div>
 
-    <div class="section-divider">Meeting & Cost</div>
+    <div class="section-divider" data-i18n="section_meeting_cost">Meeting & Cost</div>
     <div class="field">
-      <label>Meeting point</label>
-      <input type="text" id="f-meeting" placeholder="Parking at Refugi X, trailhead GPS…">
+      <label data-i18n="lbl_meeting_point">Meeting point</label>
+      <input type="text" id="f-meeting" data-i18n-placeholder="ph_meeting" placeholder="Parking at Refugi X, trailhead GPS…">
     </div>
     <div class="form-3col">
       <div class="field" style="grid-column:span 2">
-        <label>Cost per person</label>
+        <label data-i18n="lbl_cost_per_person">Cost per person</label>
         <input type="number" id="f-cost" step="0.01" min="0" placeholder="25.00">
       </div>
       <div class="field">
-        <label>Currency</label>
+        <label data-i18n="lbl_currency">Currency</label>
         <select id="f-currency">
           <option value="EUR">EUR €</option>
           <option value="USD">USD $</option>
@@ -546,27 +547,27 @@ nav { display: flex; gap: 0.25rem; }
       </div>
     </div>
 
-    <div class="section-divider">Details</div>
+    <div class="section-divider" data-i18n="section_details">Details</div>
     <div class="field">
-      <label>Notes</label>
-      <textarea id="f-notes" rows="3" placeholder="What to bring, car sharing, etc…"></textarea>
+      <label data-i18n="lbl_notes">Notes</label>
+      <textarea id="f-notes" rows="3" data-i18n-placeholder="ph_notes_cal" placeholder="What to bring, car sharing, etc…"></textarea>
     </div>
 
     <div id="f-status-row" style="display:none">
-      <div class="section-divider">Status</div>
+      <div class="section-divider" data-i18n="section_status">Status</div>
       <div class="field">
         <select id="f-status">
-          <option value="open">Open — accepting participants</option>
-          <option value="full">Full — no more spots</option>
-          <option value="completed">Completed — ascent done</option>
-          <option value="cancelled">Cancelled</option>
+          <option value="open" data-i18n="status_open_desc">Open — accepting participants</option>
+          <option value="full" data-i18n="status_full_desc">Full — no more spots</option>
+          <option value="completed" data-i18n="status_completed_desc">Completed — ascent done</option>
+          <option value="cancelled" data-i18n="status_cancelled_desc">Cancelled</option>
         </select>
       </div>
     </div>
 
     <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeFormModal()">Cancel</button>
-      <button class="btn btn-primary" id="btn-form-save" onclick="saveForm()">Create event</button>
+      <button class="btn btn-secondary" onclick="closeFormModal()" data-i18n="lbl_cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-form-save" onclick="saveForm()" data-i18n="form_btn_create">Create event</button>
     </div>
   </div>
 </div>
@@ -575,8 +576,8 @@ nav { display: flex; gap: 0.25rem; }
 
 <script>
 // ── Auth / session ────────────────────────────────────────────────────────────
-function decodeJwtPayload(t) {
-  try { return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }
+function decodeJwtPayload(tok) {
+  try { return JSON.parse(atob(tok.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }
   catch { return null; }
 }
 
@@ -590,6 +591,7 @@ if (_claims) {
   document.getElementById('user-badge').textContent = _claims.username;
   if (isAdmin) document.getElementById('admin-link').style.display = '';
 }
+document.addEventListener('DOMContentLoaded', applyI18n);
 
 async function logout() {
   sessionStorage.removeItem('pt_token');
@@ -651,6 +653,10 @@ const ACT_ICONS = {
   hike: '🥾', via_ferrata: '🪝', ski: '⛷️', trail_run: '🏃',
   cycling: '🚵', camping: '🏕️', other: '🗺️'
 };
+const ACT_KEYS = {
+  hike: 'act_hike', via_ferrata: 'act_via_ferrata', ski: 'act_ski',
+  trail_run: 'act_trail_run', cycling: 'act_cycling', camping: 'act_camping', other: 'act_other'
+};
 
 function actIcon(t) { return ACT_ICONS[t] || '🗺️'; }
 
@@ -691,14 +697,14 @@ function renderGrid() {
           <span class="event-status-badge badge-${ev.status}">${statusLabel(ev.status)}</span>
         </div>
         <div class="event-meta">
-          <span class="meta-chip" style="color:#8ab080">by ${esc(ev.created_by_name)}</span>
+          <span class="meta-chip" style="color:#8ab080">${t('by_label')} ${esc(ev.created_by_name)}</span>
           ${endDateStr ? `<span class="meta-chip">${endDateStr}</span>` : ''}
           ${metaParts}
         </div>
         ${ev.notes ? `<div class="event-notes">${esc(ev.notes)}</div>` : ''}
       </div>
       <div class="event-right">
-        <div class="participants-badge"><strong>${ev.participant_count}</strong> going</div>
+        <div class="participants-badge">${t('participants_going', `<strong>${ev.participant_count}</strong>`)}</div>
         ${myRsvp ? `<div class="rsvp-pill rsvp-${myRsvp}">${rsvpLabel(myRsvp)}</div>` : ''}
       </div>
     </div>`;
@@ -712,11 +718,13 @@ function getMyRsvp(ev) {
 }
 
 function statusLabel(s) {
-  return { open: 'Open', full: 'Full', completed: 'Done', cancelled: 'Cancelled' }[s] ?? s;
+  const k = { open: 'status_open', full: 'status_full', completed: 'status_completed', cancelled: 'status_cancelled' }[s];
+  return k ? t(k) : s;
 }
 
 function rsvpLabel(s) {
-  return { going: '✓ Going', maybe: '? Maybe', not_going: '✗ Not going' }[s] ?? s;
+  const k = { going: 'rsvp_going', maybe: 'rsvp_maybe', not_going: 'rsvp_not_going' }[s];
+  return k ? t(k) : s;
 }
 
 function formatCost(c, currency) {
@@ -737,9 +745,8 @@ function setView(v) {
 }
 
 // ── Month calendar ────────────────────────────────────────────────────────────
-const MONTHS = ['January','February','March','April','May','June',
-                'July','August','September','October','November','December'];
-const DOW    = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const MONTHS = t('months').split(',');
+const DOW    = t('days_short').split(',');
 
 function calPrev()  { calMonth--; if (calMonth < 0)  { calMonth = 11; calYear--; } renderCalendar(); }
 function calNext()  { calMonth++; if (calMonth > 11) { calMonth = 0;  calYear++; } renderCalendar(); }
@@ -852,7 +859,7 @@ async function openDetail(id) {
     if (idx !== -1) events[idx] = ev;
     showDetail(ev);
   } catch {
-    showToast('Error loading event', true);
+    showToast(t('err_load_event'), true);
   }
 }
 
@@ -890,10 +897,9 @@ function showDetail(ev) {
   if (canManage) {
     statusSection.style.display = 'block';
     const statuses = ['open','full','completed','cancelled'];
-    const labels   = { open:'Open', full:'Full', completed:'Done', cancelled:'Cancelled' };
     document.getElementById('d-status-bar').innerHTML = statuses.map(s =>
       `<button class="status-btn ${ev.status === s ? 'cur-' + s : ''}"
-               onclick="changeStatus('${s}')">${labels[s]}</button>`
+               onclick="changeStatus('${s}')">${statusLabel(s)}</button>`
     ).join('');
   } else {
     statusSection.style.display = 'none';
@@ -901,13 +907,13 @@ function showDetail(ev) {
 
   // Info grid
   const items = [
-    ev.difficulty ? { label: 'Difficulty', val: ev.difficulty } : null,
-    ev.duration_hours ? { label: 'Duration', val: ev.duration_hours + 'h' } : null,
-    ev.max_participants ? { label: 'Max participants', val: ev.max_participants } : null,
-    ev.cost_per_person ? { label: 'Cost / person', val: formatCost(ev.cost_per_person, ev.currency) } : null,
-    ev.meeting_point ? { label: 'Meeting point', val: ev.meeting_point } : null,
-    { label: 'Organised by', val: ev.created_by_name },
-    { label: 'Status', val: statusLabel(ev.status) },
+    ev.difficulty ? { label: t('lbl_difficulty_field'), val: ev.difficulty } : null,
+    ev.duration_hours ? { label: t('lbl_duration_field'), val: ev.duration_hours + 'h' } : null,
+    ev.max_participants ? { label: t('lbl_max_p_field'), val: ev.max_participants } : null,
+    ev.cost_per_person ? { label: t('lbl_cost_field'), val: formatCost(ev.cost_per_person, ev.currency) } : null,
+    ev.meeting_point ? { label: t('lbl_meeting_field'), val: ev.meeting_point } : null,
+    { label: t('lbl_organised_by'), val: ev.created_by_name },
+    { label: t('lbl_status_field'), val: statusLabel(ev.status) },
   ].filter(Boolean);
 
   document.getElementById('d-info-grid').innerHTML = items.map(i =>
@@ -928,10 +934,10 @@ function showDetail(ev) {
     rsvpSection.style.display = 'block';
     const myRsvp = (ev.attendees || []).find(a => a.user_id === myId)?.status ?? null;
     document.getElementById('d-rsvp-bar').innerHTML = `
-      <button class="rsvp-btn ${myRsvp === 'going' ? 'active-going' : ''}" onclick="rsvp('going')">✓ Going</button>
-      <button class="rsvp-btn ${myRsvp === 'maybe' ? 'active-maybe' : ''}" onclick="rsvp('maybe')">? Maybe</button>
-      <button class="rsvp-btn ${myRsvp === 'not_going' ? 'active-not_going' : ''}" onclick="rsvp('not_going')">✗ Not going</button>
-      ${myRsvp ? `<button class="rsvp-btn" style="background:#ffffff08;flex:0;padding:0.5rem 0.6rem;" onclick="cancelRsvp()" title="Remove RSVP">✕</button>` : ''}
+      <button class="rsvp-btn ${myRsvp === 'going' ? 'active-going' : ''}" onclick="rsvp('going')">${t('rsvp_going')}</button>
+      <button class="rsvp-btn ${myRsvp === 'maybe' ? 'active-maybe' : ''}" onclick="rsvp('maybe')">${t('rsvp_maybe')}</button>
+      <button class="rsvp-btn ${myRsvp === 'not_going' ? 'active-not_going' : ''}" onclick="rsvp('not_going')">${t('rsvp_not_going')}</button>
+      ${myRsvp ? `<button class="rsvp-btn" style="background:#ffffff08;flex:0;padding:0.5rem 0.6rem;" onclick="cancelRsvp()">✕</button>` : ''}
     `;
   } else {
     rsvpSection.style.display = 'none';
@@ -942,7 +948,8 @@ function showDetail(ev) {
   const attSection = document.getElementById('d-attendees-section');
   if (attendees.length) {
     attSection.style.display = 'block';
-    document.getElementById('d-count').textContent = ev.participant_count;
+    document.getElementById('d-attendees-section').querySelector('.section-divider').textContent =
+      t('section_participants', ev.participant_count);
     const attColors = { going: '#7ec87e', maybe: '#f5a623', not_going: '#e87e7e' };
     document.getElementById('d-attendees').innerHTML = attendees.map(a => `
       <div class="attendee-row">
@@ -985,8 +992,8 @@ async function changeStatus(newStatus) {
     if (idx !== -1) events[idx] = { ...events[idx], ...updated };
     showDetail(updated);
     renderGrid();
-    showToast('Status updated');
-  } catch { showToast('Error updating status', true); }
+    showToast(t('toast_status_updated'));
+  } catch { showToast(t('err_update_status'), true); }
 }
 
 // ── RSVP ──────────────────────────────────────────────────────────────────────
@@ -1005,8 +1012,8 @@ async function rsvp(status) {
     showDetail(updated);
     renderGrid();
     if (viewMode === 'calendar') renderCalendar();
-    showToast(status === 'going' ? '✓ Joined!' : status === 'maybe' ? '? Marked as maybe' : '✗ Marked as not going');
-  } catch { showToast('Error updating RSVP', true); }
+    showToast(status === 'going' ? t('rsvp_toast_going') : status === 'maybe' ? t('rsvp_toast_maybe') : t('rsvp_toast_not_going'));
+  } catch { showToast(t('err_rsvp'), true); }
 }
 
 async function cancelRsvp() {
@@ -1019,31 +1026,31 @@ async function cancelRsvp() {
     if (idx !== -1) events[idx] = updated;
     showDetail(updated);
     renderGrid();
-    showToast('RSVP removed');
-  } catch { showToast('Error removing RSVP', true); }
+    showToast(t('rsvp_toast_removed'));
+  } catch { showToast(t('err_rsvp'), true); }
 }
 
 // ── Delete event ──────────────────────────────────────────────────────────────
 async function deleteEvent() {
   if (!detailEventId) return;
   const ev = events.find(e => e.id === detailEventId);
-  if (!confirm(`Delete "${ev?.peak_name}"?`)) return;
+  if (!confirm(t('confirm_del_event', ev?.peak_name ?? ''))) return;
   try {
     const r = await fetch(`/api/calendar/${detailEventId}`, { method: 'DELETE' });
     if (!r.ok) throw new Error();
     events = events.filter(e => e.id !== detailEventId);
     closeDetailModal();
     renderGrid();
-    showToast('Event deleted');
-  } catch { showToast('Error deleting event', true); }
+    showToast(t('toast_event_deleted'));
+  } catch { showToast(t('err_del_event'), true); }
 }
 
 // ── Create / Edit form modal ──────────────────────────────────────────────────
 function openCreateModal() {
   editEventId = null;
-  document.getElementById('form-title').textContent = 'New event';
-  document.getElementById('form-sub').textContent   = 'Plan a group activity';
-  document.getElementById('btn-form-save').textContent = 'Create event';
+  document.getElementById('form-title').textContent = t('form_new_title');
+  document.getElementById('form-sub').textContent   = t('form_new_sub');
+  document.getElementById('btn-form-save').textContent = t('form_btn_create');
   document.getElementById('f-status-row').style.display = 'none';
   clearForm();
   document.getElementById('overlay-form').classList.add('visible');
@@ -1055,9 +1062,9 @@ function openEditFromDetail() {
   if (!ev) return;
   editEventId = ev.id;
   closeDetailModal();
-  document.getElementById('form-title').textContent = 'Edit event';
+  document.getElementById('form-title').textContent = t('form_edit_title');
   document.getElementById('form-sub').textContent   = ev.peak_name;
-  document.getElementById('btn-form-save').textContent = 'Save changes';
+  document.getElementById('btn-form-save').textContent = t('form_btn_save');
   document.getElementById('f-status-row').style.display = 'block';
   fillForm(ev);
   document.getElementById('overlay-form').classList.add('visible');
@@ -1124,7 +1131,7 @@ async function saveForm() {
 
   const btn = document.getElementById('btn-form-save');
   btn.disabled = true;
-  btn.textContent = editEventId ? 'Saving…' : 'Creating…';
+  btn.textContent = editEventId ? t('form_btn_saving') : t('form_btn_creating');
 
   try {
     let r;
@@ -1164,12 +1171,12 @@ async function saveForm() {
 
     closeFormModal();
     renderGrid();
-    showToast(editEventId ? 'Event updated' : 'Event created!');
+    showToast(editEventId ? t('toast_event_updated') : t('toast_event_created'));
   } catch {
-    showToast('Error saving event', true);
+    showToast(t('err_save_event'), true);
   } finally {
     btn.disabled = false;
-    btn.textContent = editEventId ? 'Save changes' : 'Create event';
+    btn.textContent = editEventId ? t('form_btn_save') : t('form_btn_create');
   }
 }
 

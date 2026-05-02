@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PeakTracker · Admin</title>
+<script src="/i18n.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
 <style>
@@ -126,33 +127,33 @@
 <header>
   <a class="logo" href="/">Peak<span>Tracker</span></a>
   <nav>
-    <a class="nav-link" href="/map.html">Map</a>
-    <a class="nav-link" href="/calendar/">Calendar</a>
-    <a class="nav-link active" href="/admin.html">Admin</a>
+    <a class="nav-link" href="/map.html" data-i18n="nav_map">Map</a>
+    <a class="nav-link" href="/calendar/" data-i18n="nav_calendar">Calendar</a>
+    <a class="nav-link active" href="/admin.html" data-i18n="nav_admin">Admin</a>
   </nav>
   <div class="header-right">
     <span class="user-badge" id="user-badge">—</span>
-    <button class="btn-logout" onclick="logout()">Sign out</button>
+    <button class="btn-logout" onclick="logout()" data-i18n="sign_out">Sign out</button>
   </div>
 </header>
 
 <div class="page" id="main-content" style="display:none">
-  <div class="page-title">Admin Panel</div>
-  <div class="page-sub">Manage users and application settings</div>
+  <div class="page-title" data-i18n="admin_title">Admin Panel</div>
+  <div class="page-sub" data-i18n="admin_sub">Manage users and application settings</div>
 
   <!-- Users section -->
   <div class="section">
     <div class="section-title">
-      <span>Users</span>
-      <button class="btn btn-primary btn-sm" onclick="openCreateModal()">+ New user</button>
+      <span data-i18n="section_users">Users</span>
+      <button class="btn btn-primary btn-sm" onclick="openCreateModal()" data-i18n="btn_new_user">+ New user</button>
     </div>
     <table>
       <thead>
         <tr>
-          <th>Username</th>
-          <th>Display name</th>
-          <th>Role</th>
-          <th>Created</th>
+          <th data-i18n="th_username">Username</th>
+          <th data-i18n="th_display_name">Display name</th>
+          <th data-i18n="th_role">Role</th>
+          <th data-i18n="th_created">Created</th>
           <th></th>
         </tr>
       </thead>
@@ -171,33 +172,33 @@
 <!-- Modal: Create user -->
 <div class="overlay" id="overlay-create" onclick="closeCreateModal(event)">
   <div class="modal">
-    <div class="modal-title">New user</div>
-    <div class="modal-sub">The user will be able to log in immediately.</div>
+    <div class="modal-title" data-i18n="modal_new_user_title">New user</div>
+    <div class="modal-sub" data-i18n="modal_new_user_sub">The user will be able to log in immediately.</div>
     <div class="form-grid">
       <div class="field">
-        <label>Username *</label>
+        <label data-i18n="lbl_username">Username *</label>
         <input type="text" id="new-username" autocomplete="off">
       </div>
       <div class="field">
-        <label>Display name</label>
+        <label data-i18n="lbl_display_name">Display name</label>
         <input type="text" id="new-displayname" autocomplete="off">
       </div>
       <div class="field">
-        <label>Password * (min 6)</label>
+        <label data-i18n="lbl_password_min">Password * (min 6)</label>
         <input type="password" id="new-password" autocomplete="new-password">
       </div>
       <div class="field">
-        <label>Role</label>
+        <label data-i18n="lbl_role">Role</label>
         <select id="new-role">
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
+          <option value="user" data-i18n="role_user">User</option>
+          <option value="admin" data-i18n="role_admin">Admin</option>
         </select>
       </div>
     </div>
     <div class="msg" id="create-msg"></div>
     <div class="form-actions">
-      <button class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
-      <button class="btn btn-primary" id="btn-create" onclick="createUser()">Create user</button>
+      <button class="btn btn-secondary" onclick="closeCreateModal()" data-i18n="lbl_cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-create" onclick="createUser()" data-i18n="btn_create_user">Create user</button>
     </div>
   </div>
 </div>
@@ -205,20 +206,20 @@
 <!-- Modal: Change password -->
 <div class="overlay" id="overlay-password" onclick="closePasswordModal(event)">
   <div class="modal">
-    <div class="modal-title">Change password</div>
+    <div class="modal-title" data-i18n="modal_pw_title">Change password</div>
     <div class="modal-sub" id="pw-modal-sub"></div>
     <div class="field">
-      <label>New password * (min 6)</label>
+      <label data-i18n="lbl_new_password">New password * (min 6)</label>
       <input type="password" id="new-pw" autocomplete="new-password">
     </div>
     <div class="field" style="margin-top:0.75rem">
-      <label>Confirm password</label>
+      <label data-i18n="lbl_confirm_password">Confirm password</label>
       <input type="password" id="confirm-pw" autocomplete="new-password">
     </div>
     <div class="msg" id="pw-msg"></div>
     <div class="form-actions">
-      <button class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
-      <button class="btn btn-primary" id="btn-pw-save" onclick="savePassword()">Save password</button>
+      <button class="btn btn-secondary" onclick="closePasswordModal()" data-i18n="lbl_cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-pw-save" onclick="savePassword()" data-i18n="btn_save_password">Save password</button>
     </div>
   </div>
 </div>
@@ -226,12 +227,12 @@
 <!-- Modal: Confirm delete user -->
 <div class="overlay" id="overlay-delete" onclick="closeDeleteModal(event)">
   <div class="modal" style="max-width:360px">
-    <div class="modal-title">Delete user</div>
+    <div class="modal-title" data-i18n="modal_del_user_title">Delete user</div>
     <div class="modal-sub" id="del-modal-sub"></div>
-    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.2rem;">This action is permanent and cannot be undone. All their event RSVPs will be removed.</p>
+    <p id="del-warning" data-i18n="del_user_warning" style="font-size:0.82rem;color:var(--muted);margin-bottom:1.2rem;">This action is permanent and cannot be undone. All their event RSVPs will be removed.</p>
     <div class="form-actions">
-      <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
-      <button class="btn btn-danger" style="flex:1" id="btn-confirm-del" onclick="confirmDelete()">Delete user</button>
+      <button class="btn btn-secondary" onclick="closeDeleteModal()" data-i18n="lbl_cancel">Cancel</button>
+      <button class="btn btn-danger" style="flex:1" id="btn-confirm-del" onclick="confirmDelete()" data-i18n="btn_delete_user">Delete user</button>
     </div>
   </div>
 </div>
@@ -240,8 +241,8 @@
 
 <script>
 // ── Auth check ────────────────────────────────────────────────────────────────
-function decodeJwtPayload(t) {
-  try { return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }
+function decodeJwtPayload(tok) {
+  try { return JSON.parse(atob(tok.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }
   catch { return null; }
 }
 
@@ -254,6 +255,7 @@ if (!_claims || _claims.role !== 'admin') {
 } else {
   document.getElementById('main-content').style.display = 'block';
   document.getElementById('user-badge').textContent = _claims.username + ' (admin)';
+  document.addEventListener('DOMContentLoaded', applyI18n);
   loadUsers();
 }
 
@@ -289,13 +291,13 @@ function renderUsers() {
     const isMe = u.id === currentUserId;
     const created = u.created_at.split('T')[0];
     return `<tr>
-      <td><strong>${esc(u.username)}</strong>${isMe ? ' <span style="font-size:0.65rem;color:var(--muted)">(you)</span>' : ''}</td>
+      <td><strong>${esc(u.username)}</strong>${isMe ? ` <span style="font-size:0.65rem;color:var(--muted)">${t('you_label')}</span>` : ''}</td>
       <td style="color:var(--muted)">${u.display_name ? esc(u.display_name) : '—'}</td>
-      <td><span class="role-badge role-${u.role}">${u.role}</span></td>
+      <td><span class="role-badge role-${u.role}">${t(u.role === 'admin' ? 'role_admin' : 'role_user')}</span></td>
       <td style="color:var(--muted);font-size:0.78rem">${created}</td>
       <td style="text-align:right">
-        <button class="btn btn-secondary btn-sm" style="margin-right:0.4rem" onclick="openPasswordModal('${u.id}','${esc(u.username)}')">Password</button>
-        ${!isMe ? `<button class="btn btn-danger" onclick="openDeleteModal('${u.id}','${esc(u.username)}')">Delete</button>` : ''}
+        <button class="btn btn-secondary btn-sm" style="margin-right:0.4rem" onclick="openPasswordModal('${u.id}','${esc(u.username)}')">${t('btn_password')}</button>
+        ${!isMe ? `<button class="btn btn-danger" onclick="openDeleteModal('${u.id}','${esc(u.username)}')">${t('btn_delete_row')}</button>` : ''}
       </td>
     </tr>`;
   }).join('');
@@ -324,10 +326,10 @@ async function createUser() {
   const role        = document.getElementById('new-role').value;
 
   if (!username) { document.getElementById('new-username').focus(); return; }
-  if (password.length < 6) { showMsg('create-msg', 'Password must be at least 6 characters', 'err'); return; }
+  if (password.length < 6) { showMsg('create-msg', t('err_pw_min'), 'err'); return; }
 
   const btn = document.getElementById('btn-create');
-  btn.disabled = true; btn.textContent = 'Creating…';
+  btn.disabled = true; btn.textContent = t('btn_creating_user');
 
   try {
     const r = await fetch('/api/users', {
@@ -335,15 +337,15 @@ async function createUser() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password, display_name: displayName || null, role }),
     });
-    if (r.status === 409) { showMsg('create-msg', 'Username already taken', 'err'); return; }
+    if (r.status === 409) { showMsg('create-msg', t('err_username_taken'), 'err'); return; }
     if (!r.ok) throw new Error();
     closeCreateModal();
     await loadUsers();
-    showToast('User "' + username + '" created');
+    showToast(t('toast_user_created', username));
   } catch {
-    showMsg('create-msg', 'Error creating user', 'err');
+    showMsg('create-msg', t('err_create_user'), 'err');
   } finally {
-    btn.disabled = false; btn.textContent = 'Create user';
+    btn.disabled = false; btn.textContent = t('btn_create_user');
   }
 }
 
@@ -352,7 +354,7 @@ let pwTargetId = null;
 
 function openPasswordModal(userId, username) {
   pwTargetId = userId;
-  document.getElementById('pw-modal-sub').textContent = 'Changing password for: ' + username;
+  document.getElementById('pw-modal-sub').textContent = t('modal_pw_sub', username);
   document.getElementById('new-pw').value = '';
   document.getElementById('confirm-pw').value = '';
   showMsg('pw-msg', '', '');
@@ -370,11 +372,11 @@ async function savePassword() {
   const newPw    = document.getElementById('new-pw').value;
   const confirmPw = document.getElementById('confirm-pw').value;
 
-  if (newPw.length < 6) { showMsg('pw-msg', 'Password must be at least 6 characters', 'err'); return; }
-  if (newPw !== confirmPw) { showMsg('pw-msg', 'Passwords do not match', 'err'); return; }
+  if (newPw.length < 6) { showMsg('pw-msg', t('err_pw_min'), 'err'); return; }
+  if (newPw !== confirmPw) { showMsg('pw-msg', t('err_pw_mismatch'), 'err'); return; }
 
   const btn = document.getElementById('btn-pw-save');
-  btn.disabled = true; btn.textContent = 'Saving…';
+  btn.disabled = true; btn.textContent = t('btn_saving_password');
 
   try {
     const r = await fetch(`/api/users/${pwTargetId}/password`, {
@@ -384,11 +386,11 @@ async function savePassword() {
     });
     if (!r.ok) throw new Error();
     closePasswordModal();
-    showToast('Password updated');
+    showToast(t('toast_pw_updated'));
   } catch {
-    showMsg('pw-msg', 'Error updating password', 'err');
+    showMsg('pw-msg', t('err_update_pw'), 'err');
   } finally {
-    btn.disabled = false; btn.textContent = 'Save password';
+    btn.disabled = false; btn.textContent = t('btn_save_password');
   }
 }
 
@@ -397,7 +399,7 @@ let delTargetId = null;
 
 function openDeleteModal(userId, username) {
   delTargetId = userId;
-  document.getElementById('del-modal-sub').textContent = 'Delete user "' + username + '"?';
+  document.getElementById('del-modal-sub').textContent = t('modal_del_user_sub', username);
   document.getElementById('overlay-delete').classList.add('visible');
 }
 
@@ -410,17 +412,17 @@ function closeDeleteModal(e) {
 async function confirmDelete() {
   if (!delTargetId) return;
   const btn = document.getElementById('btn-confirm-del');
-  btn.disabled = true; btn.textContent = 'Deleting…';
+  btn.disabled = true; btn.textContent = t('btn_deleting_user');
   try {
     const r = await fetch(`/api/users/${delTargetId}`, { method: 'DELETE' });
     if (!r.ok) throw new Error();
     closeDeleteModal();
     await loadUsers();
-    showToast('User deleted');
+    showToast(t('toast_user_deleted'));
   } catch {
-    showToast('Error deleting user', true);
+    showToast(t('err_del_user'), true);
   } finally {
-    btn.disabled = false; btn.textContent = 'Delete user';
+    btn.disabled = false; btn.textContent = t('btn_delete_user');
   }
 }
 

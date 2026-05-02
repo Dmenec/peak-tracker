@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PeakTracker · Sign in</title>
+<script src="/i18n.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
 <style>
@@ -139,20 +140,20 @@
   <div class="logo">
     <span class="logo-mark">⛰</span>
     <div class="logo-title">PeakTracker</div>
-    <div class="logo-sub">Sign in to continue</div>
+    <div class="logo-sub" data-i18n="login_subtitle">Sign in to continue</div>
   </div>
 
   <form id="login-form" onsubmit="doLogin(event)">
-    <label for="username">Username</label>
+    <label for="username" data-i18n="lbl_username">Username</label>
     <input type="text" id="username" autocomplete="username" required autofocus>
 
-    <label for="password">Password</label>
+    <label for="password" data-i18n="lbl_password">Password</label>
     <input type="password" id="password" autocomplete="current-password" required>
 
-    <button class="btn" type="submit" id="btn-submit">Sign in</button>
+    <button class="btn" type="submit" id="btn-submit" data-i18n="btn_sign_in">Sign in</button>
   </form>
 
-  <div class="error-msg" id="error-msg">Invalid username or password</div>
+  <div class="error-msg" id="error-msg" data-i18n="err_credentials">Invalid username or password</div>
 </div>
 
 <script>
@@ -162,7 +163,7 @@ async function doLogin(e) {
   const err = document.getElementById('error-msg');
   err.style.display = 'none';
   btn.disabled = true;
-  btn.textContent = 'Signing in…';
+  btn.textContent = t('btn_signing_in');
 
   try {
     const r = await fetch('/api/auth/login', {
@@ -177,7 +178,7 @@ async function doLogin(e) {
     if (!r.ok) {
       err.style.display = 'block';
       btn.disabled = false;
-      btn.textContent = 'Sign in';
+      btn.textContent = t('btn_sign_in');
       return;
     }
 
@@ -190,9 +191,10 @@ async function doLogin(e) {
   } catch {
     err.style.display = 'block';
     btn.disabled = false;
-    btn.textContent = 'Sign in';
+    btn.textContent = t('btn_sign_in');
   }
 }
+document.addEventListener('DOMContentLoaded', applyI18n);
 </script>
 </body>
 </html>

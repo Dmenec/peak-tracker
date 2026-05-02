@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PeakTracker · Peak Map</title>
+<script src="/i18n.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
@@ -427,29 +428,29 @@
 <header>
   <a class="logo" href="/">Peak<span>Tracker</span></a>
   <nav>
-    <a class="nav-link active" href="/map.html">Map</a>
-    <a class="nav-link" href="/calendar/">Calendar</a>
-    <a class="nav-link admin-only" href="/admin.html" style="display:none">Admin</a>
+    <a class="nav-link active" href="/map.html" data-i18n="nav_map">Map</a>
+    <a class="nav-link" href="/calendar/" data-i18n="nav_calendar">Calendar</a>
+    <a class="nav-link admin-only" href="/admin.html" data-i18n="nav_admin" style="display:none">Admin</a>
   </nav>
   <div class="header-right">
     <div class="legend-items">
       <div class="legend-item">
-        <span class="legend-dot" style="background:#27ae60;"></span> Completed
+        <span class="legend-dot" style="background:#27ae60;"></span> <span data-i18n="leg_completed">Completed</span>
       </div>
       <div class="legend-item">
-        <span class="legend-dot" style="background:#4a9fd4;"></span> Planned
+        <span class="legend-dot" style="background:#4a9fd4;"></span> <span data-i18n="leg_planned">Planned</span>
       </div>
       <div class="legend-item">
-        <span class="legend-dot" style="background:#c0392b;"></span> Cancelled
+        <span class="legend-dot" style="background:#c0392b;"></span> <span data-i18n="leg_cancelled">Cancelled</span>
       </div>
       <div class="legend-item">
-        <span class="legend-dot" style="background:#7a9a7a;"></span> Unplanned
+        <span class="legend-dot" style="background:#7a9a7a;"></span> <span data-i18n="leg_unplanned">Unplanned</span>
       </div>
     </div>
     <div class="stats-badge">
       <strong id="peak-count">0</strong> completed
     </div>
-    <button class="btn-logout" onclick="logout()">Sign out</button>
+    <button class="btn-logout" onclick="logout()" data-i18n="sign_out">Sign out</button>
   </div>
 </header>
 
@@ -461,11 +462,12 @@
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-top-row">
-        <div class="sidebar-title">Registered peaks</div>
-        <button class="btn-register-peak admin-only" id="btn-new-peak" onclick="startRegisterPeakMode()" title="Add a new peak to the map" style="display:none">+ New peak</button>
+        <div class="sidebar-title" data-i18n="registered_peaks">Registered peaks</div>
+        <button class="btn-register-peak admin-only" id="btn-new-peak" onclick="startRegisterPeakMode()" data-i18n="btn_new_peak" style="display:none">+ New peak</button>
       </div>
       <div class="sidebar-stats-row" id="sidebar-stats"></div>
       <input class="search-input" type="text" id="search-input"
+             data-i18n-placeholder="search_placeholder"
              placeholder="Search peaks…" autocomplete="off"
              oninput="onSearchInput()" onkeydown="if(event.key==='Escape')clearSearch()">
     </div>
@@ -478,27 +480,27 @@
 <!-- Modal: Plan ascent (map click or from popup) -->
 <div class="overlay" id="overlay-plan" onclick="closeModal(event)">
   <div class="modal">
-    <div class="modal-title">Plan an ascent</div>
+    <div class="modal-title" data-i18n="modal_plan_title">Plan an ascent</div>
     <div class="modal-subtitle" id="plan-subtitle"></div>
     <div class="field">
-      <label>Peak *</label>
-      <input type="text" id="plan-peak-name" placeholder="Peak name…">
+      <label data-i18n="lbl_peak">Peak *</label>
+      <input type="text" id="plan-peak-name" data-i18n-placeholder="lbl_peak" placeholder="Peak name…">
     </div>
     <div class="field">
-      <label>Date *</label>
+      <label data-i18n="lbl_date">Date *</label>
       <input type="date" id="plan-date">
     </div>
     <div class="field">
-      <label>Companions</label>
-      <input type="text" id="plan-companions" placeholder="Alice, Bob, Carol…">
+      <label data-i18n="lbl_companions">Companions</label>
+      <input type="text" id="plan-companions" data-i18n-placeholder="ph_companions" placeholder="Alice, Bob, Carol…">
     </div>
     <div class="field">
-      <label>Notes</label>
-      <textarea id="plan-notes" rows="2" placeholder="Meeting point, gear…"></textarea>
+      <label data-i18n="lbl_notes">Notes</label>
+      <textarea id="plan-notes" rows="2" data-i18n-placeholder="ph_plan_notes" placeholder="Meeting point, gear…"></textarea>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closePlanModal()">Cancel</button>
-      <button class="btn btn-primary" id="btn-plan-save" onclick="savePlan()">Add to calendar</button>
+      <button class="btn btn-secondary" onclick="closePlanModal()" data-i18n="lbl_cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-plan-save" onclick="savePlan()" data-i18n="btn_add_calendar">Add to calendar</button>
     </div>
   </div>
 </div>
@@ -510,46 +512,46 @@
     <div class="modal-subtitle" id="exp-modal-subtitle"></div>
 
     <!-- Status pills -->
-    <div class="section-label">Status</div>
+    <div class="section-label" data-i18n="lbl_status">Status</div>
     <div class="status-pills" id="exp-status-pills"></div>
 
     <!-- Editable fields -->
     <div class="field">
-      <label>Date</label>
+      <label data-i18n="lbl_date_field">Date</label>
       <input type="date" id="exp-date">
     </div>
     <div class="form-2col">
       <div class="field">
-        <label>Duration (h)</label>
+        <label data-i18n="lbl_duration">Duration (h)</label>
         <input type="number" id="exp-duration" step="0.5" placeholder="6.5">
       </div>
       <div class="field">
-        <label>Difficulty</label>
+        <label data-i18n="lbl_difficulty">Difficulty</label>
         <select id="exp-difficulty">
-          <option value="">— Not specified —</option>
-          <option value="Easy">Easy</option>
-          <option value="Moderate">Moderate</option>
-          <option value="Hard">Hard</option>
-          <option value="Very hard">Very hard</option>
-          <option value="Alpine">Alpine</option>
+          <option value="" data-i18n="diff_none">— Not specified —</option>
+          <option value="Easy" data-i18n="diff_easy">Easy</option>
+          <option value="Moderate" data-i18n="diff_moderate">Moderate</option>
+          <option value="Hard" data-i18n="diff_hard">Hard</option>
+          <option value="Very hard" data-i18n="diff_very_hard">Very hard</option>
+          <option value="Alpine" data-i18n="diff_alpine">Alpine</option>
         </select>
       </div>
     </div>
     <div class="field">
-      <label>Companions</label>
-      <input type="text" id="exp-companions" placeholder="Alice, Bob, Carol…">
+      <label data-i18n="lbl_companions">Companions</label>
+      <input type="text" id="exp-companions" data-i18n-placeholder="ph_companions" placeholder="Alice, Bob, Carol…">
     </div>
     <div class="field">
-      <label>Notes</label>
-      <textarea id="exp-notes" rows="2" placeholder="Meeting point, gear…"></textarea>
+      <label data-i18n="lbl_notes">Notes</label>
+      <textarea id="exp-notes" rows="2" data-i18n-placeholder="ph_plan_notes" placeholder="Meeting point, gear…"></textarea>
     </div>
 
     <div class="modal-actions" style="flex-direction:column; gap:0.5rem;">
       <div style="display:flex;gap:0.6rem;">
-        <button class="btn btn-secondary" onclick="closeExpeditionModal()">Close</button>
-        <button class="btn btn-primary" id="btn-exp-save" onclick="saveExpeditionEdits()">Save changes</button>
+        <button class="btn btn-secondary" onclick="closeExpeditionModal()" data-i18n="btn_close">Close</button>
+        <button class="btn btn-primary" id="btn-exp-save" onclick="saveExpeditionEdits()" data-i18n="btn_save_changes">Save changes</button>
       </div>
-      <button class="btn btn-danger" style="width:100%;text-align:center;" onclick="deleteExpedition()">🗑 Delete expedition</button>
+      <button class="btn btn-danger" style="width:100%;text-align:center;" onclick="deleteExpedition()" data-i18n="btn_delete_expedition">🗑 Delete expedition</button>
     </div>
   </div>
 </div>
@@ -557,56 +559,56 @@
 <!-- Modal: Register new peak (admin only) -->
 <div class="overlay" id="overlay-new-peak" onclick="closeModal(event)">
   <div class="modal">
-    <div class="modal-title">Register peak</div>
-    <div class="modal-subtitle" id="np-coords-label">Click on the map to select the location</div>
+    <div class="modal-title" data-i18n="modal_register_title">Register peak</div>
+    <div class="modal-subtitle" id="np-coords-label" data-i18n="modal_register_sub">Click on the map to select the location</div>
 
     <div id="new-peak-form">
       <div class="field">
-        <label>Name *</label>
-        <input type="text" id="np-name" placeholder="Mont Blanc, Matterhorn, Eiger…">
+        <label data-i18n="lbl_name">Name *</label>
+        <input type="text" id="np-name" data-i18n-placeholder="ph_peak_name" placeholder="Mont Blanc, Matterhorn, Eiger…">
       </div>
       <div class="form-2col">
         <div class="field">
-          <label>Latitude</label>
+          <label data-i18n="lbl_latitude">Latitude</label>
           <input type="number" id="np-lat" step="any" readonly>
         </div>
         <div class="field">
-          <label>Longitude</label>
+          <label data-i18n="lbl_longitude">Longitude</label>
           <input type="number" id="np-lng" step="any" readonly>
         </div>
         <div class="field">
-          <label>Altitude (m) *</label>
-          <input type="number" id="np-alt" placeholder="2500">
+          <label data-i18n="lbl_altitude">Altitude (m) *</label>
+          <input type="number" id="np-alt" data-i18n-placeholder="ph_alt" placeholder="2500">
         </div>
         <div class="field">
-          <label>Ascent date</label>
+          <label data-i18n="lbl_ascent_date">Ascent date</label>
           <input type="date" id="np-date">
         </div>
         <div class="field">
-          <label>Difficulty</label>
+          <label data-i18n="lbl_difficulty">Difficulty</label>
           <select id="np-difficulty">
-            <option value="">— Select —</option>
-            <option value="Easy">Easy</option>
-            <option value="Moderate">Moderate</option>
-            <option value="Hard">Hard</option>
-            <option value="Very hard">Very hard</option>
-            <option value="Alpine">Alpine</option>
+            <option value="" data-i18n="diff_none">— Select —</option>
+            <option value="Easy" data-i18n="diff_easy">Easy</option>
+            <option value="Moderate" data-i18n="diff_moderate">Moderate</option>
+            <option value="Hard" data-i18n="diff_hard">Hard</option>
+            <option value="Very hard" data-i18n="diff_very_hard">Very hard</option>
+            <option value="Alpine" data-i18n="diff_alpine">Alpine</option>
           </select>
         </div>
         <div class="field">
-          <label>Duration (h)</label>
+          <label data-i18n="lbl_duration">Duration (h)</label>
           <input type="number" id="np-duration" step="0.5" placeholder="5.5">
         </div>
       </div>
       <div class="field">
-        <label>Notes</label>
-        <textarea id="np-notes" rows="2" placeholder="Access, hut, route…"></textarea>
+        <label data-i18n="lbl_notes">Notes</label>
+        <textarea id="np-notes" rows="2" data-i18n-placeholder="ph_notes_map" placeholder="Access, hut, route…"></textarea>
       </div>
     </div>
 
     <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeNewPeakModal()">Cancel</button>
-      <button class="btn btn-primary" id="btn-np-save" onclick="saveNewPeak()">Save peak</button>
+      <button class="btn btn-secondary" onclick="closeNewPeakModal()" data-i18n="lbl_cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-np-save" onclick="saveNewPeak()" data-i18n="btn_save_peak">Save peak</button>
     </div>
   </div>
 </div>
@@ -614,12 +616,12 @@
 <!-- Modal: Confirm delete peak -->
 <div class="overlay" id="overlay-delete" onclick="closeModal(event)">
   <div class="modal" style="max-width:360px;">
-    <div class="modal-title">Delete peak</div>
+    <div class="modal-title" data-i18n="modal_delete_title">Delete peak</div>
     <div class="modal-subtitle" id="delete-peak-name"></div>
 
     <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
-      <button class="btn btn-danger" id="btn-confirm-delete" onclick="confirmDeletePeak()">Delete peak</button>
+      <button class="btn btn-secondary" onclick="closeDeleteModal()" data-i18n="lbl_cancel">Cancel</button>
+      <button class="btn btn-danger" id="btn-confirm-delete" onclick="confirmDeletePeak()" data-i18n="btn_delete_peak">Delete peak</button>
     </div>
   </div>
 </div>
@@ -627,6 +629,10 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ── i18n bootstrap ────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', applyI18n);
+document.getElementById('map-hint').textContent = t('hint_plan');
+
 // ── State ─────────────────────────────────────────────────────────────────────
 let map, peaks = [], markers = [], eventMarkers = [], selectedPeakId = null;
 let events = [];
@@ -805,11 +811,11 @@ function updateSidebarStats() {
   const planned   = events.filter(e => e.status === 'planned').length;
 
   document.getElementById('sidebar-stats').innerHTML = `
-    <div class="stat-chip">Total: <strong>${peaks.length}</strong></div>
-    ${climbed > 0 ? `<div class="stat-chip">Climbed: <strong>${climbed}</strong></div>` : ''}
-    ${completed > 0 ? `<div class="stat-chip">Completed: <strong>${completed}</strong></div>` : ''}
-    ${planned > 0 ? `<div class="stat-chip" style="color:#7ec8f0;">Plans: <strong>${planned}</strong></div>` : ''}
-    ${highest > 0 ? `<div class="stat-chip">Max: <strong>${highest.toLocaleString()}m</strong></div>` : ''}
+    <div class="stat-chip">${t('stat_total')}: <strong>${peaks.length}</strong></div>
+    ${climbed > 0 ? `<div class="stat-chip">${t('stat_climbed')}: <strong>${climbed}</strong></div>` : ''}
+    ${completed > 0 ? `<div class="stat-chip">${t('stat_completed')}: <strong>${completed}</strong></div>` : ''}
+    ${planned > 0 ? `<div class="stat-chip" style="color:#7ec8f0;">${t('stat_plans')}: <strong>${planned}</strong></div>` : ''}
+    ${highest > 0 ? `<div class="stat-chip">${t('stat_max')}: <strong>${highest.toLocaleString()}m</strong></div>` : ''}
   `;
 }
 
@@ -938,11 +944,11 @@ function buildPopupHTML(p) {
     .sort((a, b) => b.planned_date.localeCompare(a.planned_date));
 
   const typeTag = {
-    done:      `<span style="font-size:0.65rem;background:#27ae6022;color:#7ec87e;border:1px solid #27ae6044;border-radius:3px;padding:0.1rem 0.4rem;">✓ Completed</span>`,
-    planned:   `<span style="font-size:0.65rem;background:#4a9fd422;color:#7ec8f0;border:1px solid #4a9fd444;border-radius:3px;padding:0.1rem 0.4rem;">🗺️ Planned</span>`,
-    cancelled: `<span style="font-size:0.65rem;background:#c0392b22;color:#e87e7e;border:1px solid #c0392b44;border-radius:3px;padding:0.1rem 0.4rem;">❌ Cancelled</span>`,
-    unplanned: `<span style="font-size:0.65rem;background:#ffffff0a;color:#7a9a7a;border:1px solid #ffffff15;border-radius:3px;padding:0.1rem 0.4rem;">Unplanned</span>`,
-  }[type] ?? `<span style="font-size:0.65rem;background:#ffffff0a;color:#7a9a7a;border:1px solid #ffffff15;border-radius:3px;padding:0.1rem 0.4rem;">Unplanned</span>`;
+    done:      `<span style="font-size:0.65rem;background:#27ae6022;color:#7ec87e;border:1px solid #27ae6044;border-radius:3px;padding:0.1rem 0.4rem;">${t('st_completed')}</span>`,
+    planned:   `<span style="font-size:0.65rem;background:#4a9fd422;color:#7ec8f0;border:1px solid #4a9fd444;border-radius:3px;padding:0.1rem 0.4rem;">${t('st_planned')}</span>`,
+    cancelled: `<span style="font-size:0.65rem;background:#c0392b22;color:#e87e7e;border:1px solid #c0392b44;border-radius:3px;padding:0.1rem 0.4rem;">${t('st_cancelled')}</span>`,
+    unplanned: `<span style="font-size:0.65rem;background:#ffffff0a;color:#7a9a7a;border:1px solid #ffffff15;border-radius:3px;padding:0.1rem 0.4rem;">${t('st_unplanned')}</span>`,
+  }[type] ?? `<span style="font-size:0.65rem;background:#ffffff0a;color:#7a9a7a;border:1px solid #ffffff15;border-radius:3px;padding:0.1rem 0.4rem;">${t('st_unplanned')}</span>`;
 
   // Build expedition list — each row is clickable to open the edit modal
   const expeditionsHTML = peakEvents.length > 0 ? `
@@ -956,7 +962,7 @@ function buildPopupHTML(p) {
       const info = [
         e.companions ? e.companions : null,
         e.duration_hours ? e.duration_hours + 'h' : null,
-        isDone ? '⛰ completed' : isCancelled ? '❌ cancelled' : '🗺️ planned',
+        isDone ? t('popup_tag_completed') : isCancelled ? t('popup_tag_cancelled') : t('popup_tag_planned'),
       ].filter(Boolean).join(' · ');
       return `<div class="popup-exp-item" onclick="openExpeditionModal('${e.id}')">
         <span style="width:7px;height:7px;border-radius:50%;background:${dotColor};flex-shrink:0;margin-top:1px;"></span>
@@ -971,8 +977,8 @@ function buildPopupHTML(p) {
 
   // "Mark done" button only if not already done
   const doneButton = type !== 'done'
-    ? `<button class="btn-popup btn-popup-done" data-id="${esc(p.id)}" data-name="${esc(p.name)}" onclick="markPeakDoneFromMap(this.dataset.id,this.dataset.name)">✓ Mark as completed</button>`
-    : `<div style="font-size:0.72rem;color:#27ae60;padding:0.3rem 0;">✓ This peak is already completed</div>`;
+    ? `<button class="btn-popup btn-popup-done" data-id="${esc(p.id)}" data-name="${esc(p.name)}" onclick="markPeakDoneFromMap(this.dataset.id,this.dataset.name)">${t('popup_mark_done')}</button>`
+    : `<div style="font-size:0.72rem;color:#27ae60;padding:0.3rem 0;">${t('st_already_done')}</div>`;
 
   return `<div style="font-family:'DM Sans',sans-serif;">
     ${p.photo_url ? `<img class="popup-photo" src="${p.photo_url}" alt="${esc(p.name)}">` : ''}
@@ -986,9 +992,9 @@ function buildPopupHTML(p) {
     ${p.notes ? `<div class="popup-notes">${esc(p.notes)}</div>` : ''}
     ${expeditionsHTML}
     <div class="popup-actions">
-      ${type !== 'done' ? `<button class="btn-popup btn-popup-schedule" onclick="openPlanModal('${p.id}')">📅 Plan ascent</button>` : ''}
+      ${type !== 'done' ? `<button class="btn-popup btn-popup-schedule" onclick="openPlanModal('${p.id}')">${t('popup_plan')}</button>` : ''}
       ${doneButton}
-      ${isAdmin ? `<button class="btn-popup btn-popup-delete" data-id="${esc(p.id)}" data-name="${esc(p.name)}" onclick="openDeleteModal(this.dataset.id,this.dataset.name)">🗑 Delete peak</button>` : ''}
+      ${isAdmin ? `<button class="btn-popup btn-popup-delete" data-id="${esc(p.id)}" data-name="${esc(p.name)}" onclick="openDeleteModal(this.dataset.id,this.dataset.name)">${t('popup_delete')}</button>` : ''}
     </div>
   </div>`;
 }
@@ -1030,9 +1036,9 @@ async function markPeakDoneFromMap(peakId, peakName) {
 
     map.closePopup();
     await loadData();
-    showToast('⛰ ' + peakName + ' completed!');
+    showToast(t('toast_peak_completed', peakName));
   } catch {
-    showToast('Error updating status', true);
+    showToast(t('err_status'), true);
   }
 }
 
@@ -1058,7 +1064,7 @@ function renderList(list) {
   const eventOnlyList = [...eventOnlyMap.values()];
 
   if (list.length === 0 && eventOnlyList.length === 0) {
-    el.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted);font-style:italic;font-size:0.82rem;">No peaks yet.<br>Use "+ New peak" to add one.</div>';
+    el.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--muted);font-style:italic;font-size:0.82rem;">${t('no_peaks_yet').replace('\n','<br>')}</div>`;
     return;
   }
 
@@ -1072,10 +1078,10 @@ function renderList(list) {
     const meta = p.ascent_date
       ? `<span style="color:#27ae60">✓ ${formatDate(p.ascent_date)}</span>`
       : type === 'planned'
-        ? `<span style="color:#4a9fd4">🗺️ Planned${nextStr}</span>`
+        ? `<span style="color:#4a9fd4">${t('st_planned')}${nextStr}</span>`
         : type === 'cancelled'
-          ? `<span style="color:#c0392b">❌ Cancelled</span>`
-          : `<span style="color:#7a9a7a">Unplanned</span>`;
+          ? `<span style="color:#c0392b">${t('st_cancelled')}</span>`
+          : `<span style="color:#7a9a7a">${t('st_unplanned')}</span>`;
 
     return `
     <div class="peak-item${selectedPeakId === p.id ? ' selected' : ''}"
@@ -1193,8 +1199,8 @@ function onSearchInput() {
 async function doOsmSearch(q, local) {
   // Show loading indicator in OSM section
   const el = document.getElementById('peaks-list');
-  const loadingRow = `<div class="search-section-label">OpenStreetMap</div>
-    <div class="search-loading">Searching…</div>`;
+  const loadingRow = `<div class="search-section-label">${t('search_osm')}</div>
+    <div class="search-loading">${t('search_loading')}</div>`;
   const currentHTML = el.innerHTML;
   el.innerHTML = currentHTML.replace(/<div class="search-section-label">OpenStreetMap<\/div>[\s\S]*$/, '') + loadingRow;
 
@@ -1228,7 +1234,7 @@ function renderSearchList(local, osm, q, loading) {
 
   // ── Registered peaks section ──
   if (local.length) {
-    html += `<div class="search-section-label">Registered peaks</div>`;
+    html += `<div class="search-section-label">${t('search_registered')}</div>`;
     const colors = { done: '#27ae60', planned: '#4a9fd4', cancelled: '#c0392b', unplanned: '#7a9a7a' };
     html += local.map(p => {
       const type  = peakType(p);
@@ -1253,9 +1259,9 @@ function renderSearchList(local, osm, q, loading) {
   }
 
   // ── OSM section ──
-  html += `<div class="search-section-label">OpenStreetMap</div>`;
+  html += `<div class="search-section-label">${t('search_osm')}</div>`;
   if (loading) {
-    html += `<div class="search-loading">Searching…</div>`;
+    html += `<div class="search-loading">${t('search_loading')}</div>`;
   } else if (osm.length) {
     html += osm.map((d, i) => {
       const name    = d.namedetails?.name || d.display_name.split(',')[0];
@@ -1273,11 +1279,11 @@ function renderSearchList(local, osm, q, loading) {
     // stash for click handler
     window._osmResults = osm;
   } else {
-    html += `<div class="search-loading" style="font-style:normal">No results in OpenStreetMap</div>`;
+    html += `<div class="search-loading" style="font-style:normal">${t('search_no_osm')}</div>`;
   }
 
   if (!local.length && !osm.length && !loading) {
-    el.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--muted);font-style:italic;font-size:0.82rem;">No peaks found for "${esc(q)}"</div>`;
+    el.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--muted);font-style:italic;font-size:0.82rem;">${t('search_no_peaks', esc(q))}</div>`;
     return;
   }
 
@@ -1301,7 +1307,7 @@ function selectOsmResult(idx) {
       .setContent(`<div style="font-family:'DM Sans',sans-serif;">
         <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.05em;margin-bottom:0.2rem;">${esc(name)}</div>
         <div style="font-size:0.72rem;color:#8ab080;">${ele ? `▲ ${ele.toLocaleString()} m · ` : ''}${esc(country)}</div>
-        ${isAdmin ? `<button onclick="startRegisterPeakMode()" style="margin-top:0.5rem;background:#7ec87e;color:#141a14;border:none;border-radius:5px;padding:0.3rem 0.7rem;font-size:0.75rem;font-weight:700;cursor:pointer;width:100%">+ Register this peak</button>` : ''}
+        ${isAdmin ? `<button onclick="startRegisterPeakMode()" style="margin-top:0.5rem;background:#7ec87e;color:#141a14;border:none;border-radius:5px;padding:0.3rem 0.7rem;font-size:0.75rem;font-weight:700;cursor:pointer;width:100%">${t('btn_register_this')}</button>` : ''}
       </div>`)
       .openOn(map);
   }, 1300);
@@ -1411,27 +1417,27 @@ async function savePlan() {
     placeEventMarkers();
     renderList(peaks);
     updateCounters();
-    showToast('📅 Plan added to calendar');
+    showToast(t('toast_plan_added'));
   } catch {
-    showToast('Error saving plan', true);
+    showToast(t('err_plan'), true);
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Add to calendar';
+    btn.textContent = t('btn_add_calendar');
   }
 }
 
 // ── Register peak mode ────────────────────────────────────────────────────────
 function startRegisterPeakMode() {
   registerPeakMode = true;
-  document.getElementById('map-hint').textContent = 'Click on the map to locate the new peak';
+  document.getElementById('map-hint').textContent = t('hint_register');
   document.getElementById('map-hint').style.borderColor = 'var(--sun)';
   document.getElementById('map-hint').style.color = 'var(--sun)';
-  showToast('Register mode: click on the peak location');
+  showToast(t('register_mode_toast'));
 }
 
 function openNewPeakModal(lat, lng) {
   registerPeakMode = false;
-  document.getElementById('map-hint').textContent = 'Click on the map to plan an ascent';
+  document.getElementById('map-hint').textContent = t('hint_plan');
   document.getElementById('map-hint').style.borderColor = '';
   document.getElementById('map-hint').style.color = '';
 
@@ -1464,7 +1470,7 @@ function closeNewPeakModal() {
   document.getElementById('overlay-new-peak').classList.remove('visible');
   if (tempMarker) { map.removeLayer(tempMarker); tempMarker = null; }
   registerPeakMode = false;
-  document.getElementById('map-hint').textContent = 'Click on the map to plan an ascent';
+  document.getElementById('map-hint').textContent = t('hint_plan');
   document.getElementById('map-hint').style.borderColor = '';
   document.getElementById('map-hint').style.color = '';
 }
@@ -1485,7 +1491,7 @@ async function confirmDeletePeak() {
   if (!deletePeakId) return;
   const btn = document.getElementById('btn-confirm-delete');
   btn.disabled = true;
-  btn.textContent = 'Deleting…';
+  btn.textContent = t('btn_deleting');
   try {
     const r = await fetch('/api/peaks/' + deletePeakId, { method: 'DELETE' });
     if (r.status === 401 || r.status === 403) {
@@ -1496,12 +1502,12 @@ async function confirmDeletePeak() {
     map.closePopup();
     closeDeleteModal();
     await loadData();
-    showToast('Peak deleted');
+    showToast(t('toast_peak_deleted'));
   } catch {
-    showToast('Error deleting peak', true);
+    showToast(t('err_del_peak'), true);
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Delete peak';
+    btn.textContent = t('btn_delete_peak');
   }
 }
 
@@ -1513,7 +1519,7 @@ async function saveNewPeak() {
 
   const btn = document.getElementById('btn-np-save');
   btn.disabled = true;
-  btn.textContent = 'Saving…';
+  btn.textContent = t('btn_saving');
 
   try {
     const r = await fetch('/api/peaks', {
@@ -1537,12 +1543,12 @@ async function saveNewPeak() {
     if (!r.ok) throw new Error();
     closeNewPeakModal();
     await loadData();
-    showToast('⛰ ' + name + ' registered');
+    showToast(t('toast_peak_registered', name));
   } catch {
-    showToast('Error saving peak', true);
+    showToast(t('err_save_peak'), true);
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Save peak';
+    btn.textContent = t('btn_save_peak');
   }
 }
 
@@ -1593,21 +1599,25 @@ function indexEvents() {
 
 let activeExpeditionId = null;
 
+function expLabels() {
+  return { planned: t('exp_st_planned'), completed: t('exp_st_completed'), cancelled: t('exp_st_cancelled') };
+}
+
 function openExpeditionModal(id) {
   const ev = eventById.get(id);
-  if (!ev) { showToast('Expedition not found', true); return; }
+  if (!ev) { showToast(t('err_load'), true); return; }
   activeExpeditionId = id;
 
   const isAscent    = ev.event_type === 'ascent';
   const isCancelled = ev.status === 'cancelled';
   const titleEmoji  = isAscent ? '⛰ ' : isCancelled ? '❌ ' : '🗺️ ';
-  const subtitle    = isAscent ? 'Recorded ascent' : isCancelled ? 'Cancelled expedition' : 'Planned expedition';
+  const subtitle    = isAscent ? t('exp_recorded') : isCancelled ? t('exp_cancelled') : t('exp_planned');
   document.getElementById('exp-modal-title').textContent = titleEmoji + ev.peak_name;
   document.getElementById('exp-modal-subtitle').textContent = subtitle;
 
   // Status pills
   const statuses = ['planned', 'completed', 'cancelled'];
-  const labels   = { planned: '🗺️ Planned', completed: '⛰ Completed', cancelled: '❌ Cancelled' };
+  const labels   = expLabels();
   document.getElementById('exp-status-pills').innerHTML = statuses.map(s => `
     <button class="status-pill ${ev.status === s ? (s === 'completed' ? 'active-completed' : s === 'planned' ? 'active-planned' : 'active-cancelled') : ''}"
             onclick="changeExpeditionStatus('${s}')">
@@ -1646,7 +1656,7 @@ async function changeExpeditionStatus(newStatus) {
     indexEvents();
     // Refresh status pills
     const statuses = ['planned', 'completed', 'cancelled'];
-    const labels   = { planned: '🗺️ Planned', completed: '⛰ Completed', cancelled: '❌ Cancelled' };
+    const labels   = expLabels();
     document.getElementById('exp-status-pills').innerHTML = statuses.map(s => `
       <button class="status-pill ${updated.status === s ? (s === 'completed' ? 'active-completed' : s === 'planned' ? 'active-planned' : 'active-cancelled') : ''}"
               onclick="changeExpeditionStatus('${s}')">
@@ -1654,17 +1664,17 @@ async function changeExpeditionStatus(newStatus) {
       </button>
     `).join('');
     const updatedEmoji    = updated.event_type === 'ascent' ? '⛰ ' : updated.status === 'cancelled' ? '❌ ' : '🗺️ ';
-    const updatedSubtitle = updated.event_type === 'ascent' ? 'Recorded ascent' : updated.status === 'cancelled' ? 'Cancelled expedition' : 'Planned expedition';
+    const updatedSubtitle = updated.event_type === 'ascent' ? t('exp_recorded') : updated.status === 'cancelled' ? t('exp_cancelled') : t('exp_planned');
     document.getElementById('exp-modal-title').textContent = updatedEmoji + updated.peak_name;
     document.getElementById('exp-modal-subtitle').textContent = updatedSubtitle;
     placeMarkers(peaks);
     placeEventMarkers();
     renderList(peaks);
     updateCounters();
-    if (newStatus === 'completed') showToast('⛰ Peak completed! Counter updated.');
-    else showToast('Status updated');
+    if (newStatus === 'completed') showToast(t('toast_counter_updated'));
+    else showToast(t('toast_status_updated'));
   } catch {
-    showToast('Error updating status', true);
+    showToast(t('err_status'), true);
   }
 }
 
@@ -1675,11 +1685,11 @@ async function saveExpeditionEdits() {
 
   const btn = document.getElementById('btn-exp-save');
   btn.disabled = true;
-  btn.textContent = 'Saving…';
+  btn.textContent = t('btn_saving_changes');
 
   try {
     const body = {
-      peak_name:    ev.peak_name, // name stays the same
+      peak_name:    ev.peak_name,
       planned_date: document.getElementById('exp-date').value || ev.planned_date,
       companions:   document.getElementById('exp-companions').value.trim() || null,
       notes:        document.getElementById('exp-notes').value.trim() || null,
@@ -1700,19 +1710,19 @@ async function saveExpeditionEdits() {
     placeMarkers(peaks);
     placeEventMarkers();
     renderList(peaks);
-    showToast('Expedition updated');
+    showToast(t('toast_exp_updated'));
   } catch {
-    showToast('Error saving changes', true);
+    showToast(t('err_save_exp'), true);
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Save changes';
+    btn.textContent = t('btn_save_changes');
   }
 }
 
 async function deleteExpedition() {
   if (!activeExpeditionId) return;
   const ev = eventById.get(activeExpeditionId);
-  if (!confirm(`Delete expedition "${ev?.peak_name}"?`)) return;
+  if (!confirm(t('confirm_del_exp', ev?.peak_name ?? ''))) return;
 
   try {
     const r = await fetch(`/api/calendar/${activeExpeditionId}`, { method: 'DELETE' });
@@ -1724,9 +1734,9 @@ async function deleteExpedition() {
     placeEventMarkers();
     renderList(peaks);
     updateCounters();
-    showToast('Expedition deleted');
+    showToast(t('toast_exp_deleted'));
   } catch {
-    showToast('Error deleting expedition', true);
+    showToast(t('err_del_exp'), true);
   }
 }
 
