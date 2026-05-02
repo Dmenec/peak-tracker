@@ -140,3 +140,49 @@ pub struct UpdateEventStatus {
 pub struct RsvpRequest {
     pub status: String, // "going" | "maybe" | "not_going"
 }
+
+// ── Proposals ─────────────────────────────────────────────────────────────────
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ProposalDateOption {
+    pub id:           String,
+    pub date:         String,
+    pub suggested_by: String,
+    pub suggested_by_name: String,
+    pub vote_count:   i64,
+    pub i_voted:      bool,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Proposal {
+    pub id:               String,
+    pub title:            String,
+    pub description:      Option<String>,
+    pub activity_type:    String,
+    pub created_by:       String,
+    pub created_by_name:  String,
+    pub created_at:       String,
+    pub voting_closes_at: String,
+    pub status:           String, // voting | scheduled | cancelled
+    pub calendar_event_id: Option<String>,
+    pub date_options:     Vec<ProposalDateOption>,
+    pub total_votes:      i64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateProposal {
+    pub title:         String,
+    pub description:   Option<String>,
+    pub activity_type: Option<String>,
+    pub dates:         Vec<String>, // initial date suggestions
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AddDateOption {
+    pub date: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct VoteRequest {
+    pub date_option_id: String,
+}

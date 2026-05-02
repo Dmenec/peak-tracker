@@ -71,6 +71,34 @@ fn create_tables(conn: &Connection) -> RusqliteResult<()> {
             joined_at TEXT NOT NULL,
             PRIMARY KEY (event_id, user_id)
         );
+
+        CREATE TABLE IF NOT EXISTS proposals (
+            id                TEXT PRIMARY KEY,
+            title             TEXT NOT NULL,
+            description       TEXT,
+            activity_type     TEXT NOT NULL DEFAULT 'hike',
+            created_by        TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            created_at        TEXT NOT NULL,
+            voting_closes_at  TEXT NOT NULL,
+            status            TEXT NOT NULL DEFAULT 'voting',
+            calendar_event_id TEXT REFERENCES calendar_events(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS proposal_date_options (
+            id           TEXT PRIMARY KEY,
+            proposal_id  TEXT NOT NULL REFERENCES proposals(id) ON DELETE CASCADE,
+            date         TEXT NOT NULL,
+            suggested_by TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            created_at   TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS proposal_votes (
+            proposal_id    TEXT NOT NULL REFERENCES proposals(id) ON DELETE CASCADE,
+            user_id        TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            date_option_id TEXT NOT NULL REFERENCES proposal_date_options(id) ON DELETE CASCADE,
+            voted_at       TEXT NOT NULL,
+            PRIMARY KEY (proposal_id, user_id)
+        );
     "#)
 }
 

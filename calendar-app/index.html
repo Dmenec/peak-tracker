@@ -73,6 +73,72 @@ nav { display: flex; gap: 0.25rem; }
 }
 .btn-new-event:hover { opacity: 0.85; }
 
+/* ── Main tabs ── */
+.main-tabs { display: flex; gap: 0; margin-bottom: 1.5rem; border-bottom: 1px solid #2a3a2a; }
+.main-tab {
+  padding: 0.6rem 1.2rem; font-size: 0.82rem; font-weight: 600;
+  color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent;
+  transition: all 0.15s; background: transparent; border-top: none; border-left: none; border-right: none;
+  font-family: 'DM Sans', sans-serif; margin-bottom: -1px;
+}
+.main-tab:hover { color: var(--snow); }
+.main-tab.active { color: #7ec87e; border-bottom-color: #7ec87e; }
+
+/* ── Proposals list ── */
+.proposals-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.proposal-card {
+  background: var(--granite); border: 1px solid #2a3a2a; border-radius: 12px;
+  padding: 1rem 1.2rem; cursor: pointer; transition: border-color 0.15s, background 0.12s;
+  display: flex; gap: 1rem; align-items: flex-start;
+}
+.proposal-card:hover { border-color: #4a7a4a; background: #1e281e; }
+.proposal-card.status-voting    { border-left: 3px solid var(--sky); }
+.proposal-card.status-scheduled { border-left: 3px solid var(--done); }
+.proposal-card.status-cancelled { border-left: 3px solid var(--danger); opacity: 0.6; }
+
+.proposal-icon { font-size: 1.6rem; flex-shrink: 0; padding-top: 0.1rem; }
+.proposal-body { flex: 1; min-width: 0; }
+.proposal-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.25rem; }
+.proposal-meta { font-size: 0.73rem; color: var(--muted); display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.proposal-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem; flex-shrink: 0; }
+
+.countdown {
+  font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  padding: 0.15rem 0.5rem; border-radius: 4px;
+}
+.countdown-open      { background: #4a9fd420; color: var(--sky); border: 1px solid #4a9fd440; }
+.countdown-soon      { background: #f5a62320; color: var(--sun); border: 1px solid #f5a62340; }
+.countdown-closed    { background: #27ae6020; color: #7ec87e; border: 1px solid #27ae6040; }
+.countdown-cancelled { background: #c0392b20; color: #e87e7e; border: 1px solid #c0392b40; }
+
+.votes-badge {
+  font-size: 0.7rem; color: var(--muted);
+  background: #2e3c2a; border: 1px solid #3a5a3a; border-radius: 20px; padding: 0.2rem 0.6rem;
+}
+.votes-badge strong { color: #7ec87e; }
+
+/* ── Proposal detail modal ── */
+.date-option-row {
+  display: flex; align-items: center; gap: 0.75rem;
+  background: var(--rock); border-radius: 8px; padding: 0.65rem 0.85rem;
+  margin-bottom: 0.5rem; cursor: pointer; transition: background 0.12s;
+  border: 1px solid #1e2e1e;
+}
+.date-option-row:hover { background: #1a2a1a; border-color: #3a5a3a; }
+.date-option-row.voted { background: #1a3a1a; border-color: #27ae6040; }
+.date-option-date { font-size: 0.88rem; font-weight: 700; flex: 1; }
+.date-option-sug  { font-size: 0.68rem; color: var(--muted); }
+.date-option-bar  { height: 4px; border-radius: 2px; background: #3a5a3a; min-width: 40px; transition: width 0.3s; }
+.date-option-bar.voted-bar { background: #27ae60; }
+.vote-count-label { font-size: 0.72rem; font-weight: 700; color: #7ec87e; min-width: 24px; text-align: right; }
+
+.add-date-row { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+.add-date-row input { flex: 1; background: var(--rock); border: 1px solid #2a3a2a; border-radius: 6px; padding: 0.5rem 0.7rem; color: var(--snow); font-family: 'DM Sans', sans-serif; font-size: 0.85rem; outline: none; }
+.add-date-row input:focus { border-color: #7ec87e; }
+.btn-add-date { background: #2e3c2a; color: #7ec87e; border: 1px solid #3a5a3a; border-radius: 6px; padding: 0.5rem 0.85rem; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.btn-add-date:hover { background: #3a4a3a; }
+
 /* ── Events grid ── */
 .events-grid { display: flex; flex-direction: column; gap: 0.75rem; }
 
@@ -376,6 +442,14 @@ nav { display: flex; gap: 0.25rem; }
 </header>
 
 <div class="page">
+  <!-- Main tabs -->
+  <div class="main-tabs">
+    <button class="main-tab active" id="tab-calendar" onclick="switchTab('calendar')">📅 Calendar</button>
+    <button class="main-tab" id="tab-ideas" onclick="switchTab('ideas')">💡 Ideas</button>
+  </div>
+
+  <!-- Calendar section -->
+  <div id="section-calendar">
   <div class="toolbar">
     <div class="toolbar-title" data-i18n="group_calendar">Group Calendar</div>
     <div class="filter-pills" id="filter-pills">
@@ -409,6 +483,93 @@ nav { display: flex; gap: 0.25rem; }
       <button class="cal-nav-btn" onclick="calNext()">›</button>
     </div>
     <div class="cal-grid" id="cal-grid"></div>
+  </div>
+  </div><!-- /section-calendar -->
+
+  <!-- Ideas section -->
+  <div id="section-ideas" style="display:none">
+    <div class="toolbar">
+      <div class="toolbar-title">💡 Ideas</div>
+      <button class="btn-new-event" onclick="openProposalModal()">+ New idea</button>
+    </div>
+    <div class="proposals-grid" id="proposals-grid">
+      <div class="empty-state"><p>Loading…</p></div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- ── Proposal detail modal ── -->
+<div class="overlay" id="overlay-proposal-detail" onclick="if(event.target===event.currentTarget)closeProposalDetail()">
+  <div class="modal" style="max-width:540px;">
+    <div class="detail-header">
+      <div class="detail-act-icon" id="pd-icon">💡</div>
+      <div class="detail-title-block">
+        <div class="detail-name" id="pd-title"></div>
+        <div class="detail-dates" id="pd-meta"></div>
+      </div>
+    </div>
+
+    <div id="pd-desc-wrap" style="display:none">
+      <div class="section-divider">Description</div>
+      <p id="pd-desc" style="font-size:0.82rem;color:#8ab080;font-style:italic;margin-bottom:0.75rem;"></p>
+    </div>
+
+    <div class="section-divider" id="pd-vote-label">Vote for a date</div>
+    <div id="pd-date-options"></div>
+
+    <!-- Add date option (while voting is open) -->
+    <div id="pd-add-date-wrap">
+      <div class="add-date-row">
+        <input type="date" id="pd-new-date">
+        <button class="btn-add-date" onclick="addDateOption()">+ Suggest date</button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeProposalDetail()">Close</button>
+      <button class="btn btn-danger" id="pd-btn-delete" onclick="deleteProposal()" style="display:none">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Create proposal modal ── -->
+<div class="overlay" id="overlay-proposal-create" onclick="if(event.target===event.currentTarget)closeProposalModal()">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-title">New idea</div>
+    <div class="modal-sub">Propose an activity — the group votes on the date over 2 days</div>
+
+    <div class="field">
+      <label>Activity / Peak name *</label>
+      <input type="text" id="pi-title" placeholder="Montcau, Ski day, Via ferrata Riglos…">
+    </div>
+    <div class="field">
+      <label>Activity type</label>
+      <select id="pi-activity">
+        <option value="hike">🥾 Hike</option>
+        <option value="via_ferrata">🪝 Via ferrata</option>
+        <option value="ski">⛷️ Ski / Snowboard</option>
+        <option value="trail_run">🏃 Trail run</option>
+        <option value="cycling">🚵 Cycling / MTB</option>
+        <option value="camping">🏕️ Camping</option>
+        <option value="other">🗺️ Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Description (optional)</label>
+      <textarea id="pi-desc" rows="2" placeholder="Route, meeting point, notes…"></textarea>
+    </div>
+    <div class="section-divider">Suggest date options (add at least one)</div>
+    <div id="pi-dates">
+      <div class="add-date-row">
+        <input type="date" class="pi-date-input">
+        <button class="btn-add-date" onclick="addProposalDateInput()">+ Add</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeProposalModal()">Cancel</button>
+      <button class="btn btn-primary" id="btn-proposal-create" onclick="createProposal()">Launch vote</button>
+    </div>
   </div>
 </div>
 
@@ -1221,6 +1382,253 @@ function showToast(msg, error = false) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeDetailModal(); closeFormModal(); }
 });
+
+// ── Tab switcher ─────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('section-calendar').style.display = tab === 'calendar' ? '' : 'none';
+  document.getElementById('section-ideas').style.display    = tab === 'ideas'    ? '' : 'none';
+  document.getElementById('tab-calendar').classList.toggle('active', tab === 'calendar');
+  document.getElementById('tab-ideas').classList.toggle('active', tab === 'ideas');
+  if (tab === 'ideas') loadProposals();
+}
+
+// ── Proposals ─────────────────────────────────────────────────────────────────
+let proposals = [];
+let activeProposalId = null;
+
+async function loadProposals() {
+  try {
+    const r = await fetch('/api/proposals');
+    if (!r.ok) throw new Error();
+    proposals = await r.json();
+    renderProposals();
+  } catch {
+    document.getElementById('proposals-grid').innerHTML =
+      '<div class="empty-state"><p>Error loading ideas</p></div>';
+  }
+}
+
+function renderProposals() {
+  const grid = document.getElementById('proposals-grid');
+  if (!proposals.length) {
+    grid.innerHTML = '<div class="empty-state"><p>No ideas yet. Be the first to propose one!</p></div>';
+    return;
+  }
+  grid.innerHTML = proposals.map(p => {
+    const countdown = countdownText(p.voting_closes_at, p.status);
+    const cls = `countdown ${countdown.cls}`;
+    return `
+    <div class="proposal-card status-${p.status}" onclick="openProposalDetail('${p.id}')">
+      <div class="proposal-icon">${actIcon(p.activity_type)}</div>
+      <div class="proposal-body">
+        <div class="proposal-name">${esc(p.title)}</div>
+        <div class="proposal-meta">
+          <span>by ${esc(p.created_by_name)}</span>
+          ${p.description ? `<span>${esc(p.description.substring(0,60))}…</span>` : ''}
+          ${p.status === 'scheduled' && p.calendar_event_id ? `<span style="color:#7ec87e">→ Added to calendar</span>` : ''}
+        </div>
+      </div>
+      <div class="proposal-right">
+        <span class="${cls}">${countdown.text}</span>
+        <div class="votes-badge"><strong>${p.total_votes}</strong> votes · ${p.date_options.length} dates</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function countdownText(closesAt, status) {
+  if (status === 'scheduled') return { text: '✓ Scheduled', cls: 'countdown-closed' };
+  if (status === 'cancelled') return { text: 'Cancelled', cls: 'countdown-cancelled' };
+  const diff = new Date(closesAt) - new Date();
+  if (diff <= 0) return { text: 'Closed', cls: 'countdown-closed' };
+  const h = Math.floor(diff / 3600000);
+  if (h < 6)  return { text: `${h}h left`, cls: 'countdown-soon' };
+  if (h < 24) return { text: `${h}h left`, cls: 'countdown-soon' };
+  const d = Math.floor(h / 24);
+  return { text: `${d}d ${h % 24}h left`, cls: 'countdown-open' };
+}
+
+// ── Proposal detail ───────────────────────────────────────────────────────────
+async function openProposalDetail(id) {
+  try {
+    const r = await fetch(`/api/proposals/${id}`);
+    if (!r.ok) throw new Error();
+    const p = await r.json();
+    activeProposalId = id;
+    const idx = proposals.findIndex(x => x.id === id);
+    if (idx !== -1) proposals[idx] = p;
+    renderProposalDetail(p);
+  } catch {
+    showToast('Error loading idea', true);
+  }
+}
+
+function renderProposalDetail(p) {
+  document.getElementById('pd-icon').textContent = actIcon(p.activity_type);
+  document.getElementById('pd-title').textContent = p.title;
+  const countdown = countdownText(p.voting_closes_at, p.status);
+  document.getElementById('pd-meta').textContent =
+    `by ${p.created_by_name}  ·  ${countdown.text}  ·  ${p.total_votes} votes`;
+
+  if (p.description) {
+    document.getElementById('pd-desc-wrap').style.display = 'block';
+    document.getElementById('pd-desc').textContent = p.description;
+  } else {
+    document.getElementById('pd-desc-wrap').style.display = 'none';
+  }
+
+  const isOpen = p.status === 'voting' && new Date(p.voting_closes_at) > new Date();
+  document.getElementById('pd-vote-label').textContent = isOpen ? 'Vote for a date' : 'Date results';
+  document.getElementById('pd-add-date-wrap').style.display = isOpen ? '' : 'none';
+
+  const maxVotes = Math.max(1, ...p.date_options.map(o => o.vote_count));
+  const opts = p.date_options.map(o => {
+    const pct = Math.round((o.vote_count / maxVotes) * 100);
+    const voted = o.i_voted;
+    return `
+    <div class="date-option-row ${voted ? 'voted' : ''}" onclick="${isOpen ? `voteForDate('${o.id}')` : ''}">
+      <div style="flex:1;min-width:0;">
+        <div class="date-option-date">${formatDate(o.date)}</div>
+        <div class="date-option-sug">suggested by ${esc(o.suggested_by_name)}</div>
+        <div style="margin-top:0.3rem;background:#1e2e1e;border-radius:2px;height:4px;">
+          <div class="${voted ? 'voted-bar' : ''} date-option-bar" style="width:${pct}%;height:4px;border-radius:2px;background:${voted ? '#27ae60' : '#3a5a3a'};"></div>
+        </div>
+      </div>
+      <div class="vote-count-label">${o.vote_count}</div>
+      ${voted ? '<span style="font-size:0.8rem;color:#7ec87e;">✓</span>' : ''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('pd-date-options').innerHTML = opts ||
+    '<p style="font-size:0.82rem;color:var(--muted);font-style:italic;padding:0.5rem 0;">No date options yet.</p>';
+
+  // delete button: only for creator or admin
+  const canDelete = p.created_by === myId || isAdmin;
+  document.getElementById('pd-btn-delete').style.display = canDelete ? '' : 'none';
+
+  document.getElementById('pd-new-date').value = '';
+  document.getElementById('overlay-proposal-detail').classList.add('visible');
+}
+
+function closeProposalDetail() {
+  document.getElementById('overlay-proposal-detail').classList.remove('visible');
+  activeProposalId = null;
+}
+
+async function voteForDate(optionId) {
+  if (!activeProposalId) return;
+  // If already voted for this option, unvote. Otherwise vote.
+  const p = proposals.find(x => x.id === activeProposalId);
+  const alreadyThis = p?.date_options.find(o => o.id === optionId)?.i_voted;
+
+  try {
+    let r;
+    if (alreadyThis) {
+      r = await fetch(`/api/proposals/${activeProposalId}/vote`, { method: 'DELETE' });
+    } else {
+      r = await fetch(`/api/proposals/${activeProposalId}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date_option_id: optionId }),
+      });
+    }
+    if (!r.ok) throw new Error();
+    const updated = await r.json();
+    const idx = proposals.findIndex(x => x.id === activeProposalId);
+    if (idx !== -1) proposals[idx] = updated;
+    renderProposalDetail(updated);
+    renderProposals();
+  } catch { showToast('Error voting', true); }
+}
+
+async function addDateOption() {
+  const date = document.getElementById('pd-new-date').value;
+  if (!date || !activeProposalId) return;
+  try {
+    const r = await fetch(`/api/proposals/${activeProposalId}/dates`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date }),
+    });
+    if (r.status === 409) { showToast('That date is already suggested', true); return; }
+    if (!r.ok) throw new Error();
+    const updated = await r.json();
+    const idx = proposals.findIndex(x => x.id === activeProposalId);
+    if (idx !== -1) proposals[idx] = updated;
+    renderProposalDetail(updated);
+    renderProposals();
+    document.getElementById('pd-new-date').value = '';
+  } catch { showToast('Error adding date', true); }
+}
+
+async function deleteProposal() {
+  if (!activeProposalId) return;
+  const p = proposals.find(x => x.id === activeProposalId);
+  if (!confirm(`Delete idea "${p?.title}"?`)) return;
+  try {
+    const r = await fetch(`/api/proposals/${activeProposalId}`, { method: 'DELETE' });
+    if (!r.ok) throw new Error();
+    proposals = proposals.filter(x => x.id !== activeProposalId);
+    closeProposalDetail();
+    renderProposals();
+    showToast('Idea deleted');
+  } catch { showToast('Error deleting idea', true); }
+}
+
+// ── Create proposal modal ─────────────────────────────────────────────────────
+function openProposalModal() {
+  document.getElementById('pi-title').value = '';
+  document.getElementById('pi-activity').value = 'hike';
+  document.getElementById('pi-desc').value = '';
+  document.getElementById('pi-dates').innerHTML = `
+    <div class="add-date-row">
+      <input type="date" class="pi-date-input">
+      <button class="btn-add-date" onclick="addProposalDateInput()">+ Add</button>
+    </div>`;
+  document.getElementById('overlay-proposal-create').classList.add('visible');
+  setTimeout(() => document.getElementById('pi-title').focus(), 80);
+}
+
+function closeProposalModal() {
+  document.getElementById('overlay-proposal-create').classList.remove('visible');
+}
+
+function addProposalDateInput() {
+  const wrap = document.getElementById('pi-dates');
+  const row = document.createElement('div');
+  row.className = 'add-date-row';
+  row.innerHTML = `<input type="date" class="pi-date-input"><button class="btn-add-date" onclick="this.parentElement.remove()">✕</button>`;
+  wrap.appendChild(row);
+}
+
+async function createProposal() {
+  const title = document.getElementById('pi-title').value.trim();
+  if (!title) { document.getElementById('pi-title').focus(); return; }
+  const dates = [...document.querySelectorAll('.pi-date-input')]
+    .map(i => i.value).filter(Boolean);
+  const btn = document.getElementById('btn-proposal-create');
+  btn.disabled = true; btn.textContent = 'Creating…';
+  try {
+    const r = await fetch('/api/proposals', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        activity_type: document.getElementById('pi-activity').value,
+        description: document.getElementById('pi-desc').value.trim() || null,
+        dates,
+      }),
+    });
+    if (!r.ok) throw new Error();
+    const p = await r.json();
+    proposals.unshift(p);
+    closeProposalModal();
+    renderProposals();
+    showToast('💡 Idea created! Voting open for 2 days');
+  } catch {
+    showToast('Error creating idea', true);
+  } finally { btn.disabled = false; btn.textContent = 'Launch vote'; }
+}
 
 // ── Profile modal ─────────────────────────────────────────────────────────────
 async function openProfileModal() {
