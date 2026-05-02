@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 use crate::{
     auth::CurrentUser,
-    models::{CreateUser, UpdatePassword, User},
+    models::{CreateUser, UpdatePassword, UpdateProfile, User},
     store::Store,
 };
 
@@ -60,9 +60,11 @@ pub async fn create_user(
     }).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
       .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    let id       = Uuid::new_v4().to_string();
-    let now      = Utc::now().to_rfc3339();
-    let role     = body.role.as_deref().filter(|r| *r == "admin").unwrap_or("user").to_string();
+    let id           = Uuid::new_v4().to_string();
+    let now          = Utc::now().to_rfc3339();
+    let role         = body.role.as_deref().filter(|r| *r == "admin").unwrap_or("user").to_string();
+    let display_name = body.display_name.clone()
+        .unwrap_or_else(|| body.username.trim().to_string()); // default to username
     let id2      = id.clone();
     let store2   = store.clone();
 
@@ -70,7 +72,7 @@ pub async fn create_user(
         let conn = store2.lock().unwrap();
         conn.execute(
             "INSERT INTO users (id, username, password_hash, display_name, role, created_at) VALUES (?1,?2,?3,?4,?5,?6)",
-            rusqlite::params![id2, body.username.trim(), hash, body.display_name, role, now],
+            rusqlite::params![id2, body.username.trim(), hash, display_name, role, now],
         ).map_err(|e| {
             if e.to_string().contains("UNIQUE") { StatusCode::CONFLICT }
             else { tracing::error!("create_user: {}", e); StatusCode::INTERNAL_SERVER_ERROR }
@@ -149,12 +151,45 @@ pub async fn update_password(
     }).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
 }
 
-pub async fn get_me(current: CurrentUser) -> Json<serde_json::Value> {
+pub async fn get_me(
+    State(store): State<Store>,
+    current: CurrentUser,
+) -> Json<serde_json::Value> {
+    let uid = current.user_id.clone();
+    let display_name: Option<String> = tokio::task::spawn_blocking(move || {
+        let conn = store.lock().unwrap();
+        conn.query_row(
+            "SELECT display_name FROM users WHERE id = ?1",
+            rusqlite::params![uid],
+            |r| r.get(0),
+        ).ok().flatten()
+    }).await.unwrap_or(None);
+
     Json(serde_json::json!({
-        "user_id":  current.user_id,
-        "username": current.username,
-        "role":     current.role,
+        "user_id":      current.user_id,
+        "username":     current.username,
+        "role":         current.role,
+        "display_name": display_name.unwrap_or_else(|| current.username.clone()),
     }))
+}
+
+pub async fn update_profile(
+    State(store): State<Store>,
+    current: CurrentUser,
+    Json(body): Json<UpdateProfile>,
+) -> Result<StatusCode, StatusCode> {
+    let name = body.display_name.trim().to_string();
+    if name.is_empty() { return Err(StatusCode::UNPROCESSABLE_ENTITY); }
+
+    let uid = current.user_id.clone();
+    tokio::task::spawn_blocking(move || {
+        let conn = store.lock().unwrap();
+        conn.execute(
+            "UPDATE users SET display_name = ?1 WHERE id = ?2",
+            rusqlite::params![name, uid],
+        ).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        Ok(StatusCode::NO_CONTENT)
+    }).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
 }
 
 async fn get_user_by_id(store: Store, id: &str) -> Result<Json<User>, StatusCode> {

@@ -370,7 +370,7 @@ nav { display: flex; gap: 0.25rem; }
     <a class="nav-link admin-only" href="/admin.html" id="admin-link" data-i18n="nav_admin" style="display:none">Admin</a>
   </nav>
   <div class="header-right">
-    <span class="user-badge" id="user-badge"></span>
+    <span class="user-badge" id="user-badge" onclick="openProfileModal()" style="cursor:pointer;" title="Edit profile"></span>
     <button class="btn-logout" onclick="logout()" data-i18n="sign_out">Sign out</button>
   </div>
 </header>
@@ -568,6 +568,22 @@ nav { display: flex; gap: 0.25rem; }
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeFormModal()" data-i18n="lbl_cancel">Cancel</button>
       <button class="btn btn-primary" id="btn-form-save" onclick="saveForm()" data-i18n="form_btn_create">Create event</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Profile -->
+<div class="overlay" id="overlay-profile" onclick="if(event.target===event.currentTarget)closeProfileModal()">
+  <div class="modal" style="max-width:340px;">
+    <div class="modal-title" data-i18n="profile_title">My profile</div>
+    <div class="modal-sub" id="profile-username"></div>
+    <div class="field">
+      <label data-i18n="profile_display_name">Display name</label>
+      <input type="text" id="profile-display-name" maxlength="40">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeProfileModal()" data-i18n="lbl_cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-profile-save" onclick="saveProfile()" data-i18n="profile_save">Save</button>
     </div>
   </div>
 </div>
@@ -1206,7 +1222,43 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeDetailModal(); closeFormModal(); }
 });
 
+// ── Profile modal ─────────────────────────────────────────────────────────────
+async function openProfileModal() {
+  const r = await fetch('/api/me').catch(() => null);
+  if (!r || !r.ok) return;
+  const me = await r.json();
+  document.getElementById('profile-username').textContent = '@' + me.username;
+  document.getElementById('profile-display-name').value = me.display_name || me.username;
+  document.getElementById('overlay-profile').classList.add('visible');
+  setTimeout(() => document.getElementById('profile-display-name').focus(), 80);
+}
+function closeProfileModal() {
+  document.getElementById('overlay-profile').classList.remove('visible');
+}
+async function saveProfile() {
+  const name = document.getElementById('profile-display-name').value.trim();
+  if (!name) return;
+  const btn = document.getElementById('btn-profile-save');
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/me/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ display_name: name }),
+    });
+    if (!r.ok) throw new Error();
+    closeProfileModal();
+    document.getElementById('user-badge').textContent = name;
+    showToast(t('profile_saved'));
+  } catch {
+    showToast(t('profile_err'), true);
+  } finally { btn.disabled = false; }
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
+fetch('/api/me').then(r => r.ok ? r.json() : null).then(me => {
+  if (me) document.getElementById('user-badge').textContent = me.display_name || me.username;
+}).catch(() => {});
 loadEvents();
 </script>
 </body>

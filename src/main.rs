@@ -48,6 +48,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/auth/login",  post(auth::login))
         .route("/api/auth/logout", post(auth::logout))
         .route("/api/me",          get(routes::users::get_me))
+        .route("/api/me/profile",  patch(routes::users::update_profile))
         // Peaks
         .route("/api/peaks",           get(routes::peaks::list_peaks))
         .route("/api/peaks",           post(routes::peaks::create_peak))

@@ -54,6 +54,11 @@ pub struct UpdatePassword {
     pub new_password: String,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct UpdateProfile {
+    pub display_name: String,
+}
+
 // ── Calendar ──────────────────────────────────────────────────────────────────
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

@@ -112,6 +112,16 @@
   }
   .btn-logout:hover { color: var(--danger); border-color: var(--danger); }
 
+  /* ── Profile badge (clickable) ───────────────────────────────────────── */
+  .user-badge {
+    font-size: 0.72rem; color: var(--muted);
+    background: transparent; border: 1px solid #ffffff18;
+    border-radius: 20px; padding: 0.25rem 0.7rem;
+    cursor: pointer; transition: color 0.15s, border-color 0.15s;
+    user-select: none;
+  }
+  .user-badge:hover { color: var(--text); border-color: #ffffff40; }
+
   /* ── Layout ──────────────────────────────────────────────────────────── */
   .main-layout { flex: 1; display: flex; overflow: hidden; position: relative; }
   #map { flex: 1; z-index: 1; }
@@ -450,6 +460,7 @@
     <div class="stats-badge">
       <strong id="peak-count">0</strong> completed
     </div>
+    <span class="user-badge" id="user-badge" onclick="openProfileModal()" title="Edit profile"></span>
     <button class="btn-logout" onclick="logout()" data-i18n="sign_out">Sign out</button>
   </div>
 </header>
@@ -626,12 +637,74 @@
   </div>
 </div>
 
+<!-- Modal: Profile (all users) -->
+<div class="overlay" id="overlay-profile" onclick="closeProfileIfBackdrop(event)">
+  <div class="modal" style="max-width:340px;">
+    <div class="modal-title" data-i18n="profile_title">My profile</div>
+    <div class="modal-subtitle" id="profile-username" style="margin-bottom:1rem;color:var(--muted);font-size:0.8rem;"></div>
+    <div class="field">
+      <label data-i18n="profile_display_name">Display name</label>
+      <input type="text" id="profile-display-name" maxlength="40">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeProfileModal()" data-i18n="lbl_cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-profile-save" onclick="saveProfile()" data-i18n="profile_save">Save</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 // ── i18n bootstrap ────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', applyI18n);
 document.getElementById('map-hint').textContent = t('hint_plan');
+
+// ── Profile modal ─────────────────────────────────────────────────────────────
+let _profileDisplayName = '';
+
+async function openProfileModal() {
+  try {
+    const r = await fetch('/api/me');
+    if (!r.ok) return;
+    const me = await r.json();
+    document.getElementById('profile-username').textContent = '@' + me.username;
+    document.getElementById('profile-display-name').value = me.display_name || me.username;
+  } catch {
+    document.getElementById('profile-username').textContent = '';
+  }
+  document.getElementById('overlay-profile').classList.add('visible');
+  setTimeout(() => document.getElementById('profile-display-name').focus(), 80);
+}
+
+function closeProfileModal() {
+  document.getElementById('overlay-profile').classList.remove('visible');
+}
+function closeProfileIfBackdrop(e) {
+  if (e.target === e.currentTarget) closeProfileModal();
+}
+
+async function saveProfile() {
+  const name = document.getElementById('profile-display-name').value.trim();
+  if (!name) return;
+  const btn = document.getElementById('btn-profile-save');
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/me/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ display_name: name }),
+    });
+    if (!r.ok) throw new Error();
+    closeProfileModal();
+    document.getElementById('user-badge').textContent = name;
+    showToast(t('profile_saved'));
+  } catch {
+    showToast(t('profile_err'), true);
+  } finally {
+    btn.disabled = false;
+  }
+}
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let map, peaks = [], markers = [], eventMarkers = [], selectedPeakId = null;
@@ -1742,6 +1815,9 @@ async function deleteExpedition() {
 
 
 // ── Init ──────────────────────────────────────────────────────────────────────
+fetch('/api/me').then(r => r.ok ? r.json() : null).then(me => {
+  if (me) document.getElementById('user-badge').textContent = me.display_name || me.username;
+}).catch(() => {});
 loadData();
 loadOsmPeaks();
 // Reload OSM peaks when the user pans/zooms to a new area (debounced)

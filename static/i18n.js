@@ -5,6 +5,13 @@
       nav_map: 'Map', nav_calendar: 'Calendar', nav_admin: 'Admin',
       sign_out: 'Sign out',
 
+      // ── Profile ──
+      profile_title: 'My profile',
+      profile_display_name: 'Display name',
+      profile_save: 'Save',
+      profile_saved: 'Profile updated',
+      profile_err: 'Error saving profile',
+
       // ── Login ──
       login_subtitle: 'Sign in to continue',
       lbl_username: 'Username', lbl_password: 'Password',
@@ -196,6 +203,8 @@
     es: {
       nav_map: 'Mapa', nav_calendar: 'Calendario', nav_admin: 'Administración',
       sign_out: 'Cerrar sesión',
+      profile_title: 'Mi perfil', profile_display_name: 'Nombre visible',
+      profile_save: 'Guardar', profile_saved: 'Perfil actualizado', profile_err: 'Error al guardar el perfil',
       login_subtitle: 'Inicia sesión para continuar',
       lbl_username: 'Usuario', lbl_password: 'Contraseña',
       btn_sign_in: 'Iniciar sesión', btn_signing_in: 'Entrando…',
@@ -335,6 +344,8 @@
     ca: {
       nav_map: 'Mapa', nav_calendar: 'Calendari', nav_admin: 'Administració',
       sign_out: 'Tancar sessió',
+      profile_title: 'El meu perfil', profile_display_name: 'Nom visible',
+      profile_save: 'Desar', profile_saved: 'Perfil actualitzat', profile_err: 'Error en desar el perfil',
       login_subtitle: 'Inicia sessió per continuar',
       lbl_username: 'Usuari', lbl_password: 'Contrasenya',
       btn_sign_in: 'Inicia sessió', btn_signing_in: 'Entrant…',

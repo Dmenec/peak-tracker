@@ -89,6 +89,12 @@ fn run_migrations(conn: &Connection) {
     let _ = conn.execute("ALTER TABLE calendar_events ADD COLUMN meeting_point TEXT", []);
     let _ = conn.execute("ALTER TABLE calendar_events ADD COLUMN created_by TEXT NOT NULL DEFAULT 'system'", []);
 
+    // Back-fill: users without display_name get username as default
+    let _ = conn.execute(
+        "UPDATE users SET display_name = username WHERE display_name IS NULL OR display_name = ''",
+        [],
+    );
+
     // Back-fill: completed events → ascent type
     let _ = conn.execute(
         "UPDATE calendar_events SET event_type = 'ascent' WHERE status = 'completed' AND event_type = 'plan'",
