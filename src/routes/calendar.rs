@@ -179,9 +179,17 @@ pub async fn update_event(
 ) -> Result<Json<CalendarEvent>, StatusCode> {
     check_event_ownership(&store, &id, &current).await?;
 
+    let category: Option<String> = body.category.as_deref()
+        .filter(|s| VALID_CATEGORIES.contains(s))
+        .map(|s| s.to_string());
+    // Only admins can change to peak category
+    if category.as_deref() == Some("peak") && !current.is_admin() {
+        return Err(StatusCode::FORBIDDEN);
+    }
+    let default_act = if category.as_deref() == Some("peak") { "hike" } else { "social" };
     let activity_type = body.activity_type.as_deref()
         .filter(|s| VALID_ACT.contains(s))
-        .unwrap_or("hike").to_string();
+        .unwrap_or(default_act).to_string();
 
     let currency = body.currency.clone().unwrap_or_else(|| "EUR".into());
     let id2 = id.clone();
@@ -193,12 +201,13 @@ pub async fn update_event(
             "UPDATE calendar_events SET
              peak_name = ?1, activity_type = ?2, planned_date = ?3, end_date = ?4,
              notes = ?5, difficulty = ?6, duration_hours = ?7, max_participants = ?8,
-             cost_per_person = ?9, currency = ?10, meeting_point = ?11
-             WHERE id = ?12",
+             cost_per_person = ?9, currency = ?10, meeting_point = ?11,
+             category = COALESCE(?12, category)
+             WHERE id = ?13",
             rusqlite::params![
                 body.peak_name, activity_type, body.planned_date, body.end_date,
                 body.notes, body.difficulty, body.duration_hours, body.max_participants,
-                body.cost_per_person, currency, body.meeting_point, id2
+                body.cost_per_person, currency, body.meeting_point, category, id2
             ],
         ).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
         if n == 0 { return Err(StatusCode::NOT_FOUND); }
@@ -209,6 +218,7 @@ pub async fn update_event(
 }
 
 pub async fn update_event_status(
+
     State(store): State<Store>,
     current: CurrentUser,
     Path(id): Path<String>,

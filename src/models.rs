@@ -119,6 +119,7 @@ pub struct CreateEvent {
 #[derive(Debug, Deserialize)]
 pub struct UpdateEvent {
     pub peak_name: String,
+    pub category: Option<String>,
     pub activity_type: Option<String>,
     pub planned_date: String,
     pub end_date: Option<String>,
