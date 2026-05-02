@@ -128,6 +128,10 @@ pub async fn upload_photo(
             let img = image::load_from_memory(&bytes).map_err(|e| {
                 tracing::error!("Error loading image: {}", e); StatusCode::BAD_REQUEST
             })?;
+            // Reject decompression bombs — cap at 25 megapixels
+            if img.width() as u64 * img.height() as u64 > 25_000_000 {
+                return Err(StatusCode::PAYLOAD_TOO_LARGE);
+            }
             let resized = img.resize(1200, 1200, image::imageops::FilterType::Lanczos3);
 
             let filename  = format!("{}.jpg", Uuid::new_v4());

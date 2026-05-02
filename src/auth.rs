@@ -110,8 +110,14 @@ pub fn jwt_verify(token: &str) -> Result<Claims, &'static str> {
     if parts.len() != 3 { return Err("Malformed token"); }
 
     let message = format!("{}.{}", parts[0], parts[1]);
-    let expected_sig = jwt_sign(&message).map_err(|_| "Error verifying signature")?;
-    if expected_sig != parts[2] { return Err("Invalid signature"); }
+    let secret  = jwt_secret();
+
+    // Constant-time signature verification — prevents timing oracle attacks
+    let mut mac = Hmac::<Sha256>::new_from_slice(secret.as_bytes())
+        .map_err(|_| "Error verifying signature")?;
+    mac.update(message.as_bytes());
+    let sig_bytes = URL_SAFE_NO_PAD.decode(parts[2]).map_err(|_| "Invalid signature")?;
+    mac.verify_slice(&sig_bytes).map_err(|_| "Invalid signature")?;
 
     let payload_json = URL_SAFE_NO_PAD.decode(parts[1]).map_err(|_| "Error decoding payload")?;
     let claims: Claims = serde_json::from_slice(&payload_json).map_err(|_| "Error parsing claims")?;
@@ -163,6 +169,10 @@ fn extract_token(req: &Request<Body>) -> Option<String> {
     None
 }
 
+// Dummy hash used when a username doesn't exist, so the bcrypt verify still
+// runs and response time stays constant — prevents username enumeration.
+const DUMMY_HASH: &str = "$2b$12$WKNhAoiwuUyG8RFtYhIbj.HqvZEh7YNTFHJVxFkq0W1ADO5GD3RuO";
+
 pub async fn login(
     axum::extract::State(store): axum::extract::State<Store>,
     Json(body): Json<LoginRequest>,
@@ -186,6 +196,11 @@ pub async fn login(
     let (user_id, username, hash, role) = match row {
         Some(r) => r,
         None => {
+            // Always run bcrypt to keep timing constant (no username enumeration)
+            let pw = body.password.clone();
+            let _ = tokio::task::spawn_blocking(move || {
+                bcrypt::verify(&pw, DUMMY_HASH).unwrap_or(false)
+            }).await;
             tracing::warn!("Failed login: user '{}' not found", body.username);
             return Err(StatusCode::UNAUTHORIZED);
         }

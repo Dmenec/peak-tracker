@@ -186,7 +186,9 @@ async function doLogin(e) {
     // Store token so map.html admin buttons work without a second login
     sessionStorage.setItem('pt_token', data.token);
 
-    const redirect = new URLSearchParams(window.location.search).get('next') || '/';
+    const raw = new URLSearchParams(window.location.search).get('next') || '/';
+    // Only allow same-origin relative paths — reject anything with a scheme or //
+    const redirect = /^\/(?!\/)/.test(raw) ? raw : '/';
     window.location.href = redirect;
   } catch {
     err.style.display = 'block';
