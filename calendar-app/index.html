@@ -84,6 +84,32 @@ nav { display: flex; gap: 0.25rem; }
 .main-tab:hover { color: var(--snow); }
 .main-tab.active { color: #7ec87e; border-bottom-color: #7ec87e; }
 
+/* ── Category tab filter (peaks vs plans) ── */
+.cat-tabs { display: flex; gap: 0.4rem; margin-bottom: 1rem; }
+.cat-btn {
+  padding: 0.35rem 0.9rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+  border: 1px solid #2a3a2a; background: transparent; color: var(--muted);
+  cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+}
+.cat-btn:hover { background: #ffffff10; color: var(--snow); }
+.cat-btn.active-peaks { background: #4a9fd420; color: var(--sky); border-color: #4a9fd450; }
+.cat-btn.active-plans { background: #f5a62320; color: var(--sun); border-color: #f5a62350; }
+.cat-btn.active-all   { background: #7ec87e20; color: #7ec87e; border-color: #7ec87e50; }
+
+/* ── Plan event card overrides ── */
+.event-card.cat-plan { background: #1a1810; border-color: #3a3020; }
+.event-card.cat-plan:hover { background: #222010; border-color: #5a5030; }
+.event-card.cat-plan.status-open      { border-left-color: var(--sun); }
+.event-card.cat-plan.status-completed { border-left-color: #a855f7; }
+
+/* ── Plan category label ── */
+.cat-label {
+  font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 0.1rem 0.4rem; border-radius: 3px; flex-shrink: 0; align-self: flex-start; margin-top: 0.2rem;
+}
+.cat-label-peak { background: #4a9fd418; color: #7ec8f0; border: 1px solid #4a9fd430; }
+.cat-label-plan { background: #f5a62318; color: #ffc060; border: 1px solid #f5a62330; }
+
 /* ── Proposals list ── */
 .proposals-grid { display: flex; flex-direction: column; gap: 0.75rem; }
 
@@ -464,6 +490,12 @@ nav { display: flex; gap: 0.25rem; }
     </div>
     <button class="btn-new-event" onclick="openCreateModal()" data-i18n="btn_new_event">+ New event</button>
   </div>
+  <!-- Category filter -->
+  <div class="cat-tabs">
+    <button class="cat-btn active-all" id="cat-all" onclick="setCat('all')">⛰ + 🎉 All</button>
+    <button class="cat-btn" id="cat-peaks" onclick="setCat('peak')">⛰ Peaks</button>
+    <button class="cat-btn" id="cat-plans" onclick="setCat('plan')">🎉 Plans</button>
+  </div>
 
   <!-- List view -->
   <div id="view-list">
@@ -641,21 +673,46 @@ nav { display: flex; gap: 0.25rem; }
     <div class="modal-title" id="form-title">New event</div>
     <div class="modal-sub" id="form-sub">Plan a group activity</div>
 
+    <!-- Category selector -->
+    <div class="field" style="margin-bottom:1rem;">
+      <label>Category</label>
+      <div style="display:flex;gap:0.5rem;">
+        <button type="button" class="cat-btn active-plans" id="f-cat-plan" onclick="setFormCat('plan')" style="flex:1;">🎉 Plan</button>
+        <button type="button" class="cat-btn" id="f-cat-peak" onclick="setFormCat('peak')" style="flex:1;display:none">⛰ Peak (admin)</button>
+      </div>
+      <input type="hidden" id="f-category" value="plan">
+    </div>
+
     <div class="form-2col">
       <div class="field" style="grid-column:1/-1">
-        <label data-i18n="lbl_activity_name">Activity / Peak name *</label>
-        <input type="text" id="f-name" data-i18n-placeholder="ph_activity_name" placeholder="Mont Blanc, Canigó, Ski day…">
+        <label data-i18n="lbl_activity_name">Name *</label>
+        <input type="text" id="f-name" placeholder="Paella a la platja, Montcau, Festival…">
       </div>
       <div class="field">
-        <label data-i18n="lbl_activity_type">Activity type</label>
+        <label data-i18n="lbl_activity_type">Type</label>
         <select id="f-activity">
-          <option value="hike" data-i18n="act_hike">🥾 Hike</option>
-          <option value="via_ferrata" data-i18n="act_via_ferrata">🪝 Via ferrata</option>
-          <option value="ski" data-i18n="act_ski">⛷️ Ski / Snowboard</option>
-          <option value="trail_run" data-i18n="act_trail_run">🏃 Trail run</option>
-          <option value="cycling" data-i18n="act_cycling">🚵 Cycling / MTB</option>
-          <option value="camping" data-i18n="act_camping">🏕️ Camping</option>
-          <option value="other" data-i18n="act_other">🗺️ Other</option>
+          <!-- Plan types (default) -->
+          <optgroup label="🎉 Plans" id="f-act-plans">
+            <option value="social">🎉 Social / quedada</option>
+            <option value="food">🍽️ Menjar / beure</option>
+            <option value="festival">🎵 Festival / concert</option>
+            <option value="culture">🏛️ Cultura / museu</option>
+            <option value="beach">🏖️ Platja / surf</option>
+            <option value="travel">✈️ Viatge</option>
+            <option value="sport">🏅 Esport</option>
+            <option value="accommodation">🏠 Casa / allotjament</option>
+            <option value="other">🗺️ Altre</option>
+          </optgroup>
+          <!-- Peak types -->
+          <optgroup label="⛰ Peaks" id="f-act-peaks" style="display:none">
+            <option value="hike" data-i18n="act_hike">🥾 Hike</option>
+            <option value="via_ferrata" data-i18n="act_via_ferrata">🪝 Via ferrata</option>
+            <option value="ski" data-i18n="act_ski">⛷️ Ski / Snowboard</option>
+            <option value="trail_run" data-i18n="act_trail_run">🏃 Trail run</option>
+            <option value="cycling" data-i18n="act_cycling">🚵 Cycling / MTB</option>
+            <option value="camping" data-i18n="act_camping">🏕️ Camping</option>
+            <option value="other">🗺️ Altre</option>
+          </optgroup>
         </select>
       </div>
       <div class="field">
@@ -778,8 +835,9 @@ async function logout() {
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 let events = [];
-let peaks  = []; // loaded alongside events to look up photos
+let peaks  = [];
 let activeFilter = 'all';
+let activeCat    = 'all'; // 'all' | 'peak' | 'plan'
 let viewMode     = 'list';
 let calYear, calMonth;
 const _today = new Date();
@@ -821,14 +879,45 @@ function setFilter(f) {
 }
 
 function filtered() {
-  if (activeFilter === 'all') return events;
-  return events.filter(e => e.status === activeFilter);
+  return events.filter(e => {
+    const statusOk = activeFilter === 'all' || e.status === activeFilter;
+    const catOk    = activeCat === 'all'    || (e.category || 'peak') === activeCat;
+    return statusOk && catOk;
+  });
+}
+
+function setCat(cat) {
+  activeCat = cat;
+  ['all','peaks','plans'].forEach(id => {
+    const btn = document.getElementById('cat-' + id);
+    if (btn) btn.className = 'cat-btn';
+  });
+  const active = document.getElementById('cat-' + (cat === 'peak' ? 'peaks' : cat === 'plan' ? 'plans' : 'all'));
+  if (active) active.className = `cat-btn active-${cat === 'all' ? 'all' : cat === 'peak' ? 'peaks' : 'plans'}`;
+  renderGrid();
+  if (viewMode === 'calendar') renderCalendar();
+}
+
+function setFormCat(cat) {
+  document.getElementById('f-category').value = cat;
+  document.getElementById('f-cat-plan').className = cat === 'plan' ? 'cat-btn active-plans' : 'cat-btn';
+  document.getElementById('f-cat-peak').className = cat === 'peak' ? 'cat-btn active-peaks' : 'cat-btn';
+  // Show relevant activity optgroups
+  document.getElementById('f-act-plans').style.display = cat === 'plan' ? '' : 'none';
+  document.getElementById('f-act-peaks').style.display = cat === 'peak' ? '' : 'none';
+  // Reset activity selection
+  document.getElementById('f-activity').value = cat === 'peak' ? 'hike' : 'social';
 }
 
 // ── Render grid ───────────────────────────────────────────────────────────────
 const ACT_ICONS = {
+  // Peak
   hike: '🥾', via_ferrata: '🪝', ski: '⛷️', trail_run: '🏃',
-  cycling: '🚵', camping: '🏕️', other: '🗺️'
+  cycling: '🚵', camping: '🏕️',
+  // Plan
+  social: '🎉', food: '🍽️', festival: '🎵', culture: '🏛️',
+  beach: '🏖️', travel: '✈️', sport: '🏅', accommodation: '🏠',
+  other: '🗺️'
 };
 const ACT_KEYS = {
   hike: 'act_hike', via_ferrata: 'act_via_ferrata', ski: 'act_ski',
@@ -861,8 +950,9 @@ function renderGrid() {
     const endDateStr = ev.end_date && ev.end_date !== ev.planned_date
       ? ` → ${formatDate(ev.end_date)}` : '';
 
+    const cat = ev.category || 'peak';
     return `
-    <div class="event-card status-${ev.status}" onclick="openDetail('${ev.id}')">
+    <div class="event-card status-${ev.status} cat-${cat}" onclick="openDetail('${ev.id}')">
       <div class="event-date-block">
         <div class="event-day">${d}</div>
         <div class="event-month">${month} ${y}</div>
@@ -872,6 +962,7 @@ function renderGrid() {
           <span class="act-icon">${actIcon(ev.activity_type)}</span>
           <span class="event-name">${esc(ev.peak_name)}</span>
           <span class="event-status-badge badge-${ev.status}">${statusLabel(ev.status)}</span>
+          <span class="cat-label cat-label-${cat}">${cat === 'peak' ? '⛰ Peak' : '🎉 Plan'}</span>
         </div>
         <div class="event-meta">
           <span class="meta-chip" style="color:#8ab080">${t('by_label')} ${esc(ev.created_by_name)}</span>
@@ -1229,6 +1320,8 @@ function openCreateModal() {
   document.getElementById('form-sub').textContent   = t('form_new_sub');
   document.getElementById('btn-form-save').textContent = t('form_btn_create');
   document.getElementById('f-status-row').style.display = 'none';
+  // Show peak option only for admins
+  document.getElementById('f-cat-peak').style.display = isAdmin ? '' : 'none';
   clearForm();
   document.getElementById('overlay-form').classList.add('visible');
   setTimeout(() => document.getElementById('f-name').focus(), 80);
@@ -1249,7 +1342,9 @@ function openEditFromDetail() {
 
 function clearForm() {
   document.getElementById('f-name').value      = '';
-  document.getElementById('f-activity').value  = 'hike';
+  document.getElementById('f-category').value  = 'plan';
+  setFormCat('plan');
+  document.getElementById('f-activity').value  = 'social';
   document.getElementById('f-difficulty').value = '';
   document.getElementById('f-date-start').value = '';
   document.getElementById('f-date-end').value   = '';
@@ -1294,6 +1389,7 @@ async function saveForm() {
 
   const body = {
     peak_name:      name,
+    category:       document.getElementById('f-category').value,
     activity_type:  document.getElementById('f-activity').value,
     planned_date:   date,
     end_date:       document.getElementById('f-date-end').value || null,

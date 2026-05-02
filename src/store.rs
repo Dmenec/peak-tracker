@@ -116,6 +116,12 @@ fn run_migrations(conn: &Connection) {
     let _ = conn.execute("ALTER TABLE calendar_events ADD COLUMN currency TEXT NOT NULL DEFAULT 'EUR'", []);
     let _ = conn.execute("ALTER TABLE calendar_events ADD COLUMN meeting_point TEXT", []);
     let _ = conn.execute("ALTER TABLE calendar_events ADD COLUMN created_by TEXT NOT NULL DEFAULT 'system'", []);
+    let _ = conn.execute("ALTER TABLE calendar_events ADD COLUMN category TEXT NOT NULL DEFAULT 'peak'", []);
+    // Back-fill: events with non-mountain activity types → plan category
+    let _ = conn.execute(
+        "UPDATE calendar_events SET category='plan' WHERE activity_type IN ('food','festival','culture','beach','social','travel','sport','accommodation')",
+        [],
+    );
 
     // Back-fill: users without display_name get username as default
     let _ = conn.execute(

@@ -12,10 +12,17 @@ use crate::{
     store::Store,
 };
 
-const VALID_STATES: &[&str] = &["open", "full", "cancelled", "completed"];
-const VALID_TYPES:  &[&str] = &["plan", "ascent"];
-const VALID_RSVP:   &[&str] = &["going", "maybe", "not_going"];
-const VALID_ACT:    &[&str] = &["hike", "via_ferrata", "ski", "trail_run", "cycling", "camping", "other"];
+const VALID_STATES:    &[&str] = &["open", "full", "cancelled", "completed"];
+const VALID_TYPES:     &[&str] = &["plan", "ascent"];
+const VALID_RSVP:      &[&str] = &["going", "maybe", "not_going"];
+const VALID_CATEGORIES:&[&str] = &["peak", "plan"];
+const VALID_ACT:       &[&str] = &[
+    // Peak activities
+    "hike", "via_ferrata", "ski", "trail_run", "cycling", "camping",
+    // Social / plan activities
+    "food", "festival", "culture", "beach", "social", "travel", "sport", "accommodation",
+    "other",
+];
 
 const SELECT_COLS: &str = "
     ce.id, ce.peak_name, ce.activity_type, ce.planned_date, ce.end_date,
@@ -24,7 +31,8 @@ const SELECT_COLS: &str = "
     ce.status, ce.event_type, ce.created_by,
     COALESCE(u.display_name, u.username, 'Unknown') as created_by_name,
     ce.latitude, ce.longitude, ce.created_at,
-    (SELECT COUNT(*) FROM event_participants ep WHERE ep.event_id = ce.id AND ep.status = 'going') as participant_count
+    (SELECT COUNT(*) FROM event_participants ep WHERE ep.event_id = ce.id AND ep.status = 'going') as participant_count,
+    COALESCE(ce.category, 'peak') as category
 ";
 
 fn row_to_event(row: &rusqlite::Row) -> rusqlite::Result<CalendarEvent> {
@@ -49,6 +57,7 @@ fn row_to_event(row: &rusqlite::Row) -> rusqlite::Result<CalendarEvent> {
         longitude:        row.get(17)?,
         created_at:       row.get(18)?,
         participant_count: row.get(19)?,
+        category:         row.get::<_, Option<String>>(20)?.unwrap_or_else(|| "peak".into()),
         attendees:        vec![],
     })
 }
@@ -109,6 +118,15 @@ pub async fn create_event(
     current: CurrentUser,
     Json(body): Json<CreateEvent>,
 ) -> Result<Json<CalendarEvent>, StatusCode> {
+    let category = body.category.as_deref()
+        .filter(|s| VALID_CATEGORIES.contains(s))
+        .unwrap_or("plan").to_string();
+
+    // Only admins can create peak events
+    if category == "peak" && !current.is_admin() {
+        return Err(StatusCode::FORBIDDEN);
+    }
+
     let id  = Uuid::new_v4().to_string();
     let now = Utc::now().to_rfc3339();
 
@@ -122,9 +140,11 @@ pub async fn create_event(
             .unwrap_or("plan")
     }.to_string();
 
+    // Default activity_type by category
+    let default_act = if category == "peak" { "hike" } else { "social" };
     let activity_type = body.activity_type.as_deref()
         .filter(|s| VALID_ACT.contains(s))
-        .unwrap_or("hike").to_string();
+        .unwrap_or(default_act).to_string();
 
     let currency = body.currency.clone().unwrap_or_else(|| "EUR".into());
     let id2      = id.clone();
@@ -137,13 +157,13 @@ pub async fn create_event(
             "INSERT INTO calendar_events
              (id, peak_name, activity_type, planned_date, end_date, notes, difficulty,
               duration_hours, max_participants, cost_per_person, currency, meeting_point,
-              status, event_type, created_by, latitude, longitude, created_at)
-             VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18)",
+              status, event_type, created_by, latitude, longitude, created_at, category)
+             VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19)",
             rusqlite::params![
                 id2, body.peak_name, activity_type, body.planned_date, body.end_date,
                 body.notes, body.difficulty, body.duration_hours, body.max_participants,
                 body.cost_per_person, currency, body.meeting_point,
-                status, event_type, user_id, body.latitude, body.longitude, now
+                status, event_type, user_id, body.latitude, body.longitude, now, category
             ],
         ).map_err(|e| { tracing::error!("insert event: {}", e); StatusCode::INTERNAL_SERVER_ERROR })
     }).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)??;

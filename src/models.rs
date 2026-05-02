@@ -74,7 +74,8 @@ pub struct EventParticipant {
 pub struct CalendarEvent {
     pub id: String,
     pub peak_name: String,
-    pub activity_type: String, // hike | via_ferrata | ski | trail_run | cycling | camping | other
+    pub category: String,      // peak | plan
+    pub activity_type: String, // peak: hike|via_ferrata|ski|trail_run|cycling|camping  plan: food|festival|culture|beach|social|travel|sport|accommodation|other
     pub planned_date: String,
     pub end_date: Option<String>,
     pub notes: Option<String>,
@@ -110,6 +111,7 @@ pub struct CreateEvent {
     pub meeting_point: Option<String>,
     pub status: Option<String>,
     pub event_type: Option<String>,
+    pub category: Option<String>, // "peak" | "plan"
     pub latitude: Option<f64>,
     pub longitude: Option<f64>,
 }
