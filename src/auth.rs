@@ -257,9 +257,19 @@ pub async fn logout() -> impl IntoResponse {
 pub async fn require_session(req: Request<Body>, next: Next) -> Response {
     let path = req.uri().path();
 
+    // Static assets needed by the login page (JS, CSS, fonts, icons) must be
+    // accessible without a session so the login page can actually render.
+    let is_static_asset = path.ends_with(".js")
+        || path.ends_with(".css")
+        || path.ends_with(".ico")
+        || path.ends_with(".png")
+        || path.ends_with(".woff2")
+        || path.ends_with(".woff");
+
     let is_public = path == "/login.html"
         || path == "/api/auth/login"
-        || path == "/api/auth/logout";
+        || path == "/api/auth/logout"
+        || is_static_asset;
 
     if is_public {
         return next.run(req).await;
